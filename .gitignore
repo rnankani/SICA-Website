@@ -1,0 +1,15 @@
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor / local tooling
+.claude/
+.vscode/
+.idea/
+
+# Dependencies (future-proof)
+node_modules/
+
+# Logs
+*.log

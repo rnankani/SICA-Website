@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SICA — The skills schools don't teach</title>
+<meta name="description" content="SICA · Student Influence &amp; Communication Association. Schools teach subjects. We teach people.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script>document.documentElement.className+=' js';</script>
+<style>
+/* ═══════════════════════════════════════════════════════════
+   SICA — editorial noir
+   Ink hero. A bone panel rises over it. Fat Didone, tight
+   tracking, oversized numerals, one brass accent.
+   ═══════════════════════════════════════════════════════════ */
+:root{
+  --ink:#141210;
+  --ink-deep:#0A0909;
+  --bone:#EDE8DC;
+  --bone-dim:#1E1B17;
+  --brass:#9B7B3A;
+  --brass-lit:#C9A34F;
+  --on-ink:#8C867C;
+  --on-bone:#9C9585;
+
+  --display:'Bodoni Moda', 'Didot', Georgia, serif;
+  --ui:'Inter', system-ui, sans-serif;
+
+  --pad:clamp(20px,5vw,84px);
+  --gap:clamp(96px,14vh,190px);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--ink-deep);color:var(--bone);
+  font-family:var(--ui);font-weight:300;line-height:1.6;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+::selection{background:var(--brass);color:var(--ink)}
+a{color:inherit;text-decoration:none}
+img,svg{display:block;max-width:100%}
+
+/* ─── type scale ─────────────────────────────────────────── */
+.display{
+  font-family:var(--display);
+  font-weight:700;
+  font-optical-sizing:auto;
+  letter-spacing:-.025em;   /* tight — wide tracking reads like a day spa */
+  line-height:.92;
+}
+.eyebrow{
+  font-family:var(--ui);font-size:clamp(10px,1.1vw,12px);font-weight:500;
+  letter-spacing:.16em;text-transform:uppercase;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HERO
+   ═══════════════════════════════════════════════════════════ */
+.hero{
+  position:sticky;top:0;z-index:0;
+  height:100vh;min-height:560px;
+  background:var(--ink-deep);
+  overflow:hidden;
+  display:grid;grid-template-rows:auto 1fr auto;
+  padding:clamp(18px,3vh,34px) var(--pad) clamp(22px,4vh,40px);
+}
+
+/* cursor-tracked rake light, desktop only */
+.spot{
+  position:absolute;width:70vmax;height:70vmax;left:0;top:0;pointer-events:none;
+  transform:translate3d(var(--mx,50vw),var(--my,42vh),0) translate(-50%,-50%);
+  background:radial-gradient(circle,rgba(201,163,79,.10) 0%,rgba(201,163,79,.04) 28%,transparent 62%);
+  opacity:0;transition:opacity 1.4s ease;
+}
+.hero.lit .spot{opacity:1}
+@media (hover:none){.spot{display:none}}
+
+/* the ghost word behind everything */
+.ghost{
+  position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);
+  font-family:var(--display);font-weight:700;font-style:italic;
+  font-size:clamp(120px,26vw,420px);line-height:1;letter-spacing:-.04em;
+  color:transparent;-webkit-text-stroke:1px rgba(237,232,220,.055);
+  white-space:nowrap;pointer-events:none;user-select:none;
+  animation:drift 26s ease-in-out infinite;
+}
+@keyframes drift{0%,100%{transform:translate(-50%,-50%) translateX(-2.5%)}50%{transform:translate(-50%,-50%) translateX(2.5%)}}
+
+.hero-bar{display:flex;justify-content:space-between;align-items:center;gap:20px;position:relative;z-index:2}
+.hero-bar .eyebrow{color:var(--on-ink)}
+.hero-bar .mk{font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.02em}
+
+.hero-mid{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;justify-content:center;align-items:flex-start;
+}
+
+/* ─── the wordmark: letters lift out of a mask ───────────── */
+.word{
+  display:flex;align-items:flex-end;
+  /* height-aware: on short/landscape viewports 31vw alone overflows the hero and
+     the type gets clipped, so cap against vh too */
+  font-size:clamp(104px,min(31vw,44vh),440px);
+  margin-left:-.014em;  /* optical: pull the S to the true left edge */
+}
+.word .l{display:block;overflow:hidden;padding-bottom:.04em}
+.word .l > i{
+  display:block;font-style:normal;
+  color:var(--brass-lit);
+  will-change:transform;
+}
+html.js .word .l > i{transform:translateY(108%) rotate(3deg)}
+.word.in .l > i{animation:lift 1150ms cubic-bezier(.16,1,.3,1) forwards}
+.word.in .l:nth-child(1) > i{animation-delay:0ms}
+.word.in .l:nth-child(2) > i{animation-delay:95ms}
+.word.in .l:nth-child(3) > i{animation-delay:190ms}
+.word.in .l:nth-child(4) > i{animation-delay:285ms}
+@keyframes lift{to{transform:translateY(0) rotate(0deg)}}
+
+/* The raking highlight that sweeps the letters once.
+   Gated on background-clip:text — the effect needs transparent letters, so
+   without support the wordmark itself would vanish. Degrades to no shimmer. */
+@supports ((-webkit-background-clip:text) or (background-clip:text)){
+  .word .l > i{position:relative;background-clip:text;-webkit-background-clip:text}
+  .word.rake .l > i{
+    color:transparent;
+    background-image:linear-gradient(100deg,
+      var(--brass-lit) 40%, var(--brass-lit) 46%, #FFFFFF 50%, var(--brass-lit) 54%, var(--brass-lit) 60%);
+    background-size:280% 100%;background-position:190% 0;
+    animation:lift 1150ms cubic-bezier(.16,1,.3,1) forwards, rake 1600ms cubic-bezier(.5,0,.2,1) forwards;
+  }
+  .word.rake .l:nth-child(1) > i{animation-delay:0ms,   700ms}
+  .word.rake .l:nth-child(2) > i{animation-delay:95ms,  790ms}
+  .word.rake .l:nth-child(3) > i{animation-delay:190ms, 880ms}
+  .word.rake .l:nth-child(4) > i{animation-delay:285ms, 970ms}
+}
+@keyframes rake{to{background-position:-90% 0}}
+
+/* brass rule that draws under the wordmark, then runs the same shine as SICA */
+.rule{height:1px;width:100%;max-width:min(760px,86vw);background:rgba(237,232,220,.14);position:relative;margin-top:clamp(18px,3vh,34px)}
+.rule .fill{
+  position:absolute;inset:0 auto 0 0;display:block;width:100%;
+  background-image:linear-gradient(90deg,
+    var(--brass-lit) 40%, var(--brass-lit) 46%, #FFFFFF 50%, var(--brass-lit) 54%, var(--brass-lit) 60%);
+  background-size:280% 100%;background-position:190% 0;
+  box-shadow:0 0 14px rgba(201,163,79,.6);
+}
+html.js .rule .fill{width:0}
+html.js .rule.in .fill{animation:draw 1100ms cubic-bezier(.16,1,.3,1) forwards}
+@keyframes draw{to{width:100%}}
+/* the shine — identical gradient stops, size and easing as the wordmark's rake,
+   so it reads as the same light, just now travelling the line instead of a letter */
+html.js .rule.shine .fill{animation:ruleShine 1600ms cubic-bezier(.5,0,.2,1) forwards}
+@keyframes ruleShine{to{background-position:-90% 0}}
+
+/* the twinkle waiting at the line's end, echoing the arc-star from the first
+   concept — fires once the shine above arrives */
+.spark{
+  position:absolute;top:50%;right:-2px;width:14px;height:14px;margin:-7px -7px 0 0;
+  pointer-events:none;
+}
+html.js .spark{opacity:0}
+html.js .spark.burst{opacity:1}
+.spark-core{
+  position:absolute;inset:0;background:#FFFFFF;
+  clip-path:polygon(50% 0%,58.5% 41.5%,100% 50%,58.5% 58.5%,50% 100%,41.5% 58.5%,0% 50%,41.5% 41.5%);
+  filter:drop-shadow(0 0 6px rgba(255,255,255,.85));
+  transform:scale(.3);
+}
+.spark.burst{opacity:1}
+.spark.burst .spark-core{animation:sparkBurst 900ms cubic-bezier(.16,1,.3,1) forwards}
+@keyframes sparkBurst{
+  0%{transform:scale(.3);filter:drop-shadow(0 0 6px rgba(255,255,255,.85)) brightness(1)}
+  30%{transform:scale(2.2);filter:drop-shadow(0 0 20px rgba(255,255,255,1)) brightness(2.4)}
+  100%{transform:scale(1);filter:drop-shadow(0 0 10px rgba(201,163,79,.85)) brightness(1.15)}
+}
+
+/* ─── hero foot ──────────────────────────────────────────── */
+.hero-foot{
+  position:relative;z-index:2;
+  display:grid;grid-template-columns:1fr auto;gap:clamp(22px,4vw,60px);align-items:end;
+}
+.mask{overflow:hidden;display:block}
+html.js .mask > *{transform:translateY(115%)}
+.mask.in > *{animation:up 1000ms cubic-bezier(.16,1,.3,1) forwards}
+@keyframes up{to{transform:translateY(0)}}
+
+.claim{
+  font-family:var(--display);font-weight:400;font-style:italic;
+  font-size:clamp(19px,2.4vw,30px);line-height:1.24;letter-spacing:-.01em;
+  max-width:20ch;color:var(--bone);
+}
+.claim b{font-style:normal;font-weight:700}
+.hero-note{font-size:13px;color:var(--on-ink);max-width:30ch;margin-top:14px}
+
+.acts{display:flex;gap:10px;flex-wrap:wrap}
+
+/* ─── buttons ────────────────────────────────────────────── */
+.btn{
+  --bx:0px;--by:0px;
+  display:inline-flex;align-items:center;gap:.7em;
+  font-family:var(--ui);font-size:12px;font-weight:500;letter-spacing:.06em;
+  padding:15px 26px;border-radius:100px;border:1px solid transparent;cursor:pointer;
+  white-space:nowrap;position:relative;overflow:hidden;
+  transform:translate(var(--bx),var(--by));
+  transition:transform .45s cubic-bezier(.16,1,.3,1),background .4s ease,color .4s ease,border-color .4s ease;
+}
+.btn span{position:relative;z-index:1}
+.btn .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.55;position:relative;z-index:1}
+/* fill wipes up from the bottom on hover */
+.btn::before{
+  content:'';position:absolute;inset:0;z-index:0;transform:translateY(101%);
+  transition:transform .55s cubic-bezier(.16,1,.3,1);
+}
+.btn:hover::before{transform:translateY(0)}
+
+.btn--solid{background:var(--bone);color:var(--ink)}
+.btn--solid::before{background:var(--brass-lit)}
+.btn--line{border-color:rgba(237,232,220,.28);color:var(--bone)}
+.btn--line::before{background:var(--bone)}
+.btn--line:hover{color:var(--ink);border-color:var(--bone)}
+
+/* ─── scroll cue ─────────────────────────────────────────── */
+.cue{display:flex;align-items:center;gap:10px;color:var(--on-ink);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+.cue i{display:block;width:26px;height:1px;background:currentColor;position:relative;overflow:hidden}
+.cue i::after{content:'';position:absolute;inset:0;background:var(--brass-lit);animation:cue 2.4s ease-in-out infinite}
+@keyframes cue{0%{transform:translateX(-100%)}55%,100%{transform:translateX(100%)}}
+
+/* ═══════════════════════════════════════════════════════════
+   THE BONE PANEL — rises over the hero
+   ═══════════════════════════════════════════════════════════ */
+.sheet{
+  position:relative;z-index:1;
+  background:var(--ink);color:var(--bone);
+  border-radius:clamp(20px,3vw,40px) clamp(20px,3vw,40px) 0 0;
+  border-top:1px solid rgba(237,232,220,.07);
+  box-shadow:0 -40px 90px rgba(0,0,0,.55);
+}
+.sheet::before{
+  content:'';position:absolute;left:50%;top:14px;transform:translateX(-50%);
+  width:46px;height:3px;border-radius:3px;background:rgba(237,232,220,.2);
+}
+
+.wrap{width:100%;max-width:1340px;margin-inline:auto;padding-inline:var(--pad)}
+.sec{padding-block:var(--gap);position:relative}
+
+/* oversized ghost numeral per section */
+.num{
+  position:absolute;right:var(--pad);top:calc(var(--gap) - .18em);
+  font-family:var(--display);font-weight:700;font-size:clamp(110px,19vw,300px);
+  line-height:1;color:transparent;-webkit-text-stroke:1px rgba(237,232,220,.07);
+  pointer-events:none;user-select:none;z-index:0;
+}
+.sec > .wrap{position:relative;z-index:1}
+
+.kicker{display:flex;align-items:center;gap:12px;color:var(--brass)}
+.kicker i{width:28px;height:1px;background:currentColor;display:block}
+.h2{
+  font-family:var(--display);font-weight:700;letter-spacing:-.028em;line-height:.95;
+  font-size:clamp(38px,7vw,96px);margin-top:22px;max-width:16ch;
+}
+.h2 em{font-style:italic;font-weight:400}
+.sub{font-size:clamp(15px,1.5vw,17.5px);color:var(--on-bone);max-width:56ch;margin-top:24px;line-height:1.65}
+
+/* ─── 01 the gap ─────────────────────────────────────────── */
+.gap-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(36px,6vw,110px);margin-top:clamp(46px,7vh,84px);align-items:start}
+.gap-grid p{color:var(--on-bone);font-size:16.5px;line-height:1.72;max-width:52ch}
+.gap-grid p + p{margin-top:18px}
+.gap-grid p.lead{color:var(--bone);font-size:19px}
+
+.able{border-top:1px solid rgba(237,232,220,.16)}
+.able h3{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--brass);font-weight:500;padding-top:20px}
+.able li{
+  list-style:none;padding:19px 0 19px 34px;border-bottom:1px solid rgba(237,232,220,.12);
+  font-size:15.5px;position:relative;transition:padding-left .45s cubic-bezier(.16,1,.3,1),color .45s ease;
+}
+.able li:first-of-type{border-top:1px solid rgba(237,232,220,.12);margin-top:20px}
+.able li::before{
+  content:counter(a,decimal-leading-zero);counter-increment:a;
+  position:absolute;left:0;top:20px;font-size:11px;color:var(--brass);font-variant-numeric:tabular-nums;
+}
+.able ul{counter-reset:a}
+.able li:hover{padding-left:42px;color:var(--brass)}
+
+/* ─── 02 meeting: three offset slabs ─────────────────────── */
+.slabs{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,2vw,26px);margin-top:clamp(46px,7vh,84px)}
+.slab{
+  background:var(--bone-dim);color:var(--bone);border-radius:14px;
+  padding:clamp(26px,3vw,42px);min-height:clamp(250px,32vw,340px);
+  display:flex;flex-direction:column;justify-content:space-between;
+  position:relative;overflow:hidden;
+  transition:transform .6s cubic-bezier(.16,1,.3,1);
+}
+.slab:nth-child(2){margin-top:clamp(20px,4vw,56px)}
+.slab:nth-child(3){margin-top:clamp(40px,8vw,112px)}
+.slab:hover{transform:translateY(-10px)}
+.slab::after{
+  content:'';position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--brass-lit);
+  transform:scaleX(0);transform-origin:0 50%;transition:transform .6s cubic-bezier(.16,1,.3,1);
+}
+.slab:hover::after{transform:scaleX(1)}
+.slab .no{font-family:var(--display);font-weight:700;font-size:13px;color:var(--brass-lit);letter-spacing:.04em}
+.slab h4{font-family:var(--display);font-weight:700;font-size:clamp(26px,3vw,38px);letter-spacing:-.02em;line-height:1;margin-top:auto}
+.slab p{font-size:14.5px;color:var(--on-ink);margin-top:14px;line-height:1.6}
+
+/* ─── marquee ribbon ─────────────────────────────────────── */
+.ribbon{background:var(--ink-deep);color:var(--bone);padding:20px 0;overflow:hidden;position:relative;z-index:1}
+.ribbon-track{display:flex;gap:0;width:max-content;animation:slide 42s linear infinite}
+.ribbon:hover .ribbon-track{animation-play-state:paused}
+.ribbon span{
+  font-family:var(--display);font-weight:400;font-style:italic;
+  font-size:clamp(20px,2.6vw,34px);letter-spacing:-.01em;padding:0 clamp(16px,2.4vw,32px);
+  display:flex;align-items:center;gap:clamp(16px,2.4vw,32px);white-space:nowrap;
+}
+.ribbon span::after{content:'';width:5px;height:5px;border-radius:50%;background:var(--brass-lit);flex:none}
+@keyframes slide{to{transform:translateX(-50%)}}
+
+/* ─── 03 curriculum: horizontal rail ─────────────────────── */
+.rail{position:relative;height:260vh} /* JS refines this from the real track width */
+.rail-pin{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
+.rail-head{padding-inline:var(--pad);max-width:1340px;margin-inline:auto;width:100%}
+.rail-track{display:flex;gap:clamp(14px,2vw,26px);padding-inline:var(--pad);margin-top:clamp(28px,5vh,52px);will-change:transform}
+.card{
+  flex:0 0 clamp(250px,30vw,380px);
+  background:var(--bone-dim);border-radius:16px;padding:clamp(24px,2.6vw,38px);
+  min-height:clamp(280px,38vh,400px);display:flex;flex-direction:column;
+  position:relative;overflow:hidden;
+  transition:background .5s ease;
+}
+.card:hover{background:#2A2620}
+.card .ph{font-family:var(--display);font-weight:700;font-size:clamp(54px,7vw,92px);line-height:.85;letter-spacing:-.04em;color:var(--bone);opacity:.13}
+.card h4{font-family:var(--display);font-weight:700;font-size:clamp(24px,2.6vw,34px);letter-spacing:-.02em;margin-top:auto}
+.card p{font-size:14.5px;color:var(--on-bone);margin-top:12px;line-height:1.6}
+.card .wk{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--brass);margin-top:18px}
+.rail-bar{height:1px;background:rgba(237,232,220,.16);margin:clamp(26px,4vh,44px) var(--pad) 0;position:relative}
+.rail-bar i{position:absolute;left:0;top:-1px;height:3px;width:0;background:var(--brass);border-radius:2px}
+
+/* ─── 04 why ─────────────────────────────────────────────── */
+.versus{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(36px,6vw,100px);margin-top:clamp(46px,7vh,84px);align-items:start}
+.versus li{list-style:none;padding:15px 0;border-bottom:1px solid rgba(237,232,220,.12);color:var(--on-bone);font-size:15.5px;display:flex;gap:14px}
+.versus li b{color:var(--bone);font-weight:500;flex:none;min-width:9.5em}
+.verdict{
+  font-family:var(--display);font-weight:400;font-size:clamp(24px,3.2vw,42px);line-height:1.2;letter-spacing:-.02em;
+  padding-left:clamp(20px,3vw,40px);border-left:2px solid var(--brass);
+}
+.verdict b{font-weight:700}
+.verdict em{font-style:italic;color:var(--brass)}
+
+/* ─── 05 events ──────────────────────────────────────────── */
+.evts{display:grid;grid-template-columns:repeat(12,1fr);gap:clamp(12px,1.6vw,20px);margin-top:clamp(46px,7vh,84px)}
+.evt{
+  grid-column:span 4;background:transparent;border:1px solid rgba(237,232,220,.16);border-radius:14px;
+  padding:clamp(24px,2.6vw,38px);min-height:230px;display:flex;flex-direction:column;
+  position:relative;overflow:hidden;transition:color .5s ease,border-color .5s ease;
+}
+.evt:nth-child(1),.evt:nth-child(4){grid-column:span 5}
+.evt:nth-child(2),.evt:nth-child(5){grid-column:span 7}
+.evt:nth-child(3),.evt:nth-child(6){grid-column:span 6}
+.evt::before{
+  content:'';position:absolute;inset:0;background:var(--bone);z-index:0;
+  transform:translateY(101%);transition:transform .6s cubic-bezier(.16,1,.3,1);
+}
+.evt:hover{color:var(--ink);border-color:var(--bone)}
+.evt:hover::before{transform:translateY(0)}
+.evt > *{position:relative;z-index:1}
+.evt .ix{font-size:11px;color:var(--brass);letter-spacing:.14em}
+.evt h4{font-family:var(--display);font-weight:700;font-size:clamp(22px,2.4vw,32px);letter-spacing:-.02em;line-height:1.05;margin-top:auto}
+.evt p{font-size:14.5px;margin-top:12px;line-height:1.6;opacity:.72}
+
+/* ─── 06 founder ─────────────────────────────────────────── */
+.note{max-width:26ch;margin-top:clamp(40px,6vh,70px)}
+.note p{
+  font-family:var(--display);font-weight:400;font-size:clamp(26px,4.4vw,60px);
+  line-height:1.14;letter-spacing:-.025em;max-width:22ch;
+}
+.note p em{font-style:italic;color:var(--brass)}
+.note .by{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--on-bone);margin-top:clamp(28px,4vh,44px)}
+
+/* ─── 07 join ────────────────────────────────────────────── */
+.join{background:var(--ink-deep);color:var(--bone);border-radius:clamp(20px,3vw,40px);padding:clamp(40px,7vw,110px) clamp(26px,5vw,90px);position:relative;overflow:hidden}
+.join::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 55% at 50% 0%,rgba(201,163,79,.14),transparent 70%);pointer-events:none}
+.join > *{position:relative;z-index:1}
+.join .h2{max-width:14ch}
+.join .sub{color:var(--on-ink)}
+.join .acts{margin-top:clamp(34px,5vh,54px)}
+.news{margin-top:clamp(50px,8vh,90px);padding-top:clamp(30px,4vh,46px);border-top:1px solid rgba(237,232,220,.14);display:grid;grid-template-columns:1fr auto;gap:26px;align-items:center}
+.news p{font-size:14.5px;color:var(--on-ink);max-width:40ch}
+.news p b{display:block;color:var(--bone);font-family:var(--display);font-weight:700;font-size:clamp(19px,2.2vw,26px);letter-spacing:-.02em;margin-bottom:7px}
+.news form{display:flex;gap:9px}
+.news input{
+  background:transparent;border:1px solid rgba(237,232,220,.24);border-radius:100px;color:var(--bone);
+  font-family:var(--ui);font-size:14px;padding:15px 24px;min-width:260px;outline:none;transition:border-color .4s ease;
+}
+.news input::placeholder{color:#6B665E}
+.news input:focus{border-color:var(--brass-lit)}
+
+/* ─── faq ────────────────────────────────────────────────── */
+.faq{margin-top:clamp(46px,7vh,84px);border-top:1px solid rgba(237,232,220,.16)}
+.q{border-bottom:1px solid rgba(237,232,220,.14)}
+.q button{
+  width:100%;background:none;border:0;color:var(--bone);cursor:pointer;text-align:left;
+  display:flex;justify-content:space-between;align-items:center;gap:24px;padding:26px 0;
+  font-family:var(--display);font-weight:700;letter-spacing:-.02em;
+  font-size:clamp(18px,2.3vw,28px);transition:color .4s ease,padding-left .5s cubic-bezier(.16,1,.3,1);
+}
+.q button:hover{color:var(--brass);padding-left:12px}
+.q .sign{position:relative;flex:none;width:12px;height:12px}
+.q .sign::before,.q .sign::after{content:'';position:absolute;background:var(--brass);transition:transform .5s cubic-bezier(.16,1,.3,1),opacity .4s ease}
+.q .sign::before{left:0;top:5.5px;width:12px;height:1px}
+.q .sign::after{left:5.5px;top:0;width:1px;height:12px}
+.q.open .sign::after{transform:rotate(90deg);opacity:0}
+.q .ans{display:grid;grid-template-rows:0fr;transition:grid-template-rows .6s cubic-bezier(.16,1,.3,1)}
+.q.open .ans{grid-template-rows:1fr}
+.q .ans > div{overflow:hidden}
+.q .ans p{color:var(--on-bone);font-size:16px;max-width:54ch;padding-bottom:28px;line-height:1.65}
+
+/* ─── footer ─────────────────────────────────────────────── */
+.foot{background:var(--ink-deep);color:var(--bone);position:relative;z-index:1;padding-top:clamp(56px,8vh,90px);overflow:hidden}
+.foot-grid{display:flex;justify-content:space-between;gap:40px;flex-wrap:wrap;padding-bottom:clamp(40px,6vh,70px)}
+.foot nav{display:flex;gap:clamp(18px,3vw,44px);flex-wrap:wrap}
+.foot nav a{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--on-ink);transition:color .4s ease}
+.foot nav a:hover{color:var(--brass-lit)}
+.foot .tag{font-family:var(--display);font-weight:400;font-style:italic;font-size:clamp(17px,2vw,23px);max-width:20ch;letter-spacing:-.01em}
+.foot-mark{
+  font-family:var(--display);font-weight:700;letter-spacing:-.045em;line-height:.76;
+  font-size:clamp(90px,25.5vw,400px);color:transparent;
+  -webkit-text-stroke:1px rgba(237,232,220,.17);
+  padding-inline:var(--pad);margin-bottom:-.14em;user-select:none;
+}
+.foot-base{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;border-top:1px solid rgba(237,232,220,.12);padding:22px 0 26px;font-size:11px;letter-spacing:.08em;color:#65605A;text-transform:uppercase}
+
+/* ─── ink bloom (headline reveal) ─────────────────────────
+   Headline blooms into shape — heavy blur + faded, resolving to sharp — like
+   ink spreading and settling into letters, instead of a flat slide-up. */
+html.js .bloom{
+  opacity:0;filter:blur(18px);transform:scale(1.02);
+  transition:opacity 1.15s cubic-bezier(.16,1,.3,1),filter 1.15s cubic-bezier(.16,1,.3,1),transform 1.15s cubic-bezier(.16,1,.3,1);
+}
+html.js .bloom.in{opacity:1;filter:blur(0);transform:none}
+
+/* ─── story columns (why-join, founding) ─────────────────── */
+.story{margin-top:clamp(40px,6vh,72px)}
+.story p{color:var(--on-bone);font-size:16.5px;line-height:1.72;margin-top:20px;max-width:56ch}
+.story p:first-child{margin-top:0}
+.story .hook{
+  font-family:var(--display);font-weight:400;font-style:italic;
+  font-size:clamp(21px,2.8vw,34px);line-height:1.26;letter-spacing:-.015em;
+  color:var(--bone);max-width:24ch;
+}
+.story .hook b{font-style:normal;font-weight:700;color:var(--brass-lit)}
+.story .lead{color:var(--bone);font-size:clamp(17px,1.9vw,20px);line-height:1.62}
+.story .turn{color:var(--bone)}
+.story .turn b{color:var(--brass-lit);font-weight:500}
+
+/* ─── editorial long-read (the cost, founding) ────────────
+   Dense copy broken into beats: a magazine drop-cap leads the reader in, a
+   large display pull-quote breaks the column, and each beat reveals in turn. */
+.editorial{margin-top:clamp(40px,6vh,72px);max-width:60ch}
+.editorial > p{color:var(--on-bone);font-size:clamp(16px,1.7vw,18px);line-height:1.75;margin-top:26px}
+.editorial > p:first-child{margin-top:0}
+.editorial b{color:var(--bone);font-weight:500}
+.editorial .drop::first-letter{
+  font-family:var(--display);font-weight:700;color:var(--brass-lit);
+  float:left;font-size:clamp(66px,9vw,104px);line-height:.68;
+  padding:10px 14px 0 0;
+}
+.editorial .turn{
+  color:var(--bone);font-family:var(--display);font-weight:400;font-style:italic;
+  font-size:clamp(19px,2.3vw,27px);line-height:1.38;letter-spacing:-.014em;max-width:26ch;
+}
+.editorial .turn b{color:var(--brass-lit);font-style:normal;font-weight:700}
+
+/* pull-quote — a large display statement that breaks the running text */
+.pull{
+  font-family:var(--display);font-weight:400;font-style:italic;
+  font-size:clamp(28px,5vw,58px);line-height:1.08;letter-spacing:-.03em;
+  color:var(--bone);margin:clamp(40px,6vh,74px) 0;max-width:15ch;
+}
+.pull::before{
+  content:'';display:block;width:42px;height:2px;background:var(--brass-lit);
+  margin-bottom:clamp(20px,3vh,30px);box-shadow:0 0 12px rgba(201,163,79,.55);
+}
+.pull em{font-style:italic;color:var(--brass-lit)}
+
+/* ─── mission statement ──────────────────────────────────── */
+.statement{
+  font-family:var(--display);font-weight:400;font-style:italic;
+  font-size:clamp(22px,3.2vw,40px);line-height:1.24;letter-spacing:-.02em;
+  color:var(--on-bone);max-width:24ch;margin-top:clamp(32px,5vh,56px);
+}
+.statement b{font-style:normal;font-weight:700;color:var(--bone)}
+
+/* ─── count-up stats ─────────────────────────────────────── */
+.statband{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(16px,3vw,50px);
+  max-width:1340px;margin-inline:auto;padding:clamp(46px,8vh,90px) var(--pad);
+  border-top:1px solid rgba(237,232,220,.12);border-bottom:1px solid rgba(237,232,220,.12);
+}
+.stat{text-align:center}
+.stat b{
+  display:block;font-family:var(--display);font-weight:700;letter-spacing:-.03em;
+  font-size:clamp(58px,9vw,124px);line-height:.9;color:var(--brass-lit);
+  font-variant-numeric:tabular-nums;
+}
+.stat span{display:block;margin-top:14px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--on-bone)}
+
+/* ─── signature draw (founding) ──────────────────────────── */
+.sig-wrap{margin-top:clamp(30px,5vh,52px)}
+.sig-draw{width:min(300px,66vw);height:auto;overflow:visible;display:block}
+.sig-draw path{
+  fill:none;stroke:var(--brass-lit);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;
+  filter:drop-shadow(0 0 6px rgba(201,163,79,.45));
+}
+html.js .sig-draw .s1{stroke-dasharray:var(--l1,600);stroke-dashoffset:var(--l1,600)}
+html.js .sig-draw .s2{stroke-dasharray:var(--l2,300);stroke-dashoffset:var(--l2,300)}
+html.js .sig-draw.in .s1{animation:sign 1500ms cubic-bezier(.45,.05,.35,1) forwards}
+html.js .sig-draw.in .s2{animation:sign 700ms cubic-bezier(.5,0,.3,1) 1250ms forwards}
+@keyframes sign{to{stroke-dashoffset:0}}
+.sig-wrap .by{margin-top:16px}
+
+/* ─── shared reveal ──────────────────────────────────────── */
+html.js .rv{opacity:0;transform:translateY(30px);transition:opacity 1s cubic-bezier(.16,1,.3,1),transform 1s cubic-bezier(.16,1,.3,1)}
+html.js .rv.in{opacity:1;transform:none}
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width:1080px){
+  .gap-grid,.versus{grid-template-columns:1fr;gap:48px}
+  .slabs{grid-template-columns:1fr;gap:14px}
+  .slab:nth-child(2),.slab:nth-child(3){margin-top:0}
+  .evt,.evt:nth-child(n){grid-column:span 12}
+  .news{grid-template-columns:1fr}
+  .hero-foot{grid-template-columns:1fr;align-items:start}
+}
+@media (max-width:720px){
+  .news form{flex-direction:column}
+  .news input{min-width:0;width:100%}
+  .news .btn{justify-content:center}
+  .versus li{flex-direction:column;gap:3px}
+  .versus li b{min-width:0}
+  /* rail becomes a native swipe strip — no pinning on touch */
+  .rail{height:auto}
+  .rail-pin{position:static;height:auto;padding-block:var(--gap)}
+  .rail-track{overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:8px}
+  .rail-track::-webkit-scrollbar{display:none}
+  .card{scroll-snap-align:start;flex:0 0 78vw}
+  .rail-bar{display:none}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ HERO ══════════════════ -->
+<header class="hero" id="hero">
+  <div class="spot" id="spot"></div>
+  <div class="ghost" aria-hidden="true">Influence</div>
+
+  <div class="hero-bar">
+    <div class="mk">SICA</div>
+    <div class="eyebrow">Cupertino High School · Est. 2026</div>
+  </div>
+
+  <div class="hero-mid">
+    <h1 class="word display" id="word" aria-label="SICA">
+      <span class="l"><i>S</i></span><span class="l"><i>I</i></span><span class="l"><i>C</i></span><span class="l"><i>A</i></span>
+    </h1>
+    <div class="rule" id="rule">
+      <i class="fill" id="ruleFill"></i>
+      <i class="spark" id="ruleSpark"><i class="spark-core"></i></i>
+    </div>
+  </div>
+
+  <div class="hero-foot">
+    <div>
+      <div class="mask" id="m1"><p class="claim">Schools teach subjects. <b>We teach people.</b></p></div>
+      <div class="mask" id="m2"><p class="hero-note">Student Influence &amp; Communication Association — the skills schools don't teach.</p></div>
+    </div>
+    <div class="mask" id="m3">
+      <div>
+        <div class="acts">
+          <a href="#curriculum" class="btn btn--solid"><span>Explore the curriculum</span><i class="dot"></i></a>
+        </div>
+        <div class="cue" style="margin-top:22px"><i></i>Scroll</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════════ SHEET ══════════════════ -->
+<div class="sheet">
+
+  <!-- 01 MISSION -->
+  <section class="sec" id="mission">
+    <div class="num" aria-hidden="true">01</div>
+    <div class="wrap">
+      <div class="kicker rv"><i></i><span class="eyebrow">Mission</span></div>
+      <h2 class="h2 bloom">Schools teach subjects. <em>We teach people.</em></h2>
+      <p class="statement rv">Schools grade what you know. The real world grades how you operate. <b>SICA trains the second one.</b></p>
+    </div>
+  </section>
+
+  <!-- 02 WHY JOIN -->
+  <section class="sec" id="why-join">
+    <div class="num" aria-hidden="true">02</div>
+    <div class="wrap">
+      <div class="kicker rv"><i></i><span class="eyebrow">Why join SICA</span></div>
+      <h2 class="h2 bloom">Same resume. <em>Different outcome.</em></h2>
+      <div class="gap-grid">
+        <div class="story rv">
+          <p class="hook">Two students walk into the same internship interview. Same grades, same resume. One freezes on an unscripted question. The other reframes it, tells a 30-second story, and <b>gets remembered.</b></p>
+          <p>The difference isn't talent. It's practice — and it's the one kind of practice school never gives you.</p>
+          <p class="turn">SICA is 30 weeks of that practice: negotiation, reading a room, giving a talk with zero notice, handling the conversation you've been avoiding. By the end, you're not hoping you'll perform when it matters. <b>You already have.</b></p>
+        </div>
+        <div class="able rv">
+          <h3>By the end, you'll be able to</h3>
+          <ul>
+            <li>Walk into a room of strangers and leave with real connections</li>
+            <li>Negotiate when interests conflict</li>
+            <li>Give an unscripted three-minute talk with composure</li>
+            <li>Handle a difficult conversation without avoiding it</li>
+            <li>Run an interview and actually perform</li>
+            <li>Command a room instead of just entering it</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ribbon -->
+<div class="ribbon" aria-hidden="true">
+  <div class="ribbon-track" id="ribbon">
+    <span>Presence</span><span>Negotiation</span><span>Storytelling</span><span>Status</span><span>Persuasion</span><span>Listening</span><span>Composure</span><span>Rapport</span>
+    <span>Presence</span><span>Negotiation</span><span>Storytelling</span><span>Status</span><span>Persuasion</span><span>Listening</span><span>Composure</span><span>Rapport</span>
+  </div>
+</div>
+
+<div class="sheet" style="border-radius:0">
+
+  <!-- 03 MEETING -->
+  <section class="sec" id="meeting">
+    <div class="num" aria-hidden="true">03</div>
+    <div class="wrap">
+      <div class="kicker rv"><i></i><span class="eyebrow">What a meeting looks like</span></div>
+      <h2 class="h2 bloom">Not a lecture. <em>A practice room.</em></h2>
+      <p class="sub rv">You don't learn communication by hearing about it. You learn it by doing it, getting feedback, and doing it again. Every meeting leaves you more capable than you walked in.</p>
+      <div class="slabs">
+        <article class="slab rv"><div class="no">01 — Concept</div><h4>One idea</h4><p>Taught in ten minutes. No filler, no lecture hall.</p></article>
+        <article class="slab rv"><div class="no">02 — Practice</div><h4>You do it</h4><p>A hands-on activity where you actually run the skill.</p></article>
+        <article class="slab rv"><div class="no">03 — Challenge</div><h4>Real world</h4><p>A task to carry out before the next meeting.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 — horizontal rail -->
+  <section class="rail" id="curriculum">
+    <div class="rail-pin">
+      <div class="rail-head">
+        <div class="kicker rv"><i></i><span class="eyebrow">The Curriculum</span></div>
+        <h2 class="h2 rv" style="max-width:20ch">Six phases. Thirty weeks. <em>It builds.</em></h2>
+      </div>
+      <div class="rail-track" id="track">
+        <article class="card"><div class="ph">01</div><h4>Self</h4><p>EQ, self-awareness, active listening.</p><div class="wk">Weeks 1—5</div></article>
+        <article class="card"><div class="ph">02</div><h4>Others</h4><p>Social intelligence, empathy, status dynamics.</p><div class="wk">Weeks 6—10</div></article>
+        <article class="card"><div class="ph">03</div><h4>Communication</h4><p>Storytelling, public speaking, spontaneous thinking.</p><div class="wk">Weeks 11—15</div></article>
+        <article class="card"><div class="ph">04</div><h4>Influence</h4><p>Persuasion, negotiation, conflict resolution.</p><div class="wk">Weeks 16—20</div></article>
+        <article class="card"><div class="ph">05</div><h4>Leadership</h4><p>Executive presence, networking, interviews.</p><div class="wk">Weeks 21—25</div></article>
+        <article class="card"><div class="ph">06</div><h4>Integration</h4><p>Decision-making and a capstone challenge.</p><div class="wk">Weeks 26—30</div></article>
+      </div>
+      <div class="rail-bar"><i id="railBar"></i></div>
+    </div>
+  </section>
+
+  <!-- stat band -->
+  <div class="statband rv" id="stats" aria-label="SICA by the numbers">
+    <div class="stat"><b data-count="30">30</b><span>Weeks of practice</span></div>
+    <div class="stat"><b data-count="6">6</b><span>Phases that build</span></div>
+    <div class="stat"><b data-count="8">8</b><span>Skills measured</span></div>
+  </div>
+
+  <!-- 04 WHY SICA -->
+  <section class="sec" id="why">
+    <div class="num" aria-hidden="true">04</div>
+    <div class="wrap">
+      <div class="kicker rv"><i></i><span class="eyebrow">Why SICA</span></div>
+      <h2 class="h2 bloom">Not another <em>speech club.</em></h2>
+      <div class="versus">
+        <ul class="rv">
+          <li><b>Speech &amp; Debate</b> trains formal argument.</li>
+          <li><b>DECA &amp; FBLA</b> are business competitions.</li>
+          <li><b>Toastmasters</b> focuses on delivery.</li>
+          <li><b>Model UN</b> trains diplomacy.</li>
+          <li><b>Student Gov</b> runs the school.</li>
+        </ul>
+        <p class="verdict rv">SICA is the only program built on the <em>science of human interaction</em> — evidence-based curriculum, deliberate practice every meeting, and <b>measurable growth</b> tracked from your first meeting to your last.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 THE COST -->
+  <section class="sec" id="cost">
+    <div class="num" aria-hidden="true">05</div>
+    <div class="wrap">
+      <div class="kicker rv"><i></i><span class="eyebrow">The cost of skipping this</span></div>
+      <h2 class="h2 bloom">It doesn't show up on a <em>report card.</em></h2>
+      <div class="editorial">
+        <p class="drop rv">Look at the founders and the dropouts who actually made it. It wasn't because their idea was the smartest one in the room — it was because they <b>connected with the right people</b>, built real networks, and carried a presence other people could actually feel.</p>
+        <p class="rv">Name any profession — doctor, engineer, founder, lawyer, athlete, executive. The pattern holds every time. SICA shows up in every single one.</p>
+        <p class="rv">Here's what nobody tells you: coasting through high school with good grades and zero communication practice doesn't catch up with you senior year.</p>
+        <blockquote class="pull rv">It catches up at <em>22</em> — across the table from someone who spent three years learning to read a room, while you spent <em>zero hours.</em></blockquote>
+        <p class="turn rv">The gap never shows on a report card. It shows up the first time it costs you something real: the internship, the offer, <b>the room where the decision about you gets made.</b></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 EVENTS -->
+  <section class="sec" id="events">
+    <div class="num" aria-hidden="true">06</div>
+    <div class="wrap">
+      <div class="kicker rv"><i></i><span class="eyebrow">Events</span></div>
+      <h2 class="h2 bloom">Where the skills <em>get tested.</em></h2>
+      <div class="evts">
+        <article class="evt rv"><div class="ix">01</div><h4>Negotiation Tournament</h4><p>Pairs negotiate real scenarios, judged by local professionals.</p></article>
+        <article class="evt rv"><div class="ix">02</div><h4>Influence Olympics</h4><p>A school-wide competition across storytelling, persuasion, and presence.</p></article>
+        <article class="evt rv"><div class="ix">03</div><h4>Executive Panel Night</h4><p>Local leaders answer the questions that actually matter.</p></article>
+        <article class="evt rv"><div class="ix">04</div><h4>Networking Night</h4><p>Practice building real professional relationships.</p></article>
+        <article class="evt rv"><div class="ix">05</div><h4>Communication Challenge</h4><p>Monthly team competitions across four skill formats.</p></article>
+        <article class="evt rv"><div class="ix">06</div><h4>Social Experiments</h4><p>Design and run real experiments on how communication works.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 07 FOUNDING STORY -->
+  <section class="sec" id="founder">
+    <div class="num" aria-hidden="true">07</div>
+    <div class="wrap">
+      <div class="kicker rv"><i></i><span class="eyebrow">Founding story</span></div>
+      <h2 class="h2 bloom">I built a club that teaches you to be <em>listened to.</em></h2>
+      <div class="editorial">
+        <p class="drop rv">As Vice President of Codestarters, I watched it happen constantly — who got picked for leadership, who actually performed once they had it. Grades had <b>almost nothing to do with it.</b> It came down to communication: the ability to give your ideas real weight, to influence a room instead of getting talked over.</p>
+        <blockquote class="pull rv">So I built a club that teaches you to be <em>listened to.</em> Not just heard.</blockquote>
+        <p class="rv">The kind of presence where every time you speak, people think, &ldquo;This person can actually get things done.&rdquo;</p>
+        <p class="turn rv">That's the power I want <b>every SICA student</b> to have.</p>
+        <div class="sig-wrap rv">
+          <svg class="sig-draw" id="sig" viewBox="0 0 260 84" aria-hidden="true">
+            <path class="s1" d="M 6 52 C 16 20, 34 18, 40 36 C 45 50, 33 58, 30 46 C 27 32, 48 28, 62 44 C 70 53, 62 60, 58 50 C 53 38, 72 34, 86 48 C 95 57, 108 52, 114 40 C 120 28, 136 28, 142 44 C 147 56, 162 56, 172 44 C 180 34, 196 36, 204 48"/>
+            <path class="s2" d="M 20 68 C 80 78, 170 76, 232 62 C 244 59, 246 66, 238 67"/>
+          </svg>
+          <div class="by">Founder &middot; SICA</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section class="sec" id="join">
+    <div class="wrap">
+      <div class="join rv">
+        <div class="kicker" style="color:var(--brass-lit)"><i></i><span class="eyebrow">Join</span></div>
+        <h2 class="h2">The people who change rooms <em>weren't born knowing how.</em></h2>
+        <p class="sub">They learned it. So can you. Meetings are open to every grade — start with the newsletter and we'll tell you when the next one runs.</p>
+        <div class="news">
+          <p><b>Weekly insights on communication and influence.</b>Under three minutes. No noise, no filler.</p>
+          <form action="#newsletter" method="post" onsubmit="return false">
+            <input type="email" placeholder="your@email.com" aria-label="Email address" required>
+            <button type="submit" class="btn btn--solid" style="background:var(--brass-lit);color:var(--ink)"><span>Subscribe</span></button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- faq -->
+  <section class="sec" id="faq" style="padding-top:0">
+    <div class="wrap">
+      <div class="kicker rv"><i></i><span class="eyebrow">Questions</span></div>
+      <h2 class="h2 rv">Before you <em>apply.</em></h2>
+      <div class="faq rv" id="faqList">
+        <div class="q"><button type="button">Do I need to be good at talking already?<i class="sign"></i></button><div class="ans"><div><p>No. That's the point. SICA is where you get better.</p></div></div></div>
+        <div class="q"><button type="button">How much time does it take?<i class="sign"></i></button><div class="ans"><div><p>One meeting a week, about an hour.</p></div></div></div>
+        <div class="q"><button type="button">Is this just public speaking?<i class="sign"></i></button><div class="ans"><div><p>No. Public speaking is one of thirty topics.</p></div></div></div>
+        <div class="q"><button type="button">What do I actually get out of it?<i class="sign"></i></button><div class="ans"><div><p>Measurable skill growth, tracked from your first meeting to your last.</p></div></div></div>
+        <div class="q"><button type="button">Who is it for?<i class="sign"></i></button><div class="ans"><div><p>Anyone who wants to lead, get hired, or be taken seriously.</p></div></div></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ══════════════════ FOOTER ══════════════════ -->
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <p class="tag">The skills schools don't teach.</p>
+      <nav>
+        <a href="#mission">Mission</a>
+        <a href="#curriculum">Curriculum</a>
+        <a href="#events">Events</a>
+        <a href="#founder">Founding</a>
+        <a href="#join">Join</a>
+      </nav>
+    </div>
+  </div>
+  <div class="foot-mark" aria-hidden="true">SICA</div>
+  <div class="wrap">
+    <div class="foot-base">
+      <span>Cupertino High School · contact placeholder</span>
+      <span>© 2026 Student Influence &amp; Communication Association</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  'use strict';
+  var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var $ = function(id){ return document.getElementById(id); };
+
+  /* ─── hero entrance ──────────────────────────────────────
+     Plain timers, never rAF: rAF is suspended in a background
+     tab, which would leave the hero permanently blank.       */
+  var word = $('word'), rule = $('rule'), hero = $('hero');
+  var ruleFill = $('ruleFill'), ruleSpark = $('ruleSpark');
+  var masks = ['m1','m2','m3'].map($);
+  var done = false;
+
+  /* Commit the drawn width inline before switching animations, same reason as
+     the wordmark's lockWordmark(): once 'shine' replaces 'draw' on .fill, the
+     draw animation's forwards-held width stops applying, and without this the
+     bar would snap back to its base (collapsed) width right as the shine starts. */
+  function lockRule(){
+    ruleFill.style.width = '100%';
+  }
+
+  function land(){
+    done = true;
+    word.classList.add('in', 'rake');
+    rule.classList.add('in');
+    lockRule();
+    rule.classList.add('shine');
+    ruleSpark.classList.add('burst');
+    masks.forEach(function(m){ m.classList.add('in'); });
+    hero.classList.add('lit');
+  }
+
+  if (reduced) {
+    land();
+  } else {
+    setTimeout(function(){ word.classList.add('in', 'rake'); }, 120);
+    setTimeout(function(){ rule.classList.add('in'); }, 900);
+    setTimeout(function(){ masks[0].classList.add('in'); }, 1150);
+    setTimeout(function(){ masks[1].classList.add('in'); }, 1270);
+    setTimeout(function(){ masks[2].classList.add('in'); }, 1390);
+    setTimeout(function(){ hero.classList.add('lit'); }, 1600);
+    /* the line has reached its endpoint (900ms start + 1100ms draw) — now run
+       the exact same shine as SICA along it */
+    setTimeout(function(){ lockRule(); rule.classList.add('shine'); }, 2000);
+    /* the shine arrives at the end (2000ms + 1600ms travel) — twinkle */
+    setTimeout(function(){ ruleSpark.classList.add('burst'); }, 3600);
+    setTimeout(function(){ if (!done) land(); }, 5200);   // watchdog
+  }
+
+  /* ─── cursor rake light ──────────────────────────────── */
+  if (matchMedia('(hover:hover)').matches){
+    hero.addEventListener('mousemove', function(e){
+      hero.style.setProperty('--mx', e.clientX + 'px');
+      hero.style.setProperty('--my', e.clientY + 'px');
+    });
+  }
+
+  /* ─── magnetic buttons ───────────────────────────────── */
+  if (matchMedia('(hover:hover)').matches){
+    document.querySelectorAll('.btn').forEach(function(b){
+      b.addEventListener('mousemove', function(e){
+        var r = b.getBoundingClientRect();
+        b.style.setProperty('--bx', ((e.clientX - r.left - r.width/2) * 0.16).toFixed(1) + 'px');
+        b.style.setProperty('--by', ((e.clientY - r.top - r.height/2) * 0.24).toFixed(1) + 'px');
+      });
+      b.addEventListener('mouseleave', function(){
+        b.style.setProperty('--bx','0px'); b.style.setProperty('--by','0px');
+      });
+    });
+  }
+
+  /* ─── horizontal curriculum rail ─────────────────────────
+     Written synchronously, not batched through rAF: a rAF
+     latch never clears if frames are suspended, which would
+     freeze the rail mid-scroll.                             */
+  var rail = document.querySelector('.rail'),
+      track = $('track'),
+      bar = $('railBar');
+
+  function pinned(){
+    return matchMedia('(min-width:721px)').matches;
+  }
+
+  /* Height is derived from how far the track actually has to move, so the cards
+     travel ~1px sideways per 1px scrolled. A fixed vh height makes the rail feel
+     sluggish on wide screens and rushed on narrow ones. */
+  function sizeRail(){
+    if (!rail || !track) return 0;
+    if (!pinned()){ rail.style.height = ''; track.style.transform = ''; return 0; }
+    var pad  = parseFloat(getComputedStyle(track).paddingLeft) || 0;
+    var span = Math.max(0, track.scrollWidth - window.innerWidth + pad);
+    rail.style.height = (window.innerHeight + span) + 'px';
+    return span;
+  }
+
+  var span = sizeRail();
+
+  function drive(){
+    if (!rail || !track || !pinned()) return;
+    var travel = rail.offsetHeight - window.innerHeight;
+    if (travel <= 0) return;
+    var p = Math.min(Math.max(-rail.getBoundingClientRect().top / travel, 0), 1);
+    track.style.transform = 'translate3d(' + (-span * p).toFixed(2) + 'px,0,0)';
+    if (bar) bar.style.width = (p * 100).toFixed(2) + '%';
+  }
+  addEventListener('scroll', drive, {passive:true});
+  addEventListener('resize', function(){ span = sizeRail(); drive(); });
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function(){ span = sizeRail(); drive(); });
+  }
+  drive();
+
+  /* ─── reveals + ink bloom: once, then rest ───────────── */
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if (!e.isIntersecting) return;
+      var el = e.target;
+      var sibs = Array.prototype.slice.call(el.parentNode.children)
+                  .filter(function(n){ return n.classList.contains('rv') || n.classList.contains('bloom'); });
+      var idx = Math.max(0, Math.min(sibs.indexOf(el), 5));  // clamp — solo headlines index -1
+      el.style.transitionDelay = (idx * 85) + 'ms';
+      el.classList.add('in');
+      io.unobserve(el);
+    });
+  }, {threshold:0.1, rootMargin:'0px 0px -6% 0px'});
+  document.querySelectorAll('.rv, .bloom').forEach(function(el){ io.observe(el); });
+
+  /* Safety net: never leave content invisible if the observer
+     never delivers (suspended renderer, embedded context). */
+  setTimeout(function(){
+    document.querySelectorAll('.rv:not(.in), .bloom:not(.in)').forEach(function(el){
+      if (el.getBoundingClientRect().top < innerHeight * 1.25) el.classList.add('in');
+    });
+  }, 2600);
+
+  /* ─── count-up stats ─────────────────────────────────────
+     The HTML ships the final numbers, so with no JS (or reduced
+     motion) the correct figures are already on screen. We reset
+     to zero only when we're about to animate, and a watchdog
+     restores the targets if rAF is suspended (background tab). */
+  var statband = $('stats');
+  if (statband && !reduced){
+    var sio = new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if (!e.isIntersecting) return;
+        sio.unobserve(statband);
+        statband.querySelectorAll('b[data-count]').forEach(function(b){
+          var target = parseInt(b.getAttribute('data-count'), 10) || 0;
+          var dur = 1500, t0 = null;
+          b.textContent = '0';
+          function tick(now){
+            if (t0 === null) t0 = now;
+            var p = Math.min((now - t0) / dur, 1);
+            b.textContent = Math.round((1 - Math.pow(1 - p, 3)) * target);
+            if (p < 1) requestAnimationFrame(tick);
+          }
+          requestAnimationFrame(tick);
+          setTimeout(function(){ b.textContent = target; }, dur + 900); // watchdog
+        });
+      });
+    }, {threshold:0.45});
+    sio.observe(statband);
+  }
+
+  /* ─── signature draw ─────────────────────────────────── */
+  var sig = $('sig');
+  if (sig){
+    var s1 = sig.querySelector('.s1'), s2 = sig.querySelector('.s2');
+    try {
+      if (s1) sig.style.setProperty('--l1', Math.ceil(s1.getTotalLength()));
+      if (s2) sig.style.setProperty('--l2', Math.ceil(s2.getTotalLength()));
+    } catch(e){}
+    var drawSig = function(){ sig.classList.add('in'); };
+    var gio = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if (e.isIntersecting){ drawSig(); gio.disconnect(); } });
+    }, {threshold:0.5});
+    gio.observe(sig);
+    /* Fallback: unlike the count-up (which ships correct final numbers) an
+       un-drawn signature is just an invisible line, so guarantee it draws once
+       scrolled to, even if the observer never delivers. */
+    var sigFallback = function(){
+      if (sig.classList.contains('in')) { removeEventListener('scroll', sigFallback); return; }
+      var r = sig.getBoundingClientRect();
+      if (r.top < innerHeight * 0.8 && r.bottom > 0){ drawSig(); removeEventListener('scroll', sigFallback); }
+    };
+    addEventListener('scroll', sigFallback, {passive:true});
+  }
+
+  /* ─── faq ────────────────────────────────────────────── */
+  document.querySelectorAll('#faqList .q button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var q = btn.parentNode, was = q.classList.contains('open');
+      document.querySelectorAll('#faqList .q').forEach(function(o){ o.classList.remove('open'); });
+      if (!was) q.classList.add('open');
+    });
+  });
+})();
+</script>
+</body>
+</html>
