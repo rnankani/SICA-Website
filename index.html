@@ -7,7 +7,7 @@
 <meta name="description" content="SICA · Student Influence &amp; Communication Association. Schools teach subjects. We teach people.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Inter:wght@300;400;500;600&family=Alex+Brush&display=swap" rel="stylesheet">
 <script>document.documentElement.className+=' js';</script>
 <style>
 /* ═══════════════════════════════════════════════════════════
@@ -448,12 +448,55 @@ html.js .bloom.in{opacity:1;filter:blur(0);transform:none}
 .story .hook{
   font-family:var(--display);font-weight:400;font-style:italic;
   font-size:clamp(21px,2.8vw,34px);line-height:1.26;letter-spacing:-.015em;
-  color:var(--bone);max-width:24ch;
+  color:var(--bone);max-width:26ch;
 }
 .story .hook b{font-style:normal;font-weight:700;color:var(--brass-lit)}
 .story .lead{color:var(--bone);font-size:clamp(17px,1.9vw,20px);line-height:1.62}
 .story .turn{color:var(--bone)}
 .story .turn b{color:var(--brass-lit);font-weight:500}
+
+/* ─── duel: split comparison (why-join) ───────────────────
+   The copy narrates two candidates in the same room; this shows the split
+   instead of just describing it — one card visibly fades, the other holds
+   full contrast, so "gets remembered" is felt before it's read. */
+.duel{
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
+  gap:clamp(14px,2.4vw,28px);margin:clamp(34px,5vh,58px) 0 clamp(38px,5.5vh,64px);
+}
+.duel-card{
+  border-radius:14px;padding:clamp(22px,2.6vw,32px);
+  transition:transform .6s cubic-bezier(.16,1,.3,1),opacity .6s ease;
+  display:flex;flex-direction:column;
+}
+.duel-tag{font-family:var(--ui);font-size:10.5px;font-weight:500;letter-spacing:.14em;text-transform:uppercase}
+.duel-line{
+  font-family:var(--display);font-style:italic;font-weight:400;
+  font-size:clamp(15.5px,1.6vw,17.5px);line-height:1.42;margin-top:16px;
+}
+.duel-outcome{
+  display:inline-block;margin-top:clamp(18px,2.6vh,28px);
+  font-family:var(--ui);font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+}
+
+.duel-a{background:transparent;border:1px solid rgba(237,232,220,.1);opacity:.56}
+.duel-a .duel-tag,.duel-a .duel-outcome{color:var(--on-bone)}
+.duel-a .duel-line{color:var(--on-bone)}
+.duel-a:hover{opacity:.72}
+
+.duel-b{
+  background:var(--bone-dim);border:1px solid rgba(201,163,79,.32);
+  box-shadow:0 24px 60px rgba(0,0,0,.4);
+}
+.duel-b .duel-tag{color:var(--brass-lit)}
+.duel-b .duel-line{color:var(--bone)}
+.duel-b .duel-outcome{color:var(--brass-lit)}
+.duel-b:hover{transform:translateY(-6px)}
+
+.duel-vs{
+  font-family:var(--display);font-style:italic;font-weight:400;
+  font-size:12.5px;line-height:1.5;color:var(--on-bone);text-align:center;
+  white-space:nowrap;padding-inline:2px;
+}
 
 /* ─── editorial long-read (the cost, founding) ────────────
    Dense copy broken into beats: a magazine drop-cap leads the reader in, a
@@ -507,17 +550,29 @@ html.js .bloom.in{opacity:1;filter:blur(0);transform:none}
 }
 .stat span{display:block;margin-top:14px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--on-bone)}
 
-/* ─── signature draw (founding) ──────────────────────────── */
+/* ─── signature draw (founding) ─────────────────────────────
+   The name is real text (a script Google Font), not a hand-drawn path — a
+   path only spells a legible name by accident. Text is revealed with a
+   left-to-right clip-path wipe instead of stroke-dasharray, since dasharray
+   draws only work on <path> geometry. The underline is a genuine path — it
+   carries no legibility requirement, so a real stroke-draw looks great. */
 .sig-wrap{margin-top:clamp(30px,5vh,52px)}
-.sig-draw{width:min(300px,66vw);height:auto;overflow:visible;display:block}
-.sig-draw path{
+.sig-draw{width:min(320px,72vw);height:auto;overflow:visible;display:block}
+.sig-text{
+  font-family:'Alex Brush',cursive;font-size:52px;
+  fill:var(--brass-lit);
+  filter:drop-shadow(0 0 6px rgba(201,163,79,.45));
+}
+html.js .sig-text{clip-path:inset(0 100% 0 0)}
+html.js .sig-draw.in .sig-text{animation:sigWipe 1400ms cubic-bezier(.45,.05,.35,1) forwards}
+@keyframes sigWipe{to{clip-path:inset(0 0 0 0)}}
+
+.sig-underline{
   fill:none;stroke:var(--brass-lit);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;
   filter:drop-shadow(0 0 6px rgba(201,163,79,.45));
 }
-html.js .sig-draw .s1{stroke-dasharray:var(--l1,600);stroke-dashoffset:var(--l1,600)}
-html.js .sig-draw .s2{stroke-dasharray:var(--l2,300);stroke-dashoffset:var(--l2,300)}
-html.js .sig-draw.in .s1{animation:sign 1500ms cubic-bezier(.45,.05,.35,1) forwards}
-html.js .sig-draw.in .s2{animation:sign 700ms cubic-bezier(.5,0,.3,1) 1250ms forwards}
+html.js .sig-underline{stroke-dasharray:var(--l2,300);stroke-dashoffset:var(--l2,300)}
+html.js .sig-draw.in .sig-underline{animation:sign 700ms cubic-bezier(.5,0,.3,1) 1250ms forwards}
 @keyframes sign{to{stroke-dashoffset:0}}
 .sig-wrap .by{margin-top:16px}
 
@@ -542,6 +597,8 @@ html.js .rv.in{opacity:1;transform:none}
   .news .btn{justify-content:center}
   .versus li{flex-direction:column;gap:3px}
   .versus li b{min-width:0}
+  .duel{grid-template-columns:1fr}
+  .duel-vs{padding-block:2px;white-space:normal}
   /* rail becomes a native swipe strip — no pinning on touch */
   .rail{height:auto}
   .rail-pin{position:static;height:auto;padding-block:var(--gap)}
@@ -615,7 +672,22 @@ html.js .rv.in{opacity:1;transform:none}
       <h2 class="h2 bloom">Same resume. <em>Different outcome.</em></h2>
       <div class="gap-grid">
         <div class="story rv">
-          <p class="hook">Two students walk into the same internship interview. Same grades, same resume. One freezes on an unscripted question. The other reframes it, tells a 30-second story, and <b>gets remembered.</b></p>
+          <p class="hook">Two students walk into the <b>same internship interview.</b> Same grades. Same resume.</p>
+
+          <div class="duel">
+            <div class="duel-card duel-a">
+              <span class="duel-tag">Candidate A</span>
+              <p class="duel-line">Freezes on the unscripted question. Answers it straight, sits back down.</p>
+              <span class="duel-outcome">Forgotten by Friday</span>
+            </div>
+            <div class="duel-vs" aria-hidden="true">Same room.<br>Same question.</div>
+            <div class="duel-card duel-b">
+              <span class="duel-tag">Candidate B</span>
+              <p class="duel-line">Reframes it. Tells a 30-second story that answers the question underneath.</p>
+              <span class="duel-outcome">Gets remembered</span>
+            </div>
+          </div>
+
           <p>The difference isn't talent. It's practice — and it's the one kind of practice school never gives you.</p>
           <p class="turn">SICA is 30 weeks of that practice: negotiation, reading a room, giving a talk with zero notice, handling the conversation you've been avoiding. By the end, you're not hoping you'll perform when it matters. <b>You already have.</b></p>
         </div>
@@ -750,9 +822,9 @@ html.js .rv.in{opacity:1;transform:none}
         <p class="rv">The kind of presence where every time you speak, people think, &ldquo;This person can actually get things done.&rdquo;</p>
         <p class="turn rv">That's the power I want <b>every SICA student</b> to have.</p>
         <div class="sig-wrap rv">
-          <svg class="sig-draw" id="sig" viewBox="0 0 260 84" aria-hidden="true">
-            <path class="s1" d="M 6 52 C 16 20, 34 18, 40 36 C 45 50, 33 58, 30 46 C 27 32, 48 28, 62 44 C 70 53, 62 60, 58 50 C 53 38, 72 34, 86 48 C 95 57, 108 52, 114 40 C 120 28, 136 28, 142 44 C 147 56, 162 56, 172 44 C 180 34, 196 36, 204 48"/>
-            <path class="s2" d="M 20 68 C 80 78, 170 76, 232 62 C 244 59, 246 66, 238 67"/>
+          <svg class="sig-draw" id="sig" viewBox="0 0 320 110" aria-hidden="true">
+            <text class="sig-text" x="4" y="66">Reyansh N.</text>
+            <path class="sig-underline" d="M 8 84 C 70 96, 190 94, 272 78 C 288 75, 291 82, 280 83"/>
           </svg>
           <div class="by">Founder &middot; SICA</div>
         </div>
@@ -839,6 +911,8 @@ html.js .rv.in{opacity:1;transform:none}
     ruleFill.style.width = '100%';
   }
 
+  /* .rake keeps the gradient on the letters after the sweep so the white shine
+     lingers on the wordmark — that resting glow is intentional and stays. */
   function land(){
     done = true;
     word.classList.add('in', 'rake');
@@ -985,10 +1059,9 @@ html.js .rv.in{opacity:1;transform:none}
   /* ─── signature draw ─────────────────────────────────── */
   var sig = $('sig');
   if (sig){
-    var s1 = sig.querySelector('.s1'), s2 = sig.querySelector('.s2');
+    var underline = sig.querySelector('.sig-underline');
     try {
-      if (s1) sig.style.setProperty('--l1', Math.ceil(s1.getTotalLength()));
-      if (s2) sig.style.setProperty('--l2', Math.ceil(s2.getTotalLength()));
+      if (underline) sig.style.setProperty('--l2', Math.ceil(underline.getTotalLength()));
     } catch(e){}
     var drawSig = function(){ sig.classList.add('in'); };
     var gio = new IntersectionObserver(function(es){
@@ -996,7 +1069,7 @@ html.js .rv.in{opacity:1;transform:none}
     }, {threshold:0.5});
     gio.observe(sig);
     /* Fallback: unlike the count-up (which ships correct final numbers) an
-       un-drawn signature is just an invisible line, so guarantee it draws once
+       un-drawn signature is just an invisible name, so guarantee it draws once
        scrolled to, even if the observer never delivers. */
     var sigFallback = function(){
       if (sig.classList.contains('in')) { removeEventListener('scroll', sigFallback); return; }
