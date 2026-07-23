@@ -285,26 +285,6 @@ html.js .mask > *{transform:translateY(115%)}
 .able ul{counter-reset:a}
 .able li:hover{padding-left:42px;color:var(--brass)}
 
-/* ─── 02 meeting: three offset slabs ─────────────────────── */
-.slabs{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,2vw,26px);margin-top:clamp(46px,7vh,84px)}
-.slab{
-  background:var(--bone-dim);color:var(--bone);border-radius:14px;
-  padding:clamp(26px,3vw,42px);min-height:clamp(250px,32vw,340px);
-  display:flex;flex-direction:column;justify-content:space-between;
-  position:relative;overflow:hidden;
-  transition:transform .6s cubic-bezier(.16,1,.3,1);
-}
-.slab:nth-child(2){margin-top:clamp(20px,4vw,56px)}
-.slab:nth-child(3){margin-top:clamp(40px,8vw,112px)}
-.slab:hover{transform:translateY(-10px)}
-.slab::after{
-  content:'';position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--brass-lit);
-  transform:scaleX(0);transform-origin:0 50%;transition:transform .6s cubic-bezier(.16,1,.3,1);
-}
-.slab:hover::after{transform:scaleX(1)}
-.slab .no{font-family:var(--display);font-weight:700;font-size:13px;color:var(--brass-lit);letter-spacing:.04em}
-.slab h4{font-family:var(--display);font-weight:700;font-size:clamp(26px,3vw,38px);letter-spacing:-.02em;line-height:1;margin-top:auto}
-.slab p{font-size:14.5px;color:var(--on-ink);margin-top:14px;line-height:1.6}
 
 /* ─── marquee ribbon ─────────────────────────────────────── */
 .ribbon{background:var(--ink-deep);color:var(--bone);padding:20px 0;overflow:hidden;position:relative;z-index:1}
@@ -339,9 +319,6 @@ html.js .mask > *{transform:translateY(115%)}
 .rail-bar i{position:absolute;left:0;top:-1px;height:3px;width:0;background:var(--brass);border-radius:2px}
 
 /* ─── 04 why ─────────────────────────────────────────────── */
-.versus{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(36px,6vw,100px);margin-top:clamp(46px,7vh,84px);align-items:start}
-.versus li{list-style:none;padding:15px 0;border-bottom:1px solid rgba(237,232,220,.12);color:var(--on-bone);font-size:15.5px;display:flex;gap:14px}
-.versus li b{color:var(--bone);font-weight:500;flex:none;min-width:9.5em}
 .verdict{
   font-family:var(--display);font-weight:400;font-size:clamp(24px,3.2vw,42px);line-height:1.2;letter-spacing:-.02em;
   padding-left:clamp(20px,3vw,40px);border-left:2px solid var(--brass);
@@ -637,46 +614,56 @@ html.js .define.in .strike::after{animation:strikeDraw 680ms cubic-bezier(.5,0,.
 .define-body em{font-style:italic;color:var(--bone)}
 .define-body b{color:var(--brass-lit);font-weight:500}
 
-/* ─── comparison matrix (why sica) ────────────────────────
-   bklit-style capability grid — evidence people scan and trust. Horizontally
-   scrollable on narrow screens so all clubs stay visible without page overflow. */
-.matrix-wrap{margin-top:clamp(40px,6vh,72px);overflow-x:auto;-webkit-overflow-scrolling:touch}
-.matrix-wrap::-webkit-scrollbar{height:6px}
-.matrix-wrap::-webkit-scrollbar-thumb{background:rgba(237,232,220,.16);border-radius:3px}
-.matrix{
-  min-width:660px;display:grid;grid-template-columns:1.5fr repeat(6,1fr);
-  border-top:1px solid rgba(237,232,220,.14);
+/* ─── sample meeting (concrete, replaces the abstract 3-card diagram) ─────
+   A real named meeting instead of a framework, plus a staggered vertical
+   timeline that builds downward on scroll — the line draws, then each step
+   fades in behind it, reinforcing that a meeting has a shape and a flow. */
+.meetingcard{margin-top:clamp(46px,7vh,84px)}
+.mc-tag{
+  font-family:var(--ui);font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--brass-lit);margin-bottom:clamp(30px,4.5vh,44px);
 }
-.matrix .cell{
-  padding:15px clamp(6px,0.9vw,12px);display:flex;align-items:center;
-  border-bottom:1px solid rgba(237,232,220,.08);min-height:56px;
+.mc-timeline{position:relative}
+.mc-timeline::before{
+  content:'';position:absolute;left:5px;top:6px;bottom:6px;width:1px;
+  background:linear-gradient(180deg,var(--brass-lit) 0%,var(--brass) 100%);
+  transform:scaleY(0);transform-origin:top;
 }
-.matrix .cell.head{align-items:flex-end;padding-bottom:14px;border-bottom:1px solid rgba(237,232,220,.18)}
-.matrix .rowlabel{font-size:13.5px;color:var(--bone);line-height:1.28}
-.matrix .clubname{
-  width:100%;justify-content:center;text-align:center;line-height:1.3;
-  font-family:var(--ui);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--on-bone);
+html.js .meetingcard.in .mc-timeline::before{animation:mcLine 1200ms cubic-bezier(.16,1,.3,1) forwards}
+@keyframes mcLine{to{transform:scaleY(1)}}
+.mc-step{position:relative;padding:0 0 clamp(30px,4.5vh,46px) 32px}
+.mc-step:last-child{padding-bottom:0}
+.mc-dot{
+  position:absolute;left:0;top:5px;width:11px;height:11px;border-radius:50%;
+  background:var(--ink);border:2px solid var(--brass-lit);
 }
-.matrix .dotcell{justify-content:center}
-.matrix .sica{background:rgba(201,163,79,.08)}
-.matrix .sica.head .clubname{
-  font-family:var(--display);font-weight:700;font-size:16px;letter-spacing:.01em;
-  text-transform:none;color:var(--brass-lit);
+html.js .mc-step{opacity:0;transform:translateY(14px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
+.meetingcard.in .mc-step{opacity:1;transform:none}
+.meetingcard.in .mc-step:nth-child(1){transition-delay:300ms}
+.meetingcard.in .mc-step:nth-child(2){transition-delay:600ms}
+.meetingcard.in .mc-step:nth-child(3){transition-delay:900ms}
+.mc-time{
+  display:block;font-family:var(--ui);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--brass-lit);margin-bottom:9px;
 }
-.dot{width:13px;height:13px;border-radius:50%;flex:none}
-.dot--full{background:var(--brass-lit);box-shadow:0 0 9px rgba(201,163,79,.5)}
-.dot--part{border:1.5px solid var(--brass-lit);background:linear-gradient(90deg,var(--brass-lit) 50%,transparent 50%)}
-.dot--none{border:1.5px solid rgba(237,232,220,.22)}
-.matrix-legend{display:flex;gap:clamp(16px,3vw,30px);flex-wrap:wrap;margin-top:22px;font-size:11px;letter-spacing:.04em;color:var(--on-bone)}
-.matrix-legend span{display:flex;align-items:center;gap:8px}
-.matrix-verdict{
+.mc-step p{color:var(--on-bone);font-size:15.5px;line-height:1.66;max-width:54ch}
+.mc-reassure{
+  margin-top:clamp(30px,4.5vh,44px);font-family:var(--display);font-style:italic;font-weight:400;
+  font-size:clamp(15.5px,1.7vw,18px);color:var(--on-bone);line-height:1.55;max-width:52ch;
+}
+html.js .mc-reassure{opacity:0;transform:translateY(10px);transition:opacity .7s ease,transform .7s ease;transition-delay:1150ms}
+.meetingcard.in .mc-reassure{opacity:1;transform:none}
+.mc-reassure b{font-style:normal;font-weight:600;color:var(--brass-lit)}
+
+/* ─── verdict line — a large italic statement that closes an argument ────
+   Shared by Why SICA and elsewhere: a considered claim, not a scorecard. */
+.verdict-line{
   margin-top:clamp(28px,4vh,40px);
   font-family:var(--display);font-weight:400;font-style:italic;
   font-size:clamp(20px,2.6vw,30px);line-height:1.28;letter-spacing:-.015em;color:var(--bone);max-width:34ch;
 }
-.matrix-verdict b{font-style:normal;font-weight:700}
-.matrix-verdict em{font-style:italic;color:var(--brass-lit)}
-.swipe-hint{display:none}
+.verdict-line b{font-style:normal;font-weight:700}
+.verdict-line em{font-style:italic;color:var(--brass-lit)}
 
 /* ─── shared reveal ──────────────────────────────────────── */
 html.js .rv{opacity:0;transform:translateY(30px);transition:opacity 1s cubic-bezier(.16,1,.3,1),transform 1s cubic-bezier(.16,1,.3,1)}
@@ -686,9 +673,7 @@ html.js .rv.in{opacity:1;transform:none}
    RESPONSIVE
    ═══════════════════════════════════════════════════════════ */
 @media (max-width:1080px){
-  .gap-grid,.versus{grid-template-columns:1fr;gap:48px}
-  .slabs{grid-template-columns:1fr;gap:14px}
-  .slab:nth-child(2),.slab:nth-child(3){margin-top:0}
+  .gap-grid{grid-template-columns:1fr;gap:48px}
   .evt,.evt:nth-child(n){grid-column:span 12}
   .news{grid-template-columns:1fr}
   .hero-foot{grid-template-columns:1fr;align-items:start}
@@ -697,11 +682,8 @@ html.js .rv.in{opacity:1;transform:none}
   .news form{flex-direction:column}
   .news input{min-width:0;width:100%}
   .news .btn{justify-content:center}
-  .versus li{flex-direction:column;gap:3px}
-  .versus li b{min-width:0}
   .duel{grid-template-columns:1fr}
   .duel-vs{padding-block:2px;white-space:normal}
-  .swipe-hint{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--on-bone);margin-top:14px}
   /* rail becomes a native swipe strip — no pinning on touch */
   .rail{height:auto}
   .rail-pin{position:static;height:auto;padding-block:var(--gap)}
@@ -847,11 +829,28 @@ html.js .rv.in{opacity:1;transform:none}
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">What a meeting looks like</span></div>
       <h2 class="h2 bloom">Not a lecture. <em>A practice room.</em></h2>
-      <p class="sub rv">You don't learn communication by hearing about it. You learn it by doing it, getting feedback, and doing it again. Every meeting leaves you more capable than you walked in.</p>
-      <div class="slabs">
-        <article class="slab rv"><div class="no">01 — Concept</div><h4>One idea</h4><p>Taught in ten minutes. No filler, no lecture hall.</p></article>
-        <article class="slab rv"><div class="no">02 — Practice</div><h4>You do it</h4><p>A hands-on activity where you actually run the skill.</p></article>
-        <article class="slab rv"><div class="no">03 — Challenge</div><h4>Real world</h4><p>A task to carry out before the next meeting.</p></article>
+      <p class="sub rv">You don't learn communication by hearing about it. You learn it by doing it, getting feedback, and doing it again. Here's an actual meeting, not a framework.</p>
+
+      <div class="meetingcard rv">
+        <div class="mc-tag">Meeting 5 &mdash; Active Listening</div>
+        <div class="mc-timeline">
+          <div class="mc-step">
+            <i class="mc-dot"></i>
+            <span class="mc-time">The idea &mdash; 10 min</span>
+            <p>There are three levels of listening. Almost everyone operates at level one &mdash; waiting for their turn to talk.</p>
+          </div>
+          <div class="mc-step">
+            <i class="mc-dot"></i>
+            <span class="mc-time">The practice &mdash; 25 min</span>
+            <p>You pair up. Your partner talks for three minutes about something that actually matters to them. You can't speak &mdash; not one word. Then you repeat back what they said, including what they didn't say out loud.</p>
+          </div>
+          <div class="mc-step">
+            <i class="mc-dot"></i>
+            <span class="mc-time">The challenge &mdash; this week</span>
+            <p>Have one conversation where you ask five questions and make zero statements about yourself.</p>
+          </div>
+        </div>
+        <p class="mc-reassure">You're never put on a stage. You're never called on cold. <b>Everything starts in pairs.</b></p>
       </div>
     </div>
   </section>
@@ -882,80 +881,37 @@ html.js .rv.in{opacity:1;transform:none}
     <div class="stat"><b data-count="8">8</b><span>Skills measured</span></div>
   </div>
 
-  <!-- 04 WHY SICA -->
-  <section class="sec" id="why">
+  <!-- 04 COLLEGE APPLICATIONS -->
+  <section class="sec" id="apps">
     <div class="num" aria-hidden="true">04</div>
     <div class="wrap">
-      <div class="kicker rv"><i></i><span class="eyebrow">Why SICA</span></div>
-      <h2 class="h2 bloom">Not another <em>speech club.</em></h2>
-      <p class="sub rv">Every club here is great at its own thing. None is built on the science of communication — with deliberate practice and growth you can actually measure.</p>
-
-      <div class="matrix-wrap rv">
-        <div class="matrix">
-          <div class="cell head"></div>
-          <div class="cell head sica"><span class="clubname">SICA</span></div>
-          <div class="cell head"><span class="clubname">Robotics</span></div>
-          <div class="cell head"><span class="clubname">FBLA</span></div>
-          <div class="cell head"><span class="clubname">DECA</span></div>
-          <div class="cell head"><span class="clubname">Speech &amp; Debate</span></div>
-          <div class="cell head"><span class="clubname">Model UN</span></div>
-
-          <div class="cell rowlabel">Deliberate communication practice, every meeting</div>
-          <div class="cell dotcell sica"><i class="dot dot--full"></i></div>
-          <div class="cell dotcell"><i class="dot dot--none"></i></div>
-          <div class="cell dotcell"><i class="dot dot--part"></i></div>
-          <div class="cell dotcell"><i class="dot dot--part"></i></div>
-          <div class="cell dotcell"><i class="dot dot--part"></i></div>
-          <div class="cell dotcell"><i class="dot dot--part"></i></div>
-
-          <div class="cell rowlabel">Evidence-based curriculum that builds</div>
-          <div class="cell dotcell sica"><i class="dot dot--full"></i></div>
-          <div class="cell dotcell"><i class="dot dot--part"></i></div>
-          <div class="cell dotcell"><i class="dot dot--none"></i></div>
-          <div class="cell dotcell"><i class="dot dot--none"></i></div>
-          <div class="cell dotcell"><i class="dot dot--none"></i></div>
-          <div class="cell dotcell"><i class="dot dot--none"></i></div>
-
-          <div class="cell rowlabel">Growth measured and tracked over time</div>
-          <div class="cell dotcell sica"><i class="dot dot--full"></i></div>
-          <div class="cell dotcell"><i class="dot dot--none"></i></div>
-          <div class="cell dotcell"><i class="dot dot--none"></i></div>
-          <div class="cell dotcell"><i class="dot dot--none"></i></div>
-          <div class="cell dotcell"><i class="dot dot--part"></i></div>
-          <div class="cell dotcell"><i class="dot dot--none"></i></div>
-
-          <div class="cell rowlabel">Built on the science of human interaction</div>
-          <div class="cell dotcell sica"><i class="dot dot--full"></i></div>
-          <div class="cell dotcell"><i class="dot dot--none"></i></div>
-          <div class="cell dotcell"><i class="dot dot--none"></i></div>
-          <div class="cell dotcell"><i class="dot dot--none"></i></div>
-          <div class="cell dotcell"><i class="dot dot--none"></i></div>
-          <div class="cell dotcell"><i class="dot dot--part"></i></div>
-
-          <div class="cell rowlabel">Trains the full range, not one format</div>
-          <div class="cell dotcell sica"><i class="dot dot--full"></i></div>
-          <div class="cell dotcell"><i class="dot dot--none"></i></div>
-          <div class="cell dotcell"><i class="dot dot--part"></i></div>
-          <div class="cell dotcell"><i class="dot dot--part"></i></div>
-          <div class="cell dotcell"><i class="dot dot--none"></i></div>
-          <div class="cell dotcell"><i class="dot dot--part"></i></div>
-        </div>
+      <div class="kicker rv"><i></i><span class="eyebrow">College applications</span></div>
+      <h2 class="h2 bloom">What this does for your <em>applications.</em></h2>
+      <div class="editorial">
+        <p class="drop rv">Colleges don't care that you joined a club. They care what changed because you did.</p>
+        <p class="rv">SICA gives you three things that are actually hard to fake: measurable growth in a defined skill set, leadership opportunities that open in your second year, and the interview ability to talk about all of it convincingly when it counts.</p>
+        <p class="turn rv">That last one matters more than people realize. Plenty of students have the résumé. <b>Fewer can hold the room when someone asks them about it.</b></p>
       </div>
-      <div class="swipe-hint" aria-hidden="true">Swipe the table →</div>
-
-      <div class="matrix-legend rv">
-        <span><i class="dot dot--full"></i> Built for it</span>
-        <span><i class="dot dot--part"></i> Partial</span>
-        <span><i class="dot dot--none"></i> Not the focus</span>
-      </div>
-
-      <p class="matrix-verdict rv">SICA is the only one built on the <em>science of human interaction</em> — and the only one where your growth is <b>measured from your first meeting to your last.</b></p>
     </div>
   </section>
 
-  <!-- 05 THE COST -->
-  <section class="sec" id="cost">
+  <!-- 05 WHY SICA -->
+  <section class="sec" id="why">
     <div class="num" aria-hidden="true">05</div>
+    <div class="wrap">
+      <div class="kicker rv"><i></i><span class="eyebrow">Why SICA</span></div>
+      <h2 class="h2 bloom">Not another <em>speech club.</em></h2>
+      <div class="editorial">
+        <p class="drop rv">Every club here is good at what it does. Speech &amp; Debate builds formal argument. DECA and FBLA build business knowledge. Model UN builds diplomacy. Robotics builds things.</p>
+        <p class="turn rv">SICA is the only one training the underlying layer all of those sit on: how you communicate, how you're perceived, and whether people act on what you say.</p>
+      </div>
+      <p class="verdict-line bloom">It's not a competitor to any of them. <b>It's the thing that makes you better at all of them.</b></p>
+    </div>
+  </section>
+
+  <!-- 06 THE COST -->
+  <section class="sec" id="cost">
+    <div class="num" aria-hidden="true">06</div>
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">The cost of skipping this</span></div>
       <h2 class="h2 bloom">It doesn't show up on a <em>report card.</em></h2>
@@ -969,9 +925,9 @@ html.js .rv.in{opacity:1;transform:none}
     </div>
   </section>
 
-  <!-- 06 EVENTS -->
+  <!-- 07 EVENTS -->
   <section class="sec" id="events">
-    <div class="num" aria-hidden="true">06</div>
+    <div class="num" aria-hidden="true">07</div>
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">Events</span></div>
       <h2 class="h2 bloom">Where the skills <em>get tested.</em></h2>
@@ -986,9 +942,9 @@ html.js .rv.in{opacity:1;transform:none}
     </div>
   </section>
 
-  <!-- 07 FOUNDING STORY -->
+  <!-- 08 FOUNDING STORY -->
   <section class="sec" id="founder">
-    <div class="num" aria-hidden="true">07</div>
+    <div class="num" aria-hidden="true">08</div>
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">Founding story</span></div>
       <h2 class="h2 bloom">I built a club that teaches you to be <em>listened to.</em></h2>
@@ -1008,7 +964,7 @@ html.js .rv.in{opacity:1;transform:none}
     </div>
   </section>
 
-  <!-- 07 -->
+  <!-- JOIN (unnumbered — the ask, not a numbered argument) -->
   <section class="sec" id="join">
     <div class="wrap">
       <div class="join rv">
@@ -1059,7 +1015,7 @@ html.js .rv.in{opacity:1;transform:none}
   <div class="foot-mark" aria-hidden="true">SICA</div>
   <div class="wrap">
     <div class="foot-base">
-      <span>Cupertino High School · <a href="mailto:reyanshnankani@gmail.com">reyanshnankani@gmail.com</a></span>
+      <span>Cupertino High School · <a href="mailto:thesicaorg@gmail.com">thesicaorg@gmail.com</a></span>
       <span>© 2026 Student Influence &amp; Communication Association</span>
     </div>
   </div>
