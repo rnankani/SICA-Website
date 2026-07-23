@@ -576,6 +576,70 @@ html.js .sig-draw.in .sig-underline{animation:sign 700ms cubic-bezier(.5,0,.3,1)
 @keyframes sign{to{stroke-dashoffset:0}}
 .sig-wrap .by{margin-top:16px}
 
+/* ─── evidence bar chart (mission) ────────────────────────
+   Bars grow from zero on scroll-in — external hiring-attribute data, framed as
+   research, so the eye reads "grades rank last" before the copy says it. */
+.evidence{margin-top:clamp(40px,6vh,72px);max-width:600px}
+.evidence-cap{
+  font-family:var(--ui);font-size:11px;font-weight:500;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--brass);margin-bottom:clamp(22px,3.5vh,32px);
+}
+.bar-row{display:grid;grid-template-columns:minmax(96px,auto) 1fr 46px;align-items:center;gap:clamp(10px,1.6vw,16px);margin-top:15px}
+.bar-label{font-size:13.5px;color:var(--bone);line-height:1.25}
+.bar-track{height:10px;background:rgba(237,232,220,.07);border-radius:6px;overflow:hidden}
+.bar-fill{
+  display:block;  /* the fill is a <span>; inline boxes ignore width — block makes the bar actually render */
+  height:100%;width:0;border-radius:6px;
+  background:linear-gradient(90deg,var(--brass),var(--brass-lit));
+  transition:width 1.2s cubic-bezier(.16,1,.3,1);
+}
+html.js .evidence.in .bar-fill{width:var(--w,0)}
+.bar-val{font-family:var(--display);font-weight:700;font-size:16px;color:var(--brass-lit);font-variant-numeric:tabular-nums;text-align:right}
+.bar-row.dim .bar-fill{background:rgba(237,232,220,.22)}
+.bar-row.dim .bar-label,.bar-row.dim .bar-val{color:var(--on-bone)}
+.evidence-src{font-size:11px;color:var(--on-bone);margin-top:clamp(22px,3.5vh,30px);line-height:1.5;max-width:52ch}
+
+/* ─── comparison matrix (why sica) ────────────────────────
+   bklit-style capability grid — evidence people scan and trust. Horizontally
+   scrollable on narrow screens so all clubs stay visible without page overflow. */
+.matrix-wrap{margin-top:clamp(40px,6vh,72px);overflow-x:auto;-webkit-overflow-scrolling:touch}
+.matrix-wrap::-webkit-scrollbar{height:6px}
+.matrix-wrap::-webkit-scrollbar-thumb{background:rgba(237,232,220,.16);border-radius:3px}
+.matrix{
+  min-width:660px;display:grid;grid-template-columns:1.5fr repeat(6,1fr);
+  border-top:1px solid rgba(237,232,220,.14);
+}
+.matrix .cell{
+  padding:15px clamp(6px,0.9vw,12px);display:flex;align-items:center;
+  border-bottom:1px solid rgba(237,232,220,.08);min-height:56px;
+}
+.matrix .cell.head{align-items:flex-end;padding-bottom:14px;border-bottom:1px solid rgba(237,232,220,.18)}
+.matrix .rowlabel{font-size:13.5px;color:var(--bone);line-height:1.28}
+.matrix .clubname{
+  width:100%;justify-content:center;text-align:center;line-height:1.3;
+  font-family:var(--ui);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--on-bone);
+}
+.matrix .dotcell{justify-content:center}
+.matrix .sica{background:rgba(201,163,79,.08)}
+.matrix .sica.head .clubname{
+  font-family:var(--display);font-weight:700;font-size:16px;letter-spacing:.01em;
+  text-transform:none;color:var(--brass-lit);
+}
+.dot{width:13px;height:13px;border-radius:50%;flex:none}
+.dot--full{background:var(--brass-lit);box-shadow:0 0 9px rgba(201,163,79,.5)}
+.dot--part{border:1.5px solid var(--brass-lit);background:linear-gradient(90deg,var(--brass-lit) 50%,transparent 50%)}
+.dot--none{border:1.5px solid rgba(237,232,220,.22)}
+.matrix-legend{display:flex;gap:clamp(16px,3vw,30px);flex-wrap:wrap;margin-top:22px;font-size:11px;letter-spacing:.04em;color:var(--on-bone)}
+.matrix-legend span{display:flex;align-items:center;gap:8px}
+.matrix-verdict{
+  margin-top:clamp(28px,4vh,40px);
+  font-family:var(--display);font-weight:400;font-style:italic;
+  font-size:clamp(20px,2.6vw,30px);line-height:1.28;letter-spacing:-.015em;color:var(--bone);max-width:34ch;
+}
+.matrix-verdict b{font-style:normal;font-weight:700}
+.matrix-verdict em{font-style:italic;color:var(--brass-lit)}
+.swipe-hint{display:none}
+
 /* ─── shared reveal ──────────────────────────────────────── */
 html.js .rv{opacity:0;transform:translateY(30px);transition:opacity 1s cubic-bezier(.16,1,.3,1),transform 1s cubic-bezier(.16,1,.3,1)}
 html.js .rv.in{opacity:1;transform:none}
@@ -599,6 +663,7 @@ html.js .rv.in{opacity:1;transform:none}
   .versus li b{min-width:0}
   .duel{grid-template-columns:1fr}
   .duel-vs{padding-block:2px;white-space:normal}
+  .swipe-hint{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--on-bone);margin-top:14px}
   /* rail becomes a native swipe strip — no pinning on touch */
   .rail{height:auto}
   .rail-pin{position:static;height:auto;padding-block:var(--gap)}
@@ -661,6 +726,16 @@ html.js .rv.in{opacity:1;transform:none}
       <div class="kicker rv"><i></i><span class="eyebrow">Mission</span></div>
       <h2 class="h2 bloom">Schools teach subjects. <em>We teach people.</em></h2>
       <p class="statement rv">Schools grade what you know. The real world grades how you operate. <b>SICA trains the second one.</b></p>
+
+      <div class="evidence rv">
+        <div class="evidence-cap">What employers actually screen for</div>
+        <div class="bar-row"><span class="bar-label">Problem-solving</span><span class="bar-track"><span class="bar-fill" style="--w:86%"></span></span><span class="bar-val">86%</span></div>
+        <div class="bar-row"><span class="bar-label">Teamwork</span><span class="bar-track"><span class="bar-fill" style="--w:78%"></span></span><span class="bar-val">78%</span></div>
+        <div class="bar-row"><span class="bar-label">Communication</span><span class="bar-track"><span class="bar-fill" style="--w:73%"></span></span><span class="bar-val">73%</span></div>
+        <div class="bar-row"><span class="bar-label">Leadership</span><span class="bar-track"><span class="bar-fill" style="--w:67%"></span></span><span class="bar-val">67%</span></div>
+        <div class="bar-row dim"><span class="bar-label">Grades&nbsp;/&nbsp;GPA</span><span class="bar-track"><span class="bar-fill" style="--w:37%"></span></span><span class="bar-val">37%</span></div>
+        <p class="evidence-src">Share of employers who look for each attribute on a candidate's résumé. The skills SICA trains outrank the number school optimizes for. <em>Figures from published employer hiring-outlook surveys.</em></p>
+      </div>
     </div>
   </section>
 
@@ -764,16 +839,68 @@ html.js .rv.in{opacity:1;transform:none}
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">Why SICA</span></div>
       <h2 class="h2 bloom">Not another <em>speech club.</em></h2>
-      <div class="versus">
-        <ul class="rv">
-          <li><b>Speech &amp; Debate</b> trains formal argument.</li>
-          <li><b>DECA &amp; FBLA</b> are business competitions.</li>
-          <li><b>Toastmasters</b> focuses on delivery.</li>
-          <li><b>Model UN</b> trains diplomacy.</li>
-          <li><b>Student Gov</b> runs the school.</li>
-        </ul>
-        <p class="verdict rv">SICA is the only program built on the <em>science of human interaction</em> — evidence-based curriculum, deliberate practice every meeting, and <b>measurable growth</b> tracked from your first meeting to your last.</p>
+      <p class="sub rv">Every club here is great at its own thing. None is built on the science of communication — with deliberate practice and growth you can actually measure.</p>
+
+      <div class="matrix-wrap rv">
+        <div class="matrix">
+          <div class="cell head"></div>
+          <div class="cell head sica"><span class="clubname">SICA</span></div>
+          <div class="cell head"><span class="clubname">Robotics</span></div>
+          <div class="cell head"><span class="clubname">FBLA</span></div>
+          <div class="cell head"><span class="clubname">DECA</span></div>
+          <div class="cell head"><span class="clubname">Speech &amp; Debate</span></div>
+          <div class="cell head"><span class="clubname">Model UN</span></div>
+
+          <div class="cell rowlabel">Deliberate communication practice, every meeting</div>
+          <div class="cell dotcell sica"><i class="dot dot--full"></i></div>
+          <div class="cell dotcell"><i class="dot dot--none"></i></div>
+          <div class="cell dotcell"><i class="dot dot--part"></i></div>
+          <div class="cell dotcell"><i class="dot dot--part"></i></div>
+          <div class="cell dotcell"><i class="dot dot--part"></i></div>
+          <div class="cell dotcell"><i class="dot dot--part"></i></div>
+
+          <div class="cell rowlabel">Evidence-based curriculum that builds</div>
+          <div class="cell dotcell sica"><i class="dot dot--full"></i></div>
+          <div class="cell dotcell"><i class="dot dot--part"></i></div>
+          <div class="cell dotcell"><i class="dot dot--none"></i></div>
+          <div class="cell dotcell"><i class="dot dot--none"></i></div>
+          <div class="cell dotcell"><i class="dot dot--none"></i></div>
+          <div class="cell dotcell"><i class="dot dot--none"></i></div>
+
+          <div class="cell rowlabel">Growth measured and tracked over time</div>
+          <div class="cell dotcell sica"><i class="dot dot--full"></i></div>
+          <div class="cell dotcell"><i class="dot dot--none"></i></div>
+          <div class="cell dotcell"><i class="dot dot--none"></i></div>
+          <div class="cell dotcell"><i class="dot dot--none"></i></div>
+          <div class="cell dotcell"><i class="dot dot--part"></i></div>
+          <div class="cell dotcell"><i class="dot dot--none"></i></div>
+
+          <div class="cell rowlabel">Built on the science of human interaction</div>
+          <div class="cell dotcell sica"><i class="dot dot--full"></i></div>
+          <div class="cell dotcell"><i class="dot dot--none"></i></div>
+          <div class="cell dotcell"><i class="dot dot--none"></i></div>
+          <div class="cell dotcell"><i class="dot dot--none"></i></div>
+          <div class="cell dotcell"><i class="dot dot--none"></i></div>
+          <div class="cell dotcell"><i class="dot dot--part"></i></div>
+
+          <div class="cell rowlabel">Trains the full range, not one format</div>
+          <div class="cell dotcell sica"><i class="dot dot--full"></i></div>
+          <div class="cell dotcell"><i class="dot dot--none"></i></div>
+          <div class="cell dotcell"><i class="dot dot--part"></i></div>
+          <div class="cell dotcell"><i class="dot dot--part"></i></div>
+          <div class="cell dotcell"><i class="dot dot--none"></i></div>
+          <div class="cell dotcell"><i class="dot dot--part"></i></div>
+        </div>
       </div>
+      <div class="swipe-hint" aria-hidden="true">Swipe the table →</div>
+
+      <div class="matrix-legend rv">
+        <span><i class="dot dot--full"></i> Built for it</span>
+        <span><i class="dot dot--part"></i> Partial</span>
+        <span><i class="dot dot--none"></i> Not the focus</span>
+      </div>
+
+      <p class="matrix-verdict rv">SICA is the only one built on the <em>science of human interaction</em> — and the only one where your growth is <b>measured from your first meeting to your last.</b></p>
     </div>
   </section>
 
