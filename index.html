@@ -347,6 +347,14 @@ html.js .mask > *{transform:translateY(115%)}
 .evt h4{font-family:var(--display);font-weight:700;font-size:clamp(22px,2.4vw,32px);letter-spacing:-.02em;line-height:1.05;margin-top:auto}
 .evt p{font-size:14.5px;margin-top:12px;line-height:1.6;opacity:.72}
 
+/* A reserved, intentional home for real club documentation. These frames are
+   deliberately labels rather than fabricated photography: replace each with
+   authentic SICA images as meetings and workshops are documented. */
+.club-archive{margin-top:clamp(46px,7vh,84px);display:grid;grid-template-columns:1.3fr .7fr;gap:clamp(14px,2vw,26px)}
+.archive-frame{min-height:clamp(220px,31vw,390px);border:1px solid rgba(237,232,220,.18);border-radius:16px;padding:24px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(145deg,#211d18,#12100e);position:relative;overflow:hidden}
+.archive-frame::after{content:'';position:absolute;width:180px;height:180px;border:1px solid rgba(201,163,79,.24);border-radius:50%;right:-72px;bottom:-72px}
+.archive-frame small{color:var(--brass-lit);font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;position:relative;z-index:1}.archive-frame p{font-family:var(--display);font-size:clamp(21px,2.4vw,32px);font-weight:600;line-height:1.05;max-width:12ch;position:relative;z-index:1}.archive-stack{display:grid;gap:clamp(14px,2vw,26px)}.archive-stack .archive-frame{min-height:0}
+
 /* ─── 06 founder ─────────────────────────────────────────── */
 .note{max-width:26ch;margin-top:clamp(40px,6vh,70px)}
 .note p{
@@ -512,6 +520,9 @@ html.js .bloom.in{opacity:1;filter:blur(0);transform:none}
   color:var(--on-bone);max-width:24ch;margin-top:clamp(32px,5vh,56px);
 }
 .statement b{font-style:normal;font-weight:700;color:var(--bone)}
+/* The original employment-stat graphic is retained in the source for archival
+   purposes, but is intentionally not presented without current linked research. */
+#mission .evidence{display:none}
 
 /* ─── count-up stats ─────────────────────────────────────── */
 .statband{
@@ -676,6 +687,7 @@ html.js .rv.in{opacity:1;transform:none}
   .gap-grid{grid-template-columns:1fr;gap:48px}
   .evt,.evt:nth-child(n){grid-column:span 12}
   .news{grid-template-columns:1fr}
+  .club-archive{grid-template-columns:1fr}
   .hero-foot{grid-template-columns:1fr;align-items:start}
 }
 @media (max-width:720px){
@@ -722,13 +734,13 @@ html.js .rv.in{opacity:1;transform:none}
 
   <div class="hero-foot">
     <div>
-      <div class="mask" id="m1"><p class="claim">Schools teach subjects. <b>We teach people.</b></p></div>
-      <div class="mask" id="m2"><p class="hero-note">Student Influence &amp; Communication Association — the skills schools don't teach.</p></div>
+      <div class="mask" id="m1"><p class="claim">Learn the people skills school <b>rarely gives you time to practice.</b></p></div>
+      <div class="mask" id="m2"><p class="hero-note">SICA is a Cupertino High School club for practicing clearer communication, stronger confidence, and better conversations—one real situation at a time.</p></div>
     </div>
     <div class="mask" id="m3">
       <div>
         <div class="acts">
-          <a href="#curriculum" class="btn btn--solid"><span>Explore the curriculum</span><i class="dot"></i></a>
+          <a href="#meeting" class="btn btn--solid"><span>See what happens at a meeting</span><i class="dot"></i></a>
         </div>
         <div class="cue" style="margin-top:22px"><i></i>Scroll</div>
       </div>
@@ -743,8 +755,8 @@ html.js .rv.in{opacity:1;transform:none}
   <section class="define rv" id="what-influence">
     <div class="wrap">
       <p class="define-lead">Influence isn't <span class="strike">popularity</span>.</p>
-      <p class="define-body">Popularity is how many people know you. Influence is whether what you say <em>changes anything.</em></p>
-      <p class="define-body">The quietest person in the room can have more of it than the loudest &mdash; if they know how to build it. That's a skill, and <b>it's the one this club teaches.</b></p>
+      <p class="define-body">Popularity is how many people know you. Influence is being able to <em>say what you mean, understand other people, and move a conversation forward.</em></p>
+      <p class="define-body">It is not about being the loudest person in the room. It is about knowing how to listen, explain an idea, and show up with confidence. <b>Those are learnable skills.</b></p>
     </div>
   </section>
 
@@ -753,8 +765,8 @@ html.js .rv.in{opacity:1;transform:none}
     <div class="num" aria-hidden="true">01</div>
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">Mission</span></div>
-      <h2 class="h2 bloom">Schools teach subjects. <em>We teach people.</em></h2>
-      <p class="statement rv">Schools grade what you know. The real world grades how you operate. <b>SICA trains the second one.</b></p>
+      <h2 class="h2 bloom">The moments school <em>doesn’t rehearse.</em></h2>
+      <p class="statement rv">A group project. A classroom presentation. A room full of people you do not know. <b>SICA is where you practice before those moments matter.</b></p>
 
       <div class="evidence rv">
         <div class="evidence-cap">What employers actually screen for</div>
@@ -775,27 +787,27 @@ html.js .rv.in{opacity:1;transform:none}
     <div class="num" aria-hidden="true">02</div>
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">Why join SICA</span></div>
-      <h2 class="h2 bloom">Same resume. <em>Different outcome.</em></h2>
+      <h2 class="h2 bloom">Same person. <em>More options.</em></h2>
       <div class="gap-grid">
         <div class="story rv">
-          <p class="hook">Two students walk into the <b>same internship interview.</b> Same grades. Same resume.</p>
+          <p class="hook">Two students walk into the <b>same group project.</b> Same ideas. Same chance to contribute.</p>
 
           <div class="duel">
             <div class="duel-card duel-a">
-              <span class="duel-tag">Candidate A</span>
-              <p class="duel-line">Freezes on the unscripted question. Answers it straight, sits back down.</p>
-              <span class="duel-outcome">Forgotten by Friday</span>
+              <span class="duel-tag">Starting point</span>
+              <p class="duel-line">Waits for the perfect moment. Their idea stays half-formed in their head.</p>
+              <span class="duel-outcome">Leaves unsure what to say</span>
             </div>
-            <div class="duel-vs" aria-hidden="true">Same room.<br>Same question.</div>
+            <div class="duel-vs" aria-hidden="true">Same room.<br>Same idea.</div>
             <div class="duel-card duel-b">
-              <span class="duel-tag">Candidate B</span>
-              <p class="duel-line">Reframes it. Tells a 30-second story that answers the question underneath.</p>
-              <span class="duel-outcome">Gets remembered</span>
+              <span class="duel-tag">After practice</span>
+              <p class="duel-line">Asks a useful question, shares a clear thought, and helps the group decide what to do next.</p>
+              <span class="duel-outcome">Becomes someone people rely on</span>
             </div>
           </div>
 
-          <p>The difference isn't talent. It's practice — and it's the one kind of practice school never gives you.</p>
-          <p class="turn">SICA is 30 weeks of that practice: negotiation, reading a room, giving a talk with zero notice, handling the conversation you've been avoiding. By the end, you're not hoping you'll perform when it matters. <b>You already have.</b></p>
+          <p>The difference is not talent or volume. It is practice—the kind most classes cannot make time for.</p>
+          <p class="turn">SICA makes that practice feel normal: asking questions, reading a room, speaking without a perfect script, and handling a conversation you have been avoiding. <b>Start where you are.</b></p>
         </div>
         <div class="able rv">
           <h3>By the end, you'll be able to</h3>
@@ -863,12 +875,12 @@ html.js .rv.in{opacity:1;transform:none}
         <h2 class="h2 rv" style="max-width:20ch">Six phases. Thirty weeks. <em>It builds.</em></h2>
       </div>
       <div class="rail-track" id="track">
-        <article class="card"><div class="ph">01</div><h4>Self</h4><p>EQ, self-awareness, active listening.</p><div class="wk">Weeks 1—5</div></article>
-        <article class="card"><div class="ph">02</div><h4>Others</h4><p>Social intelligence, empathy, status dynamics.</p><div class="wk">Weeks 6—10</div></article>
-        <article class="card"><div class="ph">03</div><h4>Communication</h4><p>Storytelling, public speaking, spontaneous thinking.</p><div class="wk">Weeks 11—15</div></article>
-        <article class="card"><div class="ph">04</div><h4>Influence</h4><p>Persuasion, negotiation, conflict resolution.</p><div class="wk">Weeks 16—20</div></article>
-        <article class="card"><div class="ph">05</div><h4>Leadership</h4><p>Executive presence, networking, interviews.</p><div class="wk">Weeks 21—25</div></article>
-        <article class="card"><div class="ph">06</div><h4>Integration</h4><p>Decision-making and a capstone challenge.</p><div class="wk">Weeks 26—30</div></article>
+        <article class="card"><div class="ph">01</div><h4>Know yourself</h4><p>Notice what you do under pressure, listen with intent, and build steadier confidence.</p><div class="wk">Weeks 1—5</div></article>
+        <article class="card"><div class="ph">02</div><h4>Read the room</h4><p>Pick up on group dynamics, ask better questions, and make people feel included.</p><div class="wk">Weeks 6—10</div></article>
+        <article class="card"><div class="ph">03</div><h4>Say it clearly</h4><p>Turn an idea into a story, think on your feet, and speak so people can follow.</p><div class="wk">Weeks 11—15</div></article>
+        <article class="card"><div class="ph">04</div><h4>Handle the hard part</h4><p>Disagree with respect, negotiate for a better outcome, and work through conflict.</p><div class="wk">Weeks 16—20</div></article>
+        <article class="card"><div class="ph">05</div><h4>Show up as a leader</h4><p>Lead a conversation, make a first impression, and help a team move forward.</p><div class="wk">Weeks 21—25</div></article>
+        <article class="card"><div class="ph">06</div><h4>Put it together</h4><p>Use what you have practiced in a collaborative final challenge.</p><div class="wk">Weeks 26—30</div></article>
       </div>
       <div class="rail-bar"><i id="railBar"></i></div>
     </div>
@@ -881,16 +893,16 @@ html.js .rv.in{opacity:1;transform:none}
     <div class="stat"><b data-count="8">8</b><span>Skills measured</span></div>
   </div>
 
-  <!-- 04 COLLEGE APPLICATIONS -->
+  <!-- 04 WHERE IT SHOWS UP -->
   <section class="sec" id="apps">
     <div class="num" aria-hidden="true">04</div>
     <div class="wrap">
-      <div class="kicker rv"><i></i><span class="eyebrow">College applications</span></div>
-      <h2 class="h2 bloom">What this does for your <em>applications.</em></h2>
+      <div class="kicker rv"><i></i><span class="eyebrow">Where it shows up</span></div>
+      <h2 class="h2 bloom">More than a skill for <em>the classroom.</em></h2>
       <div class="editorial">
-        <p class="drop rv">Colleges don't care that you joined a club. They care what changed because you did.</p>
-        <p class="rv">SICA gives you three things that are actually hard to fake: measurable growth in a defined skill set, leadership opportunities that open in your second year, and the interview ability to talk about all of it convincingly when it counts.</p>
-        <p class="turn rv">That last one matters more than people realize. Plenty of students have the résumé. <b>Fewer can hold the room when someone asks them about it.</b></p>
+        <p class="drop rv">The skills travel with you: to a new friend’s lunch table, an interview, a team meeting, a presentation, or the conversation you have been putting off.</p>
+        <p class="rv">You do not need to become a different person. You need more ways to express the person you already are—especially when you feel nervous, rushed, or out of place.</p>
+        <p class="turn rv">The goal is simple: leave with a set of habits you can use anywhere. <b>Not a line for a résumé. A change you can feel.</b></p>
       </div>
     </div>
   </section>
@@ -902,10 +914,10 @@ html.js .rv.in{opacity:1;transform:none}
       <div class="kicker rv"><i></i><span class="eyebrow">Why SICA</span></div>
       <h2 class="h2 bloom">Not another <em>speech club.</em></h2>
       <div class="editorial">
-        <p class="drop rv">Every club here is good at what it does. Speech &amp; Debate builds formal argument. DECA and FBLA build business knowledge. Model UN builds diplomacy. Robotics builds things.</p>
-        <p class="turn rv">SICA is the only one training the underlying layer all of those sit on: how you communicate, how you're perceived, and whether people act on what you say.</p>
+        <p class="drop rv">You will not spend meetings memorizing speeches or competing to sound the smartest. You will practice the conversations that happen before, after, and between the big moments.</p>
+        <p class="turn rv">That means room for the student who already loves the stage and the student who would rather begin in a pair. <b>Everyone gets repetitions.</b></p>
       </div>
-      <p class="verdict-line bloom">It's not a competitor to any of them. <b>It's the thing that makes you better at all of them.</b></p>
+      <p class="verdict-line bloom">It is a place to become more <b>clear, calm, and capable with people.</b></p>
     </div>
   </section>
 
@@ -929,15 +941,28 @@ html.js .rv.in{opacity:1;transform:none}
   <section class="sec" id="events">
     <div class="num" aria-hidden="true">07</div>
     <div class="wrap">
-      <div class="kicker rv"><i></i><span class="eyebrow">Events</span></div>
-      <h2 class="h2 bloom">Where the skills <em>get tested.</em></h2>
+      <div class="kicker rv"><i></i><span class="eyebrow">Ways we practice</span></div>
+      <h2 class="h2 bloom">The work should feel <em>real.</em></h2>
       <div class="evts">
-        <article class="evt rv"><div class="ix">01</div><h4>Negotiation Tournament</h4><p>Pairs negotiate real scenarios, judged by local professionals.</p></article>
-        <article class="evt rv"><div class="ix">02</div><h4>Influence Olympics</h4><p>A school-wide competition across storytelling, persuasion, and presence.</p></article>
-        <article class="evt rv"><div class="ix">03</div><h4>Executive Panel Night</h4><p>Local leaders answer the questions that actually matter.</p></article>
-        <article class="evt rv"><div class="ix">04</div><h4>Networking Night</h4><p>Practice building real professional relationships.</p></article>
-        <article class="evt rv"><div class="ix">05</div><h4>Communication Challenge</h4><p>Monthly team competitions across four skill formats.</p></article>
-        <article class="evt rv"><div class="ix">06</div><h4>Social Experiments</h4><p>Design and run real experiments on how communication works.</p></article>
+        <article class="evt rv"><div class="ix">01</div><h4>Paired practice</h4><p>Try a new conversation skill with one person before using it in a bigger group.</p></article>
+        <article class="evt rv"><div class="ix">02</div><h4>Scenario rooms</h4><p>Work through familiar moments: an introduction, a disagreement, or a hard ask.</p></article>
+        <article class="evt rv"><div class="ix">03</div><h4>Small-group feedback</h4><p>Get specific, kind feedback while there is still time to try again.</p></article>
+        <article class="evt rv"><div class="ix">04</div><h4>Conversation labs</h4><p>Practice asking better questions and making a room feel easier to enter.</p></article>
+        <article class="evt rv"><div class="ix">05</div><h4>Team challenges</h4><p>Use a communication skill to solve something together, not just talk about it.</p></article>
+        <article class="evt rv"><div class="ix">06</div><h4>Reflection</h4><p>Notice what worked, what felt difficult, and one small thing to try next week.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- AUTHENTIC CLUB DOCUMENTATION: replace these frames with real images as available -->
+  <section class="sec" id="club-life">
+    <div class="wrap">
+      <div class="kicker rv"><i></i><span class="eyebrow">Club life</span></div>
+      <h2 class="h2 bloom">Built by students, <em>in the room.</em></h2>
+      <p class="sub rv">As SICA grows, this will become an honest record of the club: practice sessions, workshop notes, the officers who run them, and the people who make the room feel welcoming.</p>
+      <div class="club-archive rv" aria-label="Reserved spaces for authentic SICA photography">
+        <div class="archive-frame"><small>Future meeting photo</small><p>Workshop and discussion moments</p></div>
+        <div class="archive-stack"><div class="archive-frame"><small>Future officer portrait</small><p>The people behind SICA</p></div><div class="archive-frame"><small>Future classroom photo</small><p>Practice in progress</p></div></div>
       </div>
     </div>
   </section>
@@ -970,14 +995,8 @@ html.js .rv.in{opacity:1;transform:none}
       <div class="join rv">
         <div class="kicker" style="color:var(--brass-lit)"><i></i><span class="eyebrow">Join</span></div>
         <h2 class="h2">The people who change rooms <em>weren't born knowing how.</em></h2>
-        <p class="sub">They learned it. So can you. Meetings are open to every grade — start with the newsletter and we'll tell you when the next one runs.</p>
-        <div class="news">
-          <p><b>Weekly insights on communication and influence.</b>Under three minutes. No noise, no filler.</p>
-          <form action="#newsletter" method="post" onsubmit="return false">
-            <input type="email" placeholder="your@email.com" aria-label="Email address" required>
-            <button type="submit" class="btn btn--solid" style="background:var(--brass-lit);color:var(--ink)"><span>Subscribe</span></button>
-          </form>
-        </div>
+        <p class="sub">They learned it. So can you. Meetings are open to every grade, and you do not need any experience to begin.</p>
+        <div class="acts"><a class="btn btn--solid" style="background:var(--brass-lit);color:var(--ink)" href="mailto:thesicaorg@gmail.com?subject=I%20want%20to%20join%20SICA"><span>Ask about the next meeting</span><i class="dot"></i></a></div>
       </div>
     </div>
   </section>
@@ -986,13 +1005,13 @@ html.js .rv.in{opacity:1;transform:none}
   <section class="sec" id="faq" style="padding-top:0">
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">Questions</span></div>
-      <h2 class="h2 rv">Before you <em>apply.</em></h2>
+      <h2 class="h2 rv">Before you <em>come by.</em></h2>
       <div class="faq rv" id="faqList">
-        <div class="q"><button type="button">Do I need to be good at talking already?<i class="sign"></i></button><div class="ans"><div><p>No. That's the point. SICA is where you get better.</p></div></div></div>
-        <div class="q"><button type="button">How much time does it take?<i class="sign"></i></button><div class="ans"><div><p>One meeting a week, about an hour.</p></div></div></div>
-        <div class="q"><button type="button">Is this just public speaking?<i class="sign"></i></button><div class="ans"><div><p>No. Public speaking is one of thirty topics.</p></div></div></div>
-        <div class="q"><button type="button">What do I actually get out of it?<i class="sign"></i></button><div class="ans"><div><p>Measurable skill growth, tracked from your first meeting to your last.</p></div></div></div>
-        <div class="q"><button type="button">Who is it for?<i class="sign"></i></button><div class="ans"><div><p>Anyone who wants to lead, get hired, or be taken seriously.</p></div></div></div>
+        <div class="q"><button type="button">I’m shy. Is this for me?<i class="sign"></i></button><div class="ans"><div><p>Yes. You do not have to arrive confident. Activities begin in pairs and small groups, so you can build comfort without being put on the spot.</p></div></div></div>
+        <div class="q"><button type="button">What actually happens at a meeting?<i class="sign"></i></button><div class="ans"><div><p>Expect a short idea, a chance to practice it, useful feedback, and a small challenge to try in real life.</p></div></div></div>
+        <div class="q"><button type="button">Will I have to give speeches?<i class="sign"></i></button><div class="ans"><div><p>You will practice speaking over time, but this is not a speech club. The focus is everyday communication, and you will not be called on cold.</p></div></div></div>
+        <div class="q"><button type="button">Do I need experience?<i class="sign"></i></button><div class="ans"><div><p>No. Curiosity is enough. The point is to get repetitions in a supportive room.</p></div></div></div>
+        <div class="q"><button type="button">How can I find the next meeting?<i class="sign"></i></button><div class="ans"><div><p>Email thesicaorg@gmail.com and the team will share the current meeting details.</p></div></div></div>
       </div>
     </div>
   </section>
