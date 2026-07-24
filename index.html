@@ -523,6 +523,14 @@ html.js .bloom.in{opacity:1;filter:blur(0);transform:none}
 /* The original employment-stat graphic is retained in the source for archival
    purposes, but is intentionally not presented without current linked research. */
 #mission .evidence{display:none}
+#cost .editorial,#founder .editorial{display:none}
+.short-note{font-size:clamp(18px,2vw,24px);line-height:1.45;color:var(--on-bone);max-width:42ch;margin-top:clamp(28px,4vh,42px)}.short-note b{color:var(--bone);font-weight:600}
+.starter-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(237,232,220,.14);margin-top:clamp(34px,5vh,58px);border:1px solid rgba(237,232,220,.14)}
+.starter-card{background:var(--ink);padding:clamp(22px,3vw,34px);min-height:190px;display:flex;flex-direction:column;justify-content:space-between;transition:background .35s ease,transform .35s cubic-bezier(.16,1,.3,1)}
+.starter-card:hover{background:#242019;transform:translateY(-5px)}
+.starter-card .sc-num{font-family:var(--display);font-size:clamp(32px,4vw,52px);color:var(--brass-lit);line-height:1}
+.starter-card h3{font-family:var(--display);font-size:clamp(19px,2.1vw,27px);line-height:1.05;font-weight:600;margin-top:28px}.starter-card p{font-size:13px;color:var(--on-bone);line-height:1.5;margin-top:10px;max-width:24ch}
+@media (max-width:720px){.starter-grid{grid-template-columns:1fr}.starter-card{min-height:155px}}
 
 /* ─── count-up stats ─────────────────────────────────────── */
 .statband{
@@ -768,6 +776,12 @@ html.js .rv.in{opacity:1;transform:none}
       <h2 class="h2 bloom">The moments school <em>doesn’t rehearse.</em></h2>
       <p class="statement rv">A group project. A classroom presentation. A room full of people you do not know. <b>SICA is where you practice before those moments matter.</b></p>
 
+      <div class="starter-grid rv" aria-label="What students practice at SICA">
+        <article class="starter-card"><span class="sc-num">01</span><div><h3>Say what you mean.</h3><p>Turn a thought into something other people can understand.</p></div></article>
+        <article class="starter-card"><span class="sc-num">02</span><div><h3>Read the room.</h3><p>Notice what a conversation needs before you jump in.</p></div></article>
+        <article class="starter-card"><span class="sc-num">03</span><div><h3>Leave more ready.</h3><p>Carry one small, practiced habit into your week.</p></div></article>
+      </div>
+
       <div class="evidence rv">
         <div class="evidence-cap">What employers actually screen for</div>
         <div class="bar-row"><span class="bar-label">Problem-solving</span><span class="bar-track"><span class="bar-fill" style="--w:90%;--d:0ms"></span></span><span class="bar-val">90%</span></div>
@@ -927,6 +941,7 @@ html.js .rv.in{opacity:1;transform:none}
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">The cost of skipping this</span></div>
       <h2 class="h2 bloom">It doesn't show up on a <em>report card.</em></h2>
+      <p class="short-note rv">The moments that shape your life rarely come with a study guide. <b>SICA gives you a place to rehearse them.</b></p>
       <div class="editorial">
         <p class="drop rv">Look at the founders and the dropouts who actually made it. It wasn't because their idea was the smartest one in the room — it was because they <b>connected with the right people</b>, built real networks, and carried a presence other people could actually feel.</p>
         <p class="rv">Name any profession — doctor, engineer, founder, lawyer, athlete, executive. The pattern holds every time. SICA shows up in every single one.</p>
@@ -973,6 +988,7 @@ html.js .rv.in{opacity:1;transform:none}
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">Founding story</span></div>
       <h2 class="h2 bloom">I built a club that teaches you to be <em>listened to.</em></h2>
+      <p class="short-note rv">Grades can show what you know. They cannot show whether people understand you. <b>That is the gap SICA was built to practice.</b></p>
       <div class="editorial">
         <p class="drop rv">As Vice President of Codestarters, I watched it happen constantly — who got picked for leadership, who actually performed once they had it. Grades had <b>almost nothing to do with it.</b> It came down to communication: the ability to give your ideas real weight, to influence a room instead of getting talked over.</p>
         <blockquote class="pull rv">So I built a club that teaches you to be <em>listened to.</em> Not just heard.</blockquote>
