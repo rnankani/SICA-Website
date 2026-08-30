@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>SICA &mdash; Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="officers.css">
+</head>
+<body data-page="dashboard">
+<div class="shell">
+  <nav class="rail" id="rail"></nav>
+  <main>
+    <div class="topbar">
+      <div><div class="crumb" id="today">Dashboard</div><h1 class="ptitle">Good afternoon, Reyansh</h1></div>
+      <a class="btn" href="meetings.html">Open Meeting 5</a>
+    </div>
+    <div class="grid g4">
+      <div class="card hi"><span class="card-k">Next meeting</span><span class="card-v">5</span><span class="card-s">Thu &middot; 3:30pm &middot; Rm 604</span><span class="pill p-warn">2 items missing</span></div>
+      <a class="card" href="curriculum.html#w5"><span class="card-k">This week&rsquo;s lesson</span><span class="card-v">W05</span><span class="card-s">Active Listening</span><span class="pill p-ok">Ready to teach</span></a>
+      <a class="card" href="team.html"><span class="card-k">Roles unfilled</span><span class="card-v">4</span><span class="card-s">Of 5 officer seats</span><span class="pill p-warn">Blocking succession</span></a>
+      <a class="card" href="curriculum.html"><span class="card-k">Curriculum drafted</span><span class="card-v">8/30</span><span class="card-s">Phases 1&ndash;2 started</span><span class="pill p-idle">On track</span></a>
+    </div>
+    <div class="grid g2" style="margin-top:12px">
+      <div class="card"><h3>Blocking Meeting 5</h3>
+        <div class="rows" style="margin-top:4px">
+          <div class="row"><span class="t">PR</span><span class="w">Instagram post not scheduled</span><span class="who">Unassigned</span></div>
+          <div class="row"><span class="t">MEDIA</span><span class="w">Camera not booked</span><span class="who">Unassigned</span></div>
+        </div>
+      </div>
+      <div class="card"><h3>Start here</h3>
+        <div class="rows" style="margin-top:4px">
+          <div class="row"><span class="t">CH01</span><span class="w"><a href="handbook.html#ch1">Culture &mdash; the standing rule</a></span><span class="who">Handbook</span></div>
+          <div class="row"><span class="t">CH09</span><span class="w"><a href="handbook.html#ch9">Succession &mdash; the test</a></span><span class="who">Handbook</span></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="references-data.js"></script>
+<script src="officers.js"></script>
+<script>
+window.sicaPageInit = function(){
+  var d = new Date();
+  document.getElementById('today').textContent =
+    d.toLocaleDateString(undefined, {weekday:'long', day:'numeric', month:'long'});
+};
+</script>
+</body>
+</html>

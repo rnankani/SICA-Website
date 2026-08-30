@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>SICA &mdash; Branding</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="officers.css">
+</head>
+<body data-page="branding">
+<div class="shell">
+  <nav class="rail" id="rail"></nav>
+  <main>
+    <div class="topbar">
+      <div><div class="crumb">Identity</div><h1 class="ptitle">SICA branding</h1>
+        <p class="lede">One wordmark, one accent, two typefaces. Click any colour to copy its hex.</p></div>
+    </div>
+
+    <div class="logo-plate">
+      <div class="logo-mark">SICA</div>
+      <div class="logo-sub">Student Influence &amp; Communication Association</div>
+    </div>
+
+    <h2 class="sec-h">Colour</h2>
+    <div class="grid g4" id="swatches"></div>
+    <p style="font-size:13px;color:var(--text-3);margin-top:12px;max-width:62ch">Brass is the only accent. Green, clay and blue are reserved for status inside this workspace and must never appear in public-facing SICA material.</p>
+
+    <h2 class="sec-h">Typography</h2>
+    <div class="card" style="gap:0">
+      <div class="typerow"><span class="sample" style="font-family:var(--display);font-weight:700;font-size:34px;letter-spacing:-.025em">Grades had almost nothing to do with it.</span><span class="meta">Bodoni Moda &middot; 700 &middot; headlines and the wordmark</span></div>
+      <div class="typerow"><span class="sample" style="font-family:var(--display);font-style:italic;font-weight:400;font-size:25px">Not just heard &mdash; listened to.</span><span class="meta">Bodoni Moda &middot; 400 italic &middot; pull quotes</span></div>
+      <div class="typerow"><span class="sample" style="font-size:15px">SICA is where you practice those moments before they matter.</span><span class="meta">Inter &middot; 300&ndash;600 &middot; all body copy and interface</span></div>
+      <div class="typerow"><span class="sample" style="font-family:var(--mono);font-size:14px">3:30 &nbsp; W05 &nbsp; 31 hrs</span><span class="meta">JetBrains Mono &middot; times, counts, codes</span></div>
+    </div>
+
+    <h2 class="sec-h">Voice</h2>
+    <div class="dos">
+      <div class="do"><b>Do</b><ul>
+        <li>Write for a 9th grader with zero context.</li>
+        <li>Short sentences. Concrete examples.</li>
+        <li>Use only numbers you can source.</li>
+        <li>Stay calm &mdash; restraint is the trust signal.</li>
+      </ul></div>
+      <div class="dont"><b>Don&rsquo;t</b><ul>
+        <li>&ldquo;Executive presence&rdquo;, &ldquo;command a room&rdquo;, &ldquo;read the room&rdquo;.</li>
+        <li>Exclamation marks or hype.</li>
+        <li>Countdowns, &ldquo;limited spots&rdquo;, urgency.</li>
+        <li>Invented statistics of any kind.</li>
+      </ul></div>
+    </div>
+
+    <h2 class="sec-h">Logo rules</h2>
+    <div class="dos">
+      <div class="do"><b>Do</b><ul>
+        <li>Solid brass on near-black, or bone on brass.</li>
+        <li>Keep clear space of one &ldquo;S&rdquo; width on every side.</li>
+        <li>Always set in Bodoni Moda 700.</li>
+      </ul></div>
+      <div class="dont"><b>Don&rsquo;t</b><ul>
+        <li>Gradients or metallic effects on the letters.</li>
+        <li>Outlines, shadows, or stretching.</li>
+        <li>Any colour other than brass or bone.</li>
+      </ul></div>
+    </div>
+    <p style="font-size:13px;color:var(--text-3);margin-top:14px;max-width:62ch">Who may publish under these rules is set in <a href="handbook.html#ch7" style="color:var(--brass)">Handbook &sect;7</a>.</p>
+  </main>
+</div>
+<script src="references-data.js"></script>
+<script src="officers.js"></script>
+<script>
+window.sicaPageInit = function(){
+  var SW = [
+    ['Ink deep','#0A0909','Page ground'],['Ink','#141210','Panels'],
+    ['Bone','#EDE8DC','Primary text'],['Brass','#C9A34F','The accent'],
+    ['Brass deep','#9B7B3A','Rules, hairlines'],['Done','#7FA88A','Status only'],
+    ['Needs you','#C2685A','Status only'],['In progress','#7E93B8','Status only']
+  ];
+  var el = document.getElementById('swatches');
+  el.innerHTML = SW.map(function(s){
+    return '<button class="sw" data-hex="' + s[1] + '"><i style="background:' + s[1] + '"></i>' +
+           '<div><b>' + s[0] + '</b><span>' + s[1] + '</span>' +
+           '<span style="display:block">' + s[2] + '</span></div></button>';
+  }).join('');
+  el.addEventListener('click', function(e){
+    var b = e.target.closest('.sw'); if (!b) return;
+    var hex = b.dataset.hex;
+    if (navigator.clipboard){
+      navigator.clipboard.writeText(hex).then(function(){ sicaToast(hex + ' copied'); },
+                                             function(){ sicaToast(hex); });
+    } else sicaToast(hex);
+  });
+};
+</script>
+</body>
+</html>

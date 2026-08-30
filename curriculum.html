@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>SICA &mdash; Curriculum</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="officers.css">
+</head>
+<body data-page="curriculum">
+<div class="shell">
+  <nav class="rail" id="rail"></nav>
+  <main>
+    <div class="topbar">
+      <div>
+        <div class="crumb">Curriculum</div>
+        <h1 class="ptitle" id="trackTitle">Curriculum</h1>
+        <p class="lede" id="trackBlurb"></p>
+      </div>
+      <div class="seg" role="tablist" aria-label="Curriculum track">
+        <button class="seg-btn on" id="segA" role="tab" aria-selected="true">This year</button>
+        <button class="seg-btn" id="segB" role="tab" aria-selected="false">Full year</button>
+      </div>
+    </div>
+
+    <div class="panes">
+      <div class="pane idx" id="mIdx"></div>
+      <div class="pane" style="padding:16px" id="mDetail"></div>
+    </div>
+
+    <h2 class="sec-h">How every meeting runs</h2>
+    <p style="font-size:13.5px;color:var(--text-2);max-width:64ch;margin-bottom:12px">Forty minutes, same five blocks, every single meeting. Practice is half the meeting on purpose &mdash; it is the only block that must never be cut short.</p>
+    <div class="rows" id="tmpl"></div>
+
+    <div class="grid g2" style="margin-top:16px">
+      <div class="card">
+        <h3>Growth trigger</h3>
+        <p style="font-size:13.5px;color:var(--text-2)"><b style="color:var(--brass)" id="gTrig"></b></p>
+        <p style="font-size:13px" id="gThen"></p>
+        <p style="font-size:13px" id="gVal"></p>
+        <p style="font-size:13px;color:var(--warn)" id="gWarn"></p>
+      </div>
+      <div class="card">
+        <h3>The amphitheater</h3>
+        <p style="font-size:13px" id="aUse"></p>
+        <p style="font-size:13px;color:var(--warn)" id="aCatch"></p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="curriculum-data.js"></script>
+<script src="references-data.js"></script>
+<script src="officers.js"></script>
+<script>
+window.sicaPageInit = function(){
+  var D = window.SICA_CURRICULUM;
+  var track = (location.hash.match(/^#(a|b)/) || [0, 'a'])[1];
+  var current = null;
+
+  function meetings(t){
+    var out = [];
+    D.tracks[t].phases.forEach(function(p){
+      p.meetings.forEach(function(m){ out.push({p: p, m: m}); });
+    });
+    return out;
+  }
+  function key(m){ return m.no ? 'm' + m.no : 'b' + m.title.replace(/\W+/g, '').slice(0, 8); }
+
+  function renderIdx(){
+    var T = D.tracks[track], h = '';
+    T.phases.forEach(function(p){
+      h += '<div class="phase"><div class="phase-h"><span>' + p.n + '</span><b>' + p.name + '</b></div>';
+      p.meetings.forEach(function(m){
+        var k = key(m);
+        h += '<button class="wk' + (k === current ? ' on' : '') + '" data-k="' + k + '">' +
+             '<span class="n">' + (m.bonus ? '&plus;' : 'M' + (m.no < 10 ? '0' : '') + m.no) + '</span>' +
+             '<span class="wk-t">' + m.title + '</span>' +
+             '<i class="tick' + (m.ready ? '' : ' draft') + '"></i></button>';
+      });
+      h += '</div>';
+    });
+    document.getElementById('mIdx').innerHTML = h;
+  }
+
+  function renderDetail(){
+    var found = meetings(track).filter(function(x){ return key(x.m) === current; })[0];
+    if (!found) found = meetings(track)[0];
+    var m = found.m, p = found.p;
+    var chips = '';
+    if (m.bonus)  chips += '<span class="pill p-idle">Optional</span>';
+    if (m.ethics) chips += '<span class="pill p-busy">Ethics checkpoint</span>';
+    if (m.stage)  chips += '<span class="pill p-warn">Amphitheater if booked</span>';
+    chips += m.ready ? '<span class="pill p-ok">Ready to teach</span>'
+                     : '<span class="pill p-idle">Not written</span>';
+
+    var h = '<div class="topbar"><div><div class="crumb">' + p.name +
+            ' <b>&rsaquo;</b> ' + (m.bonus ? 'Optional meeting' : 'Meeting ' + m.no) + '</div>' +
+            '<h1 class="ptitle">' + m.title + '</h1>' +
+            '<div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:10px">' + chips + '</div></div>' +
+            '<button class="btn">Edit meeting</button></div>';
+
+    h += '<div class="beats">' +
+         beat('05', 'Concept', '5 min', m.concept) +
+         beat('10', 'Practice', '20 min', m.practice) +
+         beat('36', 'Challenge', 'Take home', m.challenge) +
+         '</div>';
+
+    if (m.note) h += '<div class="mnote"><b>Also</b><p>' + m.note + '</p></div>';
+    document.getElementById('mDetail').innerHTML = h;
+  }
+
+  function beat(t, label, dur, body){
+    return '<div class="beat"><div class="beat-h"><span class="beat-l">' + label +
+           '</span><span class="beat-d">' + dur + '</span></div><p>' + body + '</p></div>';
+  }
+
+  function setTrack(t){
+    track = t;
+    document.getElementById('segA').classList.toggle('on', t === 'a');
+    document.getElementById('segB').classList.toggle('on', t === 'b');
+    document.getElementById('segA').setAttribute('aria-selected', String(t === 'a'));
+    document.getElementById('segB').setAttribute('aria-selected', String(t === 'b'));
+    var T = D.tracks[t];
+    document.getElementById('trackTitle').innerHTML = T.label === 'This year'
+      ? 'This year &mdash; second semester' : 'The full 30-week year';
+    document.getElementById('trackBlurb').innerHTML = T.sub + '. ' + T.blurb;
+    current = key(meetings(t)[0].m);
+    history.replaceState(null, '', '#' + t);
+    renderIdx(); renderDetail();
+  }
+
+  document.getElementById('segA').addEventListener('click', function(){ setTrack('a'); });
+  document.getElementById('segB').addEventListener('click', function(){ setTrack('b'); });
+  document.getElementById('mIdx').addEventListener('click', function(e){
+    var b = e.target.closest('.wk'); if (!b) return;
+    current = b.dataset.k;
+    renderIdx(); renderDetail();
+  });
+
+  /* the shared meeting template and the two standing rules */
+  document.getElementById('tmpl').innerHTML = D.template.map(function(r){
+    return '<div class="row"><span class="t">' + r[0] + '</span>' +
+           '<span class="w"><b style="font-weight:600">' + r[2] + '</b> &mdash; ' + r[3] + '</span>' +
+           '<span class="who">' + r[1] + '</span></div>';
+  }).join('');
+
+  document.getElementById('gTrig').textContent  = D.growth.trigger;
+  document.getElementById('gThen').textContent  = D.growth.then;
+  document.getElementById('gVal').textContent   = D.growth.validated;
+  document.getElementById('gWarn').textContent  = D.growth.warning;
+  document.getElementById('aUse').textContent   = D.amphitheater.use;
+  document.getElementById('aCatch').textContent = D.amphitheater.catch;
+
+  setTrack(track);
+};
+</script>
+</body>
+</html>

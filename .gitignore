@@ -13,3 +13,6 @@ node_modules/
 
 # Logs
 *.log
+
+# Local tool state (not project source)
+.freebuff/

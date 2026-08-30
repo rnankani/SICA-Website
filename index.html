@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SICA — The skills schools don't teach</title>
-<meta name="description" content="SICA · Student Influence &amp; Communication Association. Schools teach subjects. We teach people.">
+<title>SICA — Student Influence &amp; Communication Association</title>
+<meta name="description" content="The people skills behind every opportunity. SICA is a weekly communication practice club at Cupertino High School.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Inter:wght@300;400;500;600&family=Alex+Brush&display=swap" rel="stylesheet">
@@ -33,7 +33,10 @@
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{-webkit-text-size-adjust:100%}
+/* Scrolling stays; the bar is never drawn. */
+html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
+::-webkit-scrollbar,*::-webkit-scrollbar{width:0!important;height:0!important;display:none!important}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
 body{
   background:var(--ink-deep);color:var(--bone);
   font-family:var(--ui);font-weight:300;line-height:1.6;
@@ -68,28 +71,29 @@ img,svg{display:block;max-width:100%}
   padding:clamp(18px,3vh,34px) var(--pad) clamp(22px,4vh,40px);
 }
 
-/* cursor-tracked rake light, desktop only */
-.spot{
-  position:absolute;width:70vmax;height:70vmax;left:0;top:0;pointer-events:none;
-  transform:translate3d(var(--mx,50vw),var(--my,42vh),0) translate(-50%,-50%);
-  background:radial-gradient(circle,rgba(201,163,79,.10) 0%,rgba(201,163,79,.04) 28%,transparent 62%);
-  opacity:0;transition:opacity 1.4s ease;
-}
-.hero.lit .spot{opacity:1}
-@media (hover:none){.spot{display:none}}
-
 /* the ghost word behind everything */
 .ghost{
-  position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);
+  position:absolute;left:50%;top:34%;transform:translate(-50%,-50%);
   font-family:var(--display);font-weight:700;font-style:italic;
   font-size:clamp(120px,26vw,420px);line-height:1;letter-spacing:-.04em;
-  color:transparent;-webkit-text-stroke:1px rgba(237,232,220,.055);
+  color:transparent;-webkit-text-stroke:1px rgba(237,232,220,.038);
   white-space:nowrap;pointer-events:none;user-select:none;
-  animation:drift 26s ease-in-out infinite;
 }
-@keyframes drift{0%,100%{transform:translate(-50%,-50%) translateX(-2.5%)}50%{transform:translate(-50%,-50%) translateX(2.5%)}}
 
 .hero-bar{display:flex;justify-content:space-between;align-items:center;gap:20px;position:relative;z-index:2}
+.hero-bar-end{display:flex;align-items:center;gap:clamp(16px,2.4vw,30px)}
+
+/* Officer sign-in. Deliberately a text link and never a button: the hero has
+   exactly one call to action, and five officers shouldn't outrank it. */
+.officers{
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--on-ink);transition:color .35s ease;white-space:nowrap;
+}
+.officers i{font-style:normal;transition:transform .35s cubic-bezier(.16,1,.3,1)}
+.officers:hover{color:var(--brass-lit)}
+.officers:hover i{transform:translateX(3px)}
+@media (max-width:600px){.hero-bar-end .eyebrow{display:none}}
 .hero-bar .eyebrow{color:var(--on-ink)}
 .hero-bar .mk{font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.02em}
 
@@ -98,48 +102,39 @@ img,svg{display:block;max-width:100%}
   display:flex;flex-direction:column;justify-content:center;align-items:flex-start;
 }
 
-/* ─── the wordmark: letters lift out of a mask ───────────── */
+/* ─── the wordmark ──────────────────────────────────────
+   The letters are split so the shine can rake them one at a time. Sweeping
+   a single gradient across the whole word instead reads as one light that
+   slows, speeds up and slows again, because the easing is stretched over a
+   box four letters wide — four small boxes, staggered, read as travel. */
 .word{
   display:flex;align-items:flex-end;
-  /* height-aware: on short/landscape viewports 31vw alone overflows the hero and
-     the type gets clipped, so cap against vh too */
-  font-size:clamp(104px,min(31vw,44vh),440px);
-  margin-left:-.014em;  /* optical: pull the S to the true left edge */
+  font-size:clamp(104px,min(28vw,38vh),400px);
+  margin-left:-.014em;           /* optical: pull the S to the true left edge */
 }
-.word .l{display:block;overflow:hidden;padding-bottom:.04em}
-.word .l > i{
-  display:block;font-style:normal;
-  color:var(--brass-lit);
-  will-change:transform;
-}
-html.js .word .l > i{transform:translateY(108%) rotate(3deg)}
-.word.in .l > i{animation:lift 1150ms cubic-bezier(.16,1,.3,1) forwards}
-.word.in .l:nth-child(1) > i{animation-delay:0ms}
-.word.in .l:nth-child(2) > i{animation-delay:95ms}
-.word.in .l:nth-child(3) > i{animation-delay:190ms}
-.word.in .l:nth-child(4) > i{animation-delay:285ms}
-@keyframes lift{to{transform:translateY(0) rotate(0deg)}}
+.word .l{display:block}
+.word .l > i{display:block;font-style:normal;color:var(--brass-lit)}
 
-/* The raking highlight that sweeps the letters once.
-   Gated on background-clip:text — the effect needs transparent letters, so
-   without support the wordmark itself would vanish. Degrades to no shimmer. */
+/* Gated on background-clip:text — the effect needs transparent letters, so
+   without support the wordmark itself would vanish. Degrades to solid brass.
+   JS only ever adds .rake when motion is allowed, for the same reason. */
 @supports ((-webkit-background-clip:text) or (background-clip:text)){
-  .word .l > i{position:relative;background-clip:text;-webkit-background-clip:text}
+  .word .l > i{background-clip:text;-webkit-background-clip:text}
   .word.rake .l > i{
     color:transparent;
     background-image:linear-gradient(100deg,
       var(--brass-lit) 40%, var(--brass-lit) 46%, #FFFFFF 50%, var(--brass-lit) 54%, var(--brass-lit) 60%);
     background-size:280% 100%;background-position:190% 0;
-    animation:lift 1150ms cubic-bezier(.16,1,.3,1) forwards, rake 1600ms cubic-bezier(.5,0,.2,1) forwards;
+    animation:rake 1600ms cubic-bezier(.5,0,.2,1) forwards;
   }
-  .word.rake .l:nth-child(1) > i{animation-delay:0ms,   700ms}
-  .word.rake .l:nth-child(2) > i{animation-delay:95ms,  790ms}
-  .word.rake .l:nth-child(3) > i{animation-delay:190ms, 880ms}
-  .word.rake .l:nth-child(4) > i{animation-delay:285ms, 970ms}
+  .word.rake .l:nth-child(1) > i{animation-delay:0ms}
+  .word.rake .l:nth-child(2) > i{animation-delay:90ms}
+  .word.rake .l:nth-child(3) > i{animation-delay:180ms}
+  .word.rake .l:nth-child(4) > i{animation-delay:270ms}
 }
 @keyframes rake{to{background-position:-90% 0}}
 
-/* brass rule that draws under the wordmark, then runs the same shine as SICA */
+/* brass rule that draws under the wordmark */
 .rule{height:1px;width:100%;max-width:min(760px,86vw);background:rgba(237,232,220,.14);position:relative;margin-top:clamp(18px,3vh,34px)}
 .rule .fill{
   position:absolute;inset:0 auto 0 0;display:block;width:100%;
@@ -151,42 +146,35 @@ html.js .word .l > i{transform:translateY(108%) rotate(3deg)}
 html.js .rule .fill{width:0}
 html.js .rule.in .fill{animation:draw 1100ms cubic-bezier(.16,1,.3,1) forwards}
 @keyframes draw{to{width:100%}}
-/* the shine — identical gradient stops, size and easing as the wordmark's rake,
-   so it reads as the same light, just now travelling the line instead of a letter */
+/* the shine — identical gradient stops, size and easing as the wordmark's
+   rake, so it reads as the same light, just travelling the line instead */
 html.js .rule.shine .fill{animation:ruleShine 1600ms cubic-bezier(.5,0,.2,1) forwards}
 @keyframes ruleShine{to{background-position:-90% 0}}
 
-/* the twinkle waiting at the line's end, echoing the arc-star from the first
-   concept — fires once the shine above arrives */
+/* the twinkle waiting at the line's end — fires once the shine arrives */
 .spark{
   position:absolute;top:50%;right:-2px;width:14px;height:14px;margin:-7px -7px 0 0;
   pointer-events:none;
 }
 html.js .spark{opacity:0}
-html.js .spark.burst{opacity:1}
+.spark.burst{opacity:1}
 .spark-core{
   position:absolute;inset:0;background:#FFFFFF;
   clip-path:polygon(50% 0%,58.5% 41.5%,100% 50%,58.5% 58.5%,50% 100%,41.5% 58.5%,0% 50%,41.5% 41.5%);
   filter:drop-shadow(0 0 6px rgba(255,255,255,.85));
   transform:scale(.3);
 }
-.spark.burst{opacity:1}
 .spark.burst .spark-core{animation:sparkBurst 900ms cubic-bezier(.16,1,.3,1) forwards}
 @keyframes sparkBurst{
   0%{transform:scale(.3);filter:drop-shadow(0 0 6px rgba(255,255,255,.85)) brightness(1)}
   30%{transform:scale(2.2);filter:drop-shadow(0 0 20px rgba(255,255,255,1)) brightness(2.4)}
   100%{transform:scale(1);filter:drop-shadow(0 0 10px rgba(201,163,79,.85)) brightness(1.15)}
 }
-
 /* ─── hero foot ──────────────────────────────────────────── */
 .hero-foot{
   position:relative;z-index:2;
   display:grid;grid-template-columns:1fr auto;gap:clamp(22px,4vw,60px);align-items:end;
 }
-.mask{overflow:hidden;display:block}
-html.js .mask > *{transform:translateY(115%)}
-.mask.in > *{animation:up 1000ms cubic-bezier(.16,1,.3,1) forwards}
-@keyframes up{to{transform:translateY(0)}}
 
 .claim{
   font-family:var(--display);font-weight:400;font-style:italic;
@@ -194,16 +182,41 @@ html.js .mask > *{transform:translateY(115%)}
   max-width:20ch;color:var(--bone);
 }
 .claim b{font-style:normal;font-weight:700}
-.hero-note{font-size:13px;color:var(--on-ink);max-width:30ch;margin-top:14px}
+.hero-note{font-size:13.5px;color:var(--on-ink);max-width:44ch;margin-top:14px;line-height:1.62}
+.hero-note b{display:block;margin-top:10px;color:var(--bone);font-weight:500}
+.lockup{
+  font-size:11px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--on-ink);margin-top:clamp(14px,2vh,20px);
+}
 
 .acts{display:flex;gap:10px;flex-wrap:wrap}
+.hero-cta{display:flex;flex-direction:column;align-items:center;gap:clamp(18px,3.2vh,30px)}
+
+/* ─── hero entry ─────────────────────────────────────────
+   Every hero element makes the same move — up 20px and in — staggered 200ms
+   apart by JS in document order. One gesture, repeated, instead of five. */
+html.js .hero-r{opacity:0;transform:translateY(20px)}
+html.js .hero-r.in{
+  opacity:1;transform:none;
+  transition:opacity 1.5s cubic-bezier(.16,1,.3,1),transform 1.5s cubic-bezier(.16,1,.3,1);
+}
+
+/* the one intentional loop on the page: a single soft nudge every 3s */
+.hero-arrow{width:20px;color:var(--brass);opacity:.8}
+.hero-arrow svg{width:100%;height:auto;display:block}
+html.js .hero-arrow.in svg{animation:nudge 3s cubic-bezier(.4,0,.2,1) 2.4s infinite}
+@keyframes nudge{
+  0%,80%,100%{transform:translateY(0)}
+  87%{transform:translateY(7px)}
+  94%{transform:translateY(0)}
+}
 
 /* ─── buttons ────────────────────────────────────────────── */
 .btn{
   --bx:0px;--by:0px;
   display:inline-flex;align-items:center;gap:.7em;
   font-family:var(--ui);font-size:12px;font-weight:500;letter-spacing:.06em;
-  padding:15px 26px;border-radius:100px;border:1px solid transparent;cursor:pointer;
+  padding:13px 24px;border-radius:6px;border:1px solid transparent;cursor:pointer;
   white-space:nowrap;position:relative;overflow:hidden;
   transform:translate(var(--bx),var(--by));
   transition:transform .45s cubic-bezier(.16,1,.3,1),background .4s ease,color .4s ease,border-color .4s ease;
@@ -219,15 +232,11 @@ html.js .mask > *{transform:translateY(115%)}
 
 .btn--solid{background:var(--bone);color:var(--ink)}
 .btn--solid::before{background:var(--brass-lit)}
+.btn--gold{background:var(--brass-lit);color:var(--ink)}
+.btn--gold::before{background:var(--bone)}
 .btn--line{border-color:rgba(237,232,220,.28);color:var(--bone)}
 .btn--line::before{background:var(--bone)}
 .btn--line:hover{color:var(--ink);border-color:var(--bone)}
-
-/* ─── scroll cue ─────────────────────────────────────────── */
-.cue{display:flex;align-items:center;gap:10px;color:var(--on-ink);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
-.cue i{display:block;width:26px;height:1px;background:currentColor;position:relative;overflow:hidden}
-.cue i::after{content:'';position:absolute;inset:0;background:var(--brass-lit);animation:cue 2.4s ease-in-out infinite}
-@keyframes cue{0%{transform:translateX(-100%)}55%,100%{transform:translateX(100%)}}
 
 /* ═══════════════════════════════════════════════════════════
    THE BONE PANEL — rises over the hero
@@ -265,39 +274,6 @@ html.js .mask > *{transform:translateY(115%)}
 .h2 em{font-style:italic;font-weight:400}
 .sub{font-size:clamp(15px,1.5vw,17.5px);color:var(--on-bone);max-width:56ch;margin-top:24px;line-height:1.65}
 
-/* ─── 01 the gap ─────────────────────────────────────────── */
-.gap-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(36px,6vw,110px);margin-top:clamp(46px,7vh,84px);align-items:start}
-.gap-grid p{color:var(--on-bone);font-size:16.5px;line-height:1.72;max-width:52ch}
-.gap-grid p + p{margin-top:18px}
-.gap-grid p.lead{color:var(--bone);font-size:19px}
-
-.able{border-top:1px solid rgba(237,232,220,.16)}
-.able h3{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--brass);font-weight:500;padding-top:20px}
-.able li{
-  list-style:none;padding:19px 0 19px 34px;border-bottom:1px solid rgba(237,232,220,.12);
-  font-size:15.5px;position:relative;transition:padding-left .45s cubic-bezier(.16,1,.3,1),color .45s ease;
-}
-.able li:first-of-type{border-top:1px solid rgba(237,232,220,.12);margin-top:20px}
-.able li::before{
-  content:counter(a,decimal-leading-zero);counter-increment:a;
-  position:absolute;left:0;top:20px;font-size:11px;color:var(--brass);font-variant-numeric:tabular-nums;
-}
-.able ul{counter-reset:a}
-.able li:hover{padding-left:42px;color:var(--brass)}
-
-
-/* ─── marquee ribbon ─────────────────────────────────────── */
-.ribbon{background:var(--ink-deep);color:var(--bone);padding:20px 0;overflow:hidden;position:relative;z-index:1}
-.ribbon-track{display:flex;gap:0;width:max-content;animation:slide 42s linear infinite}
-.ribbon:hover .ribbon-track{animation-play-state:paused}
-.ribbon span{
-  font-family:var(--display);font-weight:400;font-style:italic;
-  font-size:clamp(20px,2.6vw,34px);letter-spacing:-.01em;padding:0 clamp(16px,2.4vw,32px);
-  display:flex;align-items:center;gap:clamp(16px,2.4vw,32px);white-space:nowrap;
-}
-.ribbon span::after{content:'';width:5px;height:5px;border-radius:50%;background:var(--brass-lit);flex:none}
-@keyframes slide{to{transform:translateX(-50%)}}
-
 /* ─── 03 curriculum: horizontal rail ─────────────────────── */
 .rail{position:relative;height:260vh} /* JS refines this from the real track width */
 .rail-pin{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
@@ -317,14 +293,6 @@ html.js .mask > *{transform:translateY(115%)}
 .card .wk{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--brass);margin-top:18px}
 .rail-bar{height:1px;background:rgba(237,232,220,.16);margin:clamp(26px,4vh,44px) var(--pad) 0;position:relative}
 .rail-bar i{position:absolute;left:0;top:-1px;height:3px;width:0;background:var(--brass);border-radius:2px}
-
-/* ─── 04 why ─────────────────────────────────────────────── */
-.verdict{
-  font-family:var(--display);font-weight:400;font-size:clamp(24px,3.2vw,42px);line-height:1.2;letter-spacing:-.02em;
-  padding-left:clamp(20px,3vw,40px);border-left:2px solid var(--brass);
-}
-.verdict b{font-weight:700}
-.verdict em{font-style:italic;color:var(--brass)}
 
 /* ─── 05 events ──────────────────────────────────────────── */
 .evts{display:grid;grid-template-columns:repeat(12,1fr);gap:clamp(12px,1.6vw,20px);margin-top:clamp(46px,7vh,84px)}
@@ -347,41 +315,56 @@ html.js .mask > *{transform:translateY(115%)}
 .evt h4{font-family:var(--display);font-weight:700;font-size:clamp(22px,2.4vw,32px);letter-spacing:-.02em;line-height:1.05;margin-top:auto}
 .evt p{font-size:14.5px;margin-top:12px;line-height:1.6;opacity:.72}
 
-/* A reserved, intentional home for real club documentation. These frames are
-   deliberately labels rather than fabricated photography: replace each with
-   authentic SICA images as meetings and workshops are documented. */
-.club-archive{margin-top:clamp(46px,7vh,84px);display:grid;grid-template-columns:1.3fr .7fr;gap:clamp(14px,2vw,26px)}
-.archive-frame{min-height:clamp(220px,31vw,390px);border:1px solid rgba(237,232,220,.18);border-radius:16px;padding:24px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(145deg,#211d18,#12100e);position:relative;overflow:hidden}
-.archive-frame::after{content:'';position:absolute;width:180px;height:180px;border:1px solid rgba(201,163,79,.24);border-radius:50%;right:-72px;bottom:-72px}
-.archive-frame small{color:var(--brass-lit);font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;position:relative;z-index:1}.archive-frame p{font-family:var(--display);font-size:clamp(21px,2.4vw,32px);font-weight:600;line-height:1.05;max-width:12ch;position:relative;z-index:1}.archive-stack{display:grid;gap:clamp(14px,2vw,26px)}.archive-stack .archive-frame{min-height:0}
-
-/* ─── 06 founder ─────────────────────────────────────────── */
-.note{max-width:26ch;margin-top:clamp(40px,6vh,70px)}
-.note p{
-  font-family:var(--display);font-weight:400;font-size:clamp(26px,4.4vw,60px);
-  line-height:1.14;letter-spacing:-.025em;max-width:22ch;
+/* ─── founder: the story, with room for a real portrait ───
+   The portrait is sticky, so his face holds the right-hand column for the
+   whole read rather than scrolling away after the first paragraph. */
+.founder-grid{
+  display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);
+  gap:clamp(34px,5vw,78px);align-items:start;margin-top:clamp(40px,6vh,72px);
 }
-.note p em{font-style:italic;color:var(--brass)}
-.note .by{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--on-bone);margin-top:clamp(28px,4vh,44px)}
+.founder-grid .editorial{margin-top:0;max-width:56ch}
+.portrait{position:sticky;top:clamp(78px,14vh,140px)}
+.portrait-frame{
+  position:relative;aspect-ratio:4/5;border-radius:16px;overflow:hidden;
+  border:1px solid rgba(201,163,79,.28);
+  background:linear-gradient(150deg,#231F19,#131110);
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:clamp(18px,2vw,26px);
+}
+.portrait-frame::after{
+  content:'';position:absolute;right:-72px;bottom:-72px;width:184px;height:184px;
+  border:1px solid rgba(201,163,79,.2);border-radius:50%;
+}
+/* a real photo fills the frame and covers the placeholder beneath it */
+.portrait-frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2}
+.portrait-tag{
+  position:relative;z-index:1;font-size:10px;font-weight:600;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--brass-lit);
+}
+.portrait-frame p{
+  position:relative;z-index:1;color:var(--bone);
+  font-family:var(--display);font-weight:600;font-size:clamp(19px,2.1vw,27px);
+  line-height:1.08;max-width:10ch;
+}
+.portrait figcaption{margin-top:14px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--on-bone)}
+
+/* inline link inside running copy */
+.lnk{
+  color:var(--brass-lit);border-bottom:1px solid rgba(201,163,79,.42);
+  transition:color .35s ease,border-color .35s ease;
+}
+.lnk:hover{color:#E4CA8C;border-bottom-color:var(--brass-lit)}
 
 /* ─── 07 join ────────────────────────────────────────────── */
-.join{background:var(--ink-deep);color:var(--bone);border-radius:clamp(20px,3vw,40px);padding:clamp(40px,7vw,110px) clamp(26px,5vw,90px);position:relative;overflow:hidden}
+.join{background:var(--ink-deep);color:var(--bone);border-radius:clamp(20px,3vw,40px);padding:clamp(56px,9vw,140px) clamp(26px,5vw,90px);position:relative;overflow:hidden;text-align:center}
+.join .kicker{justify-content:center}
+.join .h2,.join .sub,.join .join-note{margin-inline:auto}
+.join .acts{justify-content:center}
 .join::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 55% at 50% 0%,rgba(201,163,79,.14),transparent 70%);pointer-events:none}
 .join > *{position:relative;z-index:1}
 .join .h2{max-width:14ch}
 .join .sub{color:var(--on-ink)}
 .join .acts{margin-top:clamp(34px,5vh,54px)}
-.news{margin-top:clamp(50px,8vh,90px);padding-top:clamp(30px,4vh,46px);border-top:1px solid rgba(237,232,220,.14);display:grid;grid-template-columns:1fr auto;gap:26px;align-items:center}
-.news p{font-size:14.5px;color:var(--on-ink);max-width:40ch}
-.news p b{display:block;color:var(--bone);font-family:var(--display);font-weight:700;font-size:clamp(19px,2.2vw,26px);letter-spacing:-.02em;margin-bottom:7px}
-.news form{display:flex;gap:9px}
-.news input{
-  background:transparent;border:1px solid rgba(237,232,220,.24);border-radius:100px;color:var(--bone);
-  font-family:var(--ui);font-size:14px;padding:15px 24px;min-width:260px;outline:none;transition:border-color .4s ease;
-}
-.news input::placeholder{color:#6B665E}
-.news input:focus{border-color:var(--brass-lit)}
-
 /* ─── faq ────────────────────────────────────────────────── */
 .faq{margin-top:clamp(46px,7vh,84px);border-top:1px solid rgba(237,232,220,.16)}
 .q{border-bottom:1px solid rgba(237,232,220,.14)}
@@ -408,7 +391,8 @@ html.js .mask > *{transform:translateY(115%)}
 .foot nav{display:flex;gap:clamp(18px,3vw,44px);flex-wrap:wrap}
 .foot nav a{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--on-ink);transition:color .4s ease}
 .foot nav a:hover{color:var(--brass-lit)}
-.foot .tag{font-family:var(--display);font-weight:400;font-style:italic;font-size:clamp(17px,2vw,23px);max-width:20ch;letter-spacing:-.01em}
+.foot nav a.foot-officers{color:var(--brass)}
+.foot .tag{font-family:var(--display);font-weight:400;font-style:italic;font-size:clamp(17px,2vw,23px);max-width:30ch;letter-spacing:-.01em}
 .foot-mark{
   font-family:var(--display);font-weight:700;letter-spacing:-.045em;line-height:.76;
   font-size:clamp(90px,25.5vw,400px);color:transparent;
@@ -417,71 +401,14 @@ html.js .mask > *{transform:translateY(115%)}
 }
 .foot-base{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;border-top:1px solid rgba(237,232,220,.12);padding:22px 0 26px;font-size:11px;letter-spacing:.08em;color:#65605A;text-transform:uppercase}
 
-/* ─── ink bloom (headline reveal) ─────────────────────────
-   Headline blooms into shape — heavy blur + faded, resolving to sharp — like
-   ink spreading and settling into letters, instead of a flat slide-up. */
+/* ─── headline reveal ────────────────────────────────────
+   Same fade-up as body content. The blur-bloom that used to live here was a
+   second motion language competing with the plain reveal; one is calmer. */
 html.js .bloom{
-  opacity:0;filter:blur(18px);transform:scale(1.02);
-  transition:opacity 1.15s cubic-bezier(.16,1,.3,1),filter 1.15s cubic-bezier(.16,1,.3,1),transform 1.15s cubic-bezier(.16,1,.3,1);
+  opacity:0;transform:translateY(26px);
+  transition:opacity 1s cubic-bezier(.16,1,.3,1),transform 1s cubic-bezier(.16,1,.3,1);
 }
-html.js .bloom.in{opacity:1;filter:blur(0);transform:none}
-
-/* ─── story columns (why-join, founding) ─────────────────── */
-.story{margin-top:clamp(40px,6vh,72px)}
-.story p{color:var(--on-bone);font-size:16.5px;line-height:1.72;margin-top:20px;max-width:56ch}
-.story p:first-child{margin-top:0}
-.story .hook{
-  font-family:var(--display);font-weight:400;font-style:italic;
-  font-size:clamp(21px,2.8vw,34px);line-height:1.26;letter-spacing:-.015em;
-  color:var(--bone);max-width:26ch;
-}
-.story .hook b{font-style:normal;font-weight:700;color:var(--brass-lit)}
-.story .lead{color:var(--bone);font-size:clamp(17px,1.9vw,20px);line-height:1.62}
-.story .turn{color:var(--bone)}
-.story .turn b{color:var(--brass-lit);font-weight:500}
-
-/* ─── duel: split comparison (why-join) ───────────────────
-   The copy narrates two candidates in the same room; this shows the split
-   instead of just describing it — one card visibly fades, the other holds
-   full contrast, so "gets remembered" is felt before it's read. */
-.duel{
-  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
-  gap:clamp(14px,2.4vw,28px);margin:clamp(34px,5vh,58px) 0 clamp(38px,5.5vh,64px);
-}
-.duel-card{
-  border-radius:14px;padding:clamp(22px,2.6vw,32px);
-  transition:transform .6s cubic-bezier(.16,1,.3,1),opacity .6s ease;
-  display:flex;flex-direction:column;
-}
-.duel-tag{font-family:var(--ui);font-size:10.5px;font-weight:500;letter-spacing:.14em;text-transform:uppercase}
-.duel-line{
-  font-family:var(--display);font-style:italic;font-weight:400;
-  font-size:clamp(15.5px,1.6vw,17.5px);line-height:1.42;margin-top:16px;
-}
-.duel-outcome{
-  display:inline-block;margin-top:clamp(18px,2.6vh,28px);
-  font-family:var(--ui);font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
-}
-
-.duel-a{background:transparent;border:1px solid rgba(237,232,220,.1);opacity:.56}
-.duel-a .duel-tag,.duel-a .duel-outcome{color:var(--on-bone)}
-.duel-a .duel-line{color:var(--on-bone)}
-.duel-a:hover{opacity:.72}
-
-.duel-b{
-  background:var(--bone-dim);border:1px solid rgba(201,163,79,.32);
-  box-shadow:0 24px 60px rgba(0,0,0,.4);
-}
-.duel-b .duel-tag{color:var(--brass-lit)}
-.duel-b .duel-line{color:var(--bone)}
-.duel-b .duel-outcome{color:var(--brass-lit)}
-.duel-b:hover{transform:translateY(-6px)}
-
-.duel-vs{
-  font-family:var(--display);font-style:italic;font-weight:400;
-  font-size:12.5px;line-height:1.5;color:var(--on-bone);text-align:center;
-  white-space:nowrap;padding-inline:2px;
-}
+html.js .bloom.in{opacity:1;transform:none}
 
 /* ─── editorial long-read (the cost, founding) ────────────
    Dense copy broken into beats: a magazine drop-cap leads the reader in, a
@@ -501,18 +428,6 @@ html.js .bloom.in{opacity:1;filter:blur(0);transform:none}
 }
 .editorial .turn b{color:var(--brass-lit);font-style:normal;font-weight:700}
 
-/* pull-quote — a large display statement that breaks the running text */
-.pull{
-  font-family:var(--display);font-weight:400;font-style:italic;
-  font-size:clamp(28px,5vw,58px);line-height:1.08;letter-spacing:-.03em;
-  color:var(--bone);margin:clamp(40px,6vh,74px) 0;max-width:15ch;
-}
-.pull::before{
-  content:'';display:block;width:42px;height:2px;background:var(--brass-lit);
-  margin-bottom:clamp(20px,3vh,30px);box-shadow:0 0 12px rgba(201,163,79,.55);
-}
-.pull em{font-style:italic;color:var(--brass-lit)}
-
 /* ─── mission statement ──────────────────────────────────── */
 .statement{
   font-family:var(--display);font-weight:400;font-style:italic;
@@ -520,32 +435,7 @@ html.js .bloom.in{opacity:1;filter:blur(0);transform:none}
   color:var(--on-bone);max-width:24ch;margin-top:clamp(32px,5vh,56px);
 }
 .statement b{font-style:normal;font-weight:700;color:var(--bone)}
-/* The original employment-stat graphic is retained in the source for archival
-   purposes, but is intentionally not presented without current linked research. */
-#mission .evidence{display:none}
-#cost .editorial,#founder .editorial{display:none}
 .short-note{font-size:clamp(18px,2vw,24px);line-height:1.45;color:var(--on-bone);max-width:42ch;margin-top:clamp(28px,4vh,42px)}.short-note b{color:var(--bone);font-weight:600}
-.starter-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(237,232,220,.14);margin-top:clamp(34px,5vh,58px);border:1px solid rgba(237,232,220,.14)}
-.starter-card{background:var(--ink);padding:clamp(22px,3vw,34px);min-height:190px;display:flex;flex-direction:column;justify-content:space-between;transition:background .35s ease,transform .35s cubic-bezier(.16,1,.3,1)}
-.starter-card:hover{background:#242019;transform:translateY(-5px)}
-.starter-card .sc-num{font-family:var(--display);font-size:clamp(32px,4vw,52px);color:var(--brass-lit);line-height:1}
-.starter-card h3{font-family:var(--display);font-size:clamp(19px,2.1vw,27px);line-height:1.05;font-weight:600;margin-top:28px}.starter-card p{font-size:13px;color:var(--on-bone);line-height:1.5;margin-top:10px;max-width:24ch}
-@media (max-width:720px){.starter-grid{grid-template-columns:1fr}.starter-card{min-height:155px}}
-
-/* ─── count-up stats ─────────────────────────────────────── */
-.statband{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(16px,3vw,50px);
-  max-width:1340px;margin-inline:auto;padding:clamp(46px,8vh,90px) var(--pad);
-  border-top:1px solid rgba(237,232,220,.12);border-bottom:1px solid rgba(237,232,220,.12);
-}
-.stat{text-align:center}
-.stat b{
-  display:block;font-family:var(--display);font-weight:700;letter-spacing:-.03em;
-  font-size:clamp(58px,9vw,124px);line-height:.9;color:var(--brass-lit);
-  font-variant-numeric:tabular-nums;
-}
-.stat span{display:block;margin-top:14px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--on-bone)}
-
 /* ─── signature draw (founding) ─────────────────────────────
    The name is real text (a script Google Font), not a hand-drawn path — a
    path only spells a legible name by accident. Text is revealed with a
@@ -606,32 +496,74 @@ html.js .evidence.in .bar-fill{width:var(--w,0)}
   font-size:14.5px;line-height:1.62;color:var(--on-bone);max-width:56ch;
 }
 .evidence-note b{color:var(--bone);font-weight:600}
-.evidence-note .en-lead{color:var(--brass-lit)}
 
-/* ─── the definition (pause moment after hero) ────────────
-   "Influence" is the club's own name and was never defined — a shy reader
-   assumes it means popularity and self-selects out. This is a full stop in
-   the page: big type, heavy black space, one idea, no section number. */
-.define{padding-block:clamp(110px,19vh,210px);text-align:center}
-.define .wrap{max-width:820px}
-.define-lead{
+/* ═══════════════════════════════════════════════════════════
+   SIGNATURE MOMENT — the pinned "Have you ever…"
+   The section is 2.5 screens tall; the stage inside it sticks for the
+   middle 1.5, and the four statements hand off to one another purely on
+   scroll position, so the pace stays under the reader's own hand. No
+   particles, no blur ramp, no second effect — the reveal is the moment.
+   ═══════════════════════════════════════════════════════════ */
+.hye{position:relative;height:250vh}
+.hye-pin{
+  position:sticky;top:0;height:100vh;overflow:hidden;
+  display:grid;place-content:center;justify-items:center;
+  padding-inline:var(--pad);
+}
+.hye-lead{
+  position:absolute;top:clamp(76px,15vh,150px);left:50%;transform:translateX(-50%);
+  font-family:var(--ui);font-size:clamp(10px,1.1vw,12px);font-weight:500;
+  letter-spacing:.24em;text-transform:uppercase;color:var(--brass);white-space:nowrap;
+}
+html.js .hye-lead{opacity:0}
+
+/* the four statements share one box and cross-fade in place */
+.hye-stage{position:relative;width:min(940px,88vw);height:clamp(180px,32vh,280px)}
+.hye-line{
+  position:absolute;inset:0;margin:0;
+  display:grid;place-content:center;text-align:center;
+  font-family:var(--display);font-weight:400;
+  font-size:clamp(23px,4.1vw,52px);line-height:1.18;letter-spacing:-.022em;color:var(--bone);
+  will-change:opacity,transform;
+}
+.hye-line em{display:block;font-style:italic;color:var(--brass-lit);margin-top:.3em}
+html.js .hye-line{opacity:0}
+
+/* the release: large, centred, and the last thing standing */
+.hye-final{
+  position:absolute;inset:0;display:grid;place-content:center;
+  text-align:center;padding-inline:var(--pad);pointer-events:none;
+  will-change:opacity,transform;
+}
+html.js .hye-final{opacity:0}
+.hye-final-kicker{
+  font-family:var(--ui);font-size:clamp(12px,1.4vw,15px);letter-spacing:.04em;
+  color:var(--on-bone);margin-bottom:clamp(20px,3.4vh,34px);
+}
+.hye-final-line{
   font-family:var(--display);font-weight:700;
-  font-size:clamp(36px,7vw,84px);line-height:1.02;letter-spacing:-.03em;color:var(--bone);
+  font-size:clamp(33px,6.4vw,88px);line-height:1.03;letter-spacing:-.032em;color:var(--bone);
 }
-.define-lead .strike{position:relative;color:var(--on-bone);white-space:nowrap}
-.define-lead .strike::after{
-  content:'';position:absolute;left:-2%;right:-2%;top:53%;height:.055em;
-  background:var(--brass-lit);box-shadow:0 0 12px rgba(201,163,79,.65);
-  transform:scaleX(0);transform-origin:left center;
+.hye-final-line em{display:block;font-style:italic;font-weight:400;color:var(--brass-lit);margin-top:.08em}
+
+/* the pin releases into this, in normal flow */
+.hye-after{padding-block:clamp(80px,13vh,150px);text-align:center;position:relative}
+.hye-coda{
+  font-family:var(--display);font-weight:400;font-style:italic;
+  font-size:clamp(21px,2.9vw,36px);line-height:1.3;letter-spacing:-.02em;
+  color:var(--bone);max-width:26ch;margin-inline:auto;
 }
-html.js .define.in .strike::after{animation:strikeDraw 680ms cubic-bezier(.5,0,.2,1) 320ms forwards}
-@keyframes strikeDraw{to{transform:scaleX(1)}}
-.define-body{
-  font-size:clamp(16px,1.9vw,20px);color:var(--on-bone);line-height:1.62;
-  max-width:50ch;margin:clamp(26px,4.5vh,40px) auto 0;
-}
-.define-body em{font-style:italic;color:var(--bone)}
-.define-body b{color:var(--brass-lit);font-weight:500}
+
+/* No JS, or reduced motion: the same copy, stacked and readable, no pin. */
+html:not(.js) .hye,.hye.is-static{height:auto}
+html:not(.js) .hye-pin,.hye.is-static .hye-pin{position:static;height:auto;overflow:visible;padding-block:clamp(100px,17vh,190px)}
+html:not(.js) .hye-lead,.hye.is-static .hye-lead{position:static;transform:none;opacity:1;margin-bottom:clamp(32px,5vh,54px)}
+html:not(.js) .hye-stage,.hye.is-static .hye-stage{height:auto;display:grid;gap:clamp(18px,3vh,30px)}
+html:not(.js) .hye-line,.hye.is-static .hye-line{position:static;opacity:1;font-size:clamp(19px,2.4vw,29px)}
+html:not(.js) .hye-final,.hye.is-static .hye-final{position:static;opacity:1;margin-top:clamp(52px,8vh,92px);padding-inline:0}
+
+@media (max-width:720px){.hye{height:220vh}}
+
 
 /* ─── sample meeting (concrete, replaces the abstract 3-card diagram) ─────
    A real named meeting instead of a framework, plus a staggered vertical
@@ -658,9 +590,11 @@ html.js .meetingcard.in .mc-timeline::before{animation:mcLine 1200ms cubic-bezie
 }
 html.js .mc-step{opacity:0;transform:translateY(14px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
 .meetingcard.in .mc-step{opacity:1;transform:none}
-.meetingcard.in .mc-step:nth-child(1){transition-delay:300ms}
-.meetingcard.in .mc-step:nth-child(2){transition-delay:600ms}
-.meetingcard.in .mc-step:nth-child(3){transition-delay:900ms}
+.meetingcard.in .mc-step:nth-child(1){transition-delay:160ms}
+.meetingcard.in .mc-step:nth-child(2){transition-delay:320ms}
+.meetingcard.in .mc-step:nth-child(3){transition-delay:480ms}
+.meetingcard.in .mc-step:nth-child(4){transition-delay:640ms}
+.meetingcard.in .mc-step:nth-child(5){transition-delay:800ms}
 .mc-time{
   display:block;font-family:var(--ui);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
   color:var(--brass-lit);margin-bottom:9px;
@@ -670,9 +604,75 @@ html.js .mc-step{opacity:0;transform:translateY(14px);transition:opacity .7s cub
   margin-top:clamp(30px,4.5vh,44px);font-family:var(--display);font-style:italic;font-weight:400;
   font-size:clamp(15.5px,1.7vw,18px);color:var(--on-bone);line-height:1.55;max-width:52ch;
 }
-html.js .mc-reassure{opacity:0;transform:translateY(10px);transition:opacity .7s ease,transform .7s ease;transition-delay:1150ms}
+html.js .mc-reassure{opacity:0;transform:translateY(10px);transition:opacity .7s ease,transform .7s ease;transition-delay:980ms}
 .meetingcard.in .mc-reassure{opacity:1;transform:none}
 .mc-reassure b{font-style:normal;font-weight:600;color:var(--brass-lit)}
+
+/* ─── the meeting demo ────────────────────────────────────
+   Four stages you scroll through rather than read. Each sits back at 55%
+   opacity until it reaches the middle of the viewport, then comes fully
+   forward — driven by --lit, set per stage from scroll position. */
+.demo{margin-top:clamp(40px,6vh,72px);display:flex;flex-direction:column;align-items:center}
+.demo-stage{
+  --lit:0;
+  width:100%;max-width:660px;text-align:center;
+  padding:clamp(22px,3.5vh,40px) 0;
+  opacity:calc(.42 + .58 * var(--lit));
+  transform:translateY(calc((1 - var(--lit)) * 16px));
+  transition:opacity .5s ease,transform .5s ease;
+}
+.demo-k{
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  font-size:10.5px;font-weight:600;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--brass);
+}
+.demo-n{font-family:var(--ui);color:var(--on-bone);font-weight:500}
+.demo-h{
+  font-family:var(--display);font-weight:400;font-style:italic;
+  font-size:clamp(19px,2.6vw,30px);line-height:1.28;letter-spacing:-.015em;
+  color:var(--bone);margin-top:12px;
+}
+.demo-board{
+  margin-top:20px;border:1px solid rgba(237,232,220,.14);border-radius:12px;
+  background:var(--bone-dim);padding:clamp(18px,3vw,28px);
+}
+.demo-board span{font-size:clamp(15px,1.8vw,18px);color:var(--on-bone)}
+
+.demo-pair{margin-top:22px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:clamp(10px,2vw,20px);align-items:center}
+.demo-av{
+  display:grid;place-items:center;width:clamp(44px,7vw,58px);height:clamp(44px,7vw,58px);
+  border-radius:50%;border:1px solid rgba(201,163,79,.4);color:var(--brass-lit);
+  font-size:11px;letter-spacing:.06em;background:rgba(201,163,79,.07);
+}
+.demo-av.alt{border-color:rgba(237,232,220,.2);color:var(--on-bone);background:rgba(237,232,220,.04)}
+.demo-talk{display:flex;flex-direction:column;gap:9px}
+.bubl{
+  position:relative;border-radius:14px;padding:11px 15px;font-size:clamp(13.5px,1.5vw,15.5px);
+  background:var(--bone-dim);border:1px solid rgba(237,232,220,.12);color:var(--on-bone);
+  opacity:var(--lit);transform:translateY(calc((1 - var(--lit)) * 10px));
+  transition:opacity .55s ease,transform .55s ease;
+}
+.bubl.b2{transition-delay:.18s}
+.bubl.strong{color:var(--bone);border-color:rgba(201,163,79,.34);background:rgba(201,163,79,.08)}
+
+.demo-card{
+  margin-top:22px;text-align:left;border:1px solid rgba(201,163,79,.28);border-radius:12px;
+  background:linear-gradient(160deg,rgba(201,163,79,.07),transparent 62%),var(--bone-dim);
+  padding:clamp(18px,3vw,26px);
+  opacity:var(--lit);transform:translateY(calc((1 - var(--lit)) * 18px));
+  transition:opacity .55s ease,transform .55s ease;
+}
+.fb-l{display:block;font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--brass)}
+.demo-card p{font-size:14.5px;color:var(--bone);margin:7px 0 16px}
+.demo-card p:last-child{margin-bottom:0}
+
+.demo-arrow{height:clamp(34px,6vh,58px);display:grid;place-items:center}
+.demo-arrow i{display:block;width:1px;height:100%;background:linear-gradient(180deg,transparent,rgba(201,163,79,.5))}
+
+@media (max-width:620px){
+  .demo-pair{grid-template-columns:1fr;justify-items:center}
+  .demo-talk{width:100%}
+}
 
 /* ─── verdict line — a large italic statement that closes an argument ────
    Shared by Why SICA and elsewhere: a considered claim, not a scorecard. */
@@ -684,6 +684,139 @@ html.js .mc-reassure{opacity:0;transform:translateY(10px);transition:opacity .7s
 .verdict-line b{font-style:normal;font-weight:700}
 .verdict-line em{font-style:italic;color:var(--brass-lit)}
 
+/* ─── the meeting band ────────────────────────────────────
+   "What happens at a meeting" and the worked example do the most work on a
+   nervous reader, so they get extra air and one soft, edgeless glow across
+   the whole band — never a box with visible edges around the text. */
+.band{position:relative}
+.band::before{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 78% 52% at 50% 50%,rgba(201,163,79,.06),transparent 72%);
+}
+.band > .sec{position:relative;z-index:1}
+.band > .sec:first-child{padding-bottom:clamp(44px,6vh,84px)}
+.band > .sec:last-child{padding-top:clamp(44px,6vh,84px)}
+
+/* the five-beat rhythm — one phrase per step, no time label */
+.mc-beat{
+  font-family:var(--display);font-weight:400;
+  font-size:clamp(19px,2.3vw,27px);line-height:1.28;letter-spacing:-.018em;color:var(--bone);
+}
+
+/* ─── before → after: the words dissolve and reassemble ────
+   Both lines occupy the same box; letters are split by JS and cross-fade
+   character by character, so the sentence visibly comes apart and a new
+   one builds in its place rather than two columns sitting side by side. */
+.shift{display:flex;flex-direction:column;gap:clamp(26px,4vh,44px);margin-top:clamp(44px,7vh,80px)}
+.morph{display:flex;flex-direction:column;gap:10px}
+.morph-tag{
+  font-family:var(--ui);font-size:10px;font-weight:500;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--on-bone);transition:color .5s ease;
+}
+.morph.done .morph-tag{color:var(--brass-lit)}
+.morph-line{position:relative;display:block;min-height:1.35em}
+.morph-line .mf,.morph-line .mt{
+  font-family:var(--display);font-weight:400;font-style:italic;
+  font-size:clamp(18px,2.4vw,29px);line-height:1.32;letter-spacing:-.015em;
+}
+.morph-line .mf{color:var(--on-bone)}
+.morph-line .mt{position:absolute;left:0;top:0;color:var(--bone);white-space:normal}
+/* each letter is its own box so it can leave on its own timing */
+.morph-line i{display:inline-block;font-style:inherit;white-space:pre;will-change:opacity,transform}
+html.js .morph-line .mt i{opacity:0}
+
+/* ─── the conversation ────────────────────────────────────
+   The site's whole argument as one thread: the bubbles accumulate on
+   scroll and the stack rides upward, so the newest line stays centred
+   and the tone visibly gains confidence on the way down. */
+.convo{position:relative;height:300vh;background:var(--ink-deep)}
+.convo-pin{position:sticky;top:0;height:100vh;overflow:hidden;display:grid;place-content:center;padding-inline:var(--pad)}
+.convo-pin::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 62% 48% at 50% 50%,rgba(201,163,79,.07),transparent 72%);
+}
+.convo-lead{
+  position:absolute;top:clamp(64px,12vh,120px);left:50%;transform:translateX(-50%);
+  font-family:var(--ui);font-size:clamp(10px,1.1vw,12px);font-weight:500;
+  letter-spacing:.24em;text-transform:uppercase;color:var(--brass);white-space:nowrap;z-index:2;
+}
+html.js .convo-lead{opacity:0}
+/* a fixed window the stack scrolls inside, masked top and bottom */
+.convo-vp{
+  position:relative;z-index:1;width:min(620px,88vw);height:min(460px,62vh);overflow:hidden;
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 16%,#000 84%,transparent);
+  mask-image:linear-gradient(180deg,transparent,#000 16%,#000 84%,transparent);
+}
+.convo-stack{display:flex;flex-direction:column;gap:14px;align-items:flex-start;will-change:transform}
+.bub{
+  max-width:82%;padding:14px 19px;border-radius:16px;
+  font-size:clamp(15px,1.8vw,19px);line-height:1.4;
+}
+html.js .bub{opacity:0}
+.bub-them{background:var(--bone-dim);border:1px solid rgba(237,232,220,.10);color:var(--on-bone);border-bottom-left-radius:5px}
+.bub-them.strong{color:var(--bone)}
+.bub-us{align-self:flex-end;background:rgba(201,163,79,.13);border:1px solid rgba(201,163,79,.3);color:var(--brass-lit);border-bottom-right-radius:5px}
+.bub-final{
+  align-self:center;max-width:100%;background:none;border:0;padding:8px 0;
+  font-family:var(--display);font-weight:700;font-style:italic;
+  font-size:clamp(27px,4.6vw,54px);line-height:1.1;letter-spacing:-.025em;color:var(--brass-lit);
+}
+.bub.typing{display:flex;gap:5px;padding:17px 19px}
+.bub.typing i{width:6px;height:6px;border-radius:50%;background:var(--on-bone);display:block}
+
+html:not(.js) .convo,.convo.is-static{height:auto}
+html:not(.js) .convo-pin,.convo.is-static .convo-pin{position:static;height:auto;padding-block:clamp(90px,15vh,170px)}
+html:not(.js) .convo-lead,.convo.is-static .convo-lead{position:static;transform:none;opacity:1;margin-bottom:34px}
+html:not(.js) .convo-vp,.convo.is-static .convo-vp{height:auto;overflow:visible;-webkit-mask-image:none;mask-image:none}
+html:not(.js) .bub,.convo.is-static .bub{opacity:1}
+
+/* ─── officer passcode gate ───────────────────────────────── */
+.officers{background:none;border:0;cursor:pointer;font-family:var(--ui)}
+.foot-officers{background:none;border:0;cursor:pointer;font-family:var(--ui);font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:0}
+.gate{
+  position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:20px;
+  background:rgba(6,5,5,.86);opacity:0;pointer-events:none;transition:opacity .32s ease;
+}
+.gate.open{opacity:1;pointer-events:auto}
+.gate-card{
+  width:min(380px,100%);background:var(--ink);border:1px solid rgba(237,232,220,.14);
+  border-radius:14px;padding:clamp(26px,4vw,36px);
+  transform:scale(.97);transition:transform .32s cubic-bezier(.16,1,.3,1);
+  box-shadow:0 40px 90px rgba(0,0,0,.6);
+}
+.gate.open .gate-card{transform:none}
+.gate h3{font-family:var(--display);font-weight:700;font-size:26px;letter-spacing:-.02em}
+.gate p{font-size:13.5px;color:var(--on-bone);margin-top:9px;line-height:1.55}
+.gate form{display:flex;flex-direction:column;gap:11px;margin-top:22px}
+.gate input{
+  background:var(--ink-deep);border:1px solid rgba(237,232,220,.18);border-radius:6px;
+  color:var(--bone);font-family:var(--ui);font-size:15px;letter-spacing:.16em;
+  padding:13px 15px;outline:none;transition:border-color .3s ease;
+}
+.gate input:focus{border-color:var(--brass-lit)}
+.gate .err{font-size:12.5px;color:#C2685A;min-height:1.2em}
+.gate .row{display:flex;gap:9px;align-items:center;justify-content:space-between}
+.gate .cancel{background:none;border:0;color:var(--on-ink);font-size:12px;cursor:pointer;font-family:var(--ui);letter-spacing:.08em;text-transform:uppercase}
+.gate .cancel:hover{color:var(--bone)}
+
+/* ─── who belongs here: one persona per card, so a visitor can point at
+   the one that is them rather than read "everyone welcome" ─────────────── */
+.who-grid .evt,.who-grid .evt:nth-child(n){grid-column:span 6;min-height:186px}
+/* --stage is written per-card from scroll position: the one nearest the
+   middle of the screen holds full contrast, the others sit back */
+.who-grid .evt{
+  opacity:calc(.42 + .58 * var(--stage,1));
+  transform:scale(calc(.975 + .025 * var(--stage,1)));
+  transition:opacity .45s ease,transform .45s cubic-bezier(.16,1,.3,1),border-color .5s ease;
+}
+.who-grid .evt h4{max-width:16ch}
+
+.join-note{margin-top:clamp(20px,3vh,28px);font-family:var(--display);font-style:italic;font-size:clamp(17px,2vw,22px);color:var(--on-ink)}
+.join-note b{font-style:normal;font-weight:700;color:var(--brass-lit)}
+
+.by{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--on-bone)}
+.evidence > .evidence-note:first-child{margin-top:0;margin-bottom:clamp(30px,4.5vh,42px)}
+
 /* ─── shared reveal ──────────────────────────────────────── */
 html.js .rv{opacity:0;transform:translateY(30px);transition:opacity 1s cubic-bezier(.16,1,.3,1),transform 1s cubic-bezier(.16,1,.3,1)}
 html.js .rv.in{opacity:1;transform:none}
@@ -691,19 +824,16 @@ html.js .rv.in{opacity:1;transform:none}
 /* ═══════════════════════════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════════════════════════ */
+@media (max-width:900px){
+  .founder-grid{grid-template-columns:1fr;gap:clamp(30px,5vh,50px)}
+  .portrait{position:static;max-width:340px}
+}
 @media (max-width:1080px){
-  .gap-grid{grid-template-columns:1fr;gap:48px}
-  .evt,.evt:nth-child(n){grid-column:span 12}
-  .news{grid-template-columns:1fr}
-  .club-archive{grid-template-columns:1fr}
+  .evt,.evt:nth-child(n),.who-grid .evt,.who-grid .evt:nth-child(n){grid-column:span 12}
   .hero-foot{grid-template-columns:1fr;align-items:start}
 }
 @media (max-width:720px){
-  .news form{flex-direction:column}
-  .news input{min-width:0;width:100%}
-  .news .btn{justify-content:center}
-  .duel{grid-template-columns:1fr}
-  .duel-vs{padding-block:2px;white-space:normal}
+  .convo-vp{height:min(400px,58vh)}
   /* rail becomes a native swipe strip — no pinning on touch */
   .rail{height:auto}
   .rail-pin{position:static;height:auto;padding-block:var(--gap)}
@@ -713,7 +843,10 @@ html.js .rv.in{opacity:1;transform:none}
   .rail-bar{display:none}
 }
 
+html:not(.js) .demo-stage{--lit:1}
 @media (prefers-reduced-motion:reduce){
+  .demo-stage{--lit:1!important}
+  html{scroll-behavior:auto}
   *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
 }
 </style>
@@ -722,35 +855,38 @@ html.js .rv.in{opacity:1;transform:none}
 
 <!-- ══════════════════ HERO ══════════════════ -->
 <header class="hero" id="hero">
-  <div class="spot" id="spot"></div>
   <div class="ghost" aria-hidden="true">Influence</div>
 
   <div class="hero-bar">
     <div class="mk">SICA</div>
-    <div class="eyebrow">Cupertino High School · Est. 2026</div>
+    <div class="hero-bar-end">
+      <span class="eyebrow">Cupertino High School · Est. 2026</span>
+      <button class="officers" type="button" id="officerBtn"><span>Officers</span><i aria-hidden="true">&rarr;</i></button>
+    </div>
   </div>
 
   <div class="hero-mid">
-    <h1 class="word display" id="word" aria-label="SICA">
+    <h1 class="word display hero-r" id="word" aria-label="SICA">
       <span class="l"><i>S</i></span><span class="l"><i>I</i></span><span class="l"><i>C</i></span><span class="l"><i>A</i></span>
     </h1>
     <div class="rule" id="rule">
       <i class="fill" id="ruleFill"></i>
       <i class="spark" id="ruleSpark"><i class="spark-core"></i></i>
     </div>
+    <p class="lockup hero-r">Student Influence &amp; Communication Association</p>
   </div>
 
   <div class="hero-foot">
     <div>
-      <div class="mask" id="m1"><p class="claim">Learn the people skills school <b>rarely gives you time to practice.</b></p></div>
-      <div class="mask" id="m2"><p class="hero-note">SICA is a Cupertino High School club for practicing clearer communication, stronger confidence, and better conversations—one real situation at a time.</p></div>
+      <p class="claim hero-r">The people skills behind <b>every opportunity.</b></p>
+      <p class="hero-note hero-r">Making friends. Explaining an idea. Handling disagreement.<b>SICA is where you practice those moments before they matter.</b></p>
     </div>
-    <div class="mask" id="m3">
-      <div>
-        <div class="acts">
-          <a href="#meeting" class="btn btn--solid"><span>See what happens at a meeting</span><i class="dot"></i></a>
-        </div>
-        <div class="cue" style="margin-top:22px"><i></i>Scroll</div>
+    <div class="hero-cta">
+      <div class="acts hero-r">
+        <a href="#have-you-ever" class="btn btn--gold"><span>Explore SICA</span><i class="dot"></i></a>
+      </div>
+      <div class="hero-arrow hero-r" aria-hidden="true">
+        <svg viewBox="0 0 24 30" fill="none"><path d="M12 3v22M4.5 18.5 12 26l7.5-7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
     </div>
   </div>
@@ -759,260 +895,284 @@ html.js .rv.in{opacity:1;transform:none}
 <!-- ══════════════════ SHEET ══════════════════ -->
 <div class="sheet">
 
-  <!-- THE DEFINITION — deliberately unnumbered: a pause, not a section -->
-  <section class="define rv" id="what-influence">
-    <div class="wrap">
-      <p class="define-lead">Influence isn't <span class="strike">popularity</span>.</p>
-      <p class="define-body">Popularity is how many people know you. Influence is being able to <em>say what you mean, understand other people, and move a conversation forward.</em></p>
-      <p class="define-body">It is not about being the loudest person in the room. It is about knowing how to listen, explain an idea, and show up with confidence. <b>Those are learnable skills.</b></p>
+  <!-- ─────────── SIGNATURE MOMENT: "Have you ever…" ───────────
+       The section pins for 1.5 viewport-heights while the four statements
+       hand off to one another on scroll position. Deliberately unlayered —
+       the reveal is the whole effect. -->
+  <section class="hye" id="have-you-ever">
+    <div class="hye-pin">
+      <p class="hye-lead">Have you ever&hellip;</p>
+
+      <div class="hye-stage">
+        <p class="hye-line">You had something worth saying<em>&hellip; but stayed quiet.</em></p>
+        <p class="hye-line">You thought of the perfect response<em>&hellip; after the conversation ended.</em></p>
+        <p class="hye-line">You wanted to introduce yourself<em>&hellip; but talked yourself out of it.</em></p>
+        <p class="hye-line">You knew the answer<em>&hellip; but never raised your hand.</em></p>
+      </div>
+
+      <div class="hye-final">
+        <p class="hye-final-kicker">Those moments happen to everyone.</p>
+        <p class="hye-final-line">They aren&rsquo;t personality traits.<em>They&rsquo;re skills.</em></p>
+      </div>
     </div>
   </section>
 
-  <!-- 01 MISSION -->
-  <section class="sec" id="mission">
+  <section class="hye-after">
+    <div class="wrap">
+      <p class="hye-coda rv">If you&rsquo;ve experienced even one of those, you&rsquo;re exactly who SICA was built for.</p>
+    </div>
+  </section>
+
+  <!-- 01 WHAT IS SICA -->
+  <section class="sec" id="what-is">
     <div class="num" aria-hidden="true">01</div>
     <div class="wrap">
-      <div class="kicker rv"><i></i><span class="eyebrow">Mission</span></div>
-      <h2 class="h2 bloom">The moments school <em>doesn’t rehearse.</em></h2>
-      <p class="statement rv">A group project. A classroom presentation. A room full of people you do not know. <b>SICA is where you practice before those moments matter.</b></p>
-
-      <div class="starter-grid rv" aria-label="What students practice at SICA">
-        <article class="starter-card"><span class="sc-num">01</span><div><h3>Say what you mean.</h3><p>Turn a thought into something other people can understand.</p></div></article>
-        <article class="starter-card"><span class="sc-num">02</span><div><h3>Read the room.</h3><p>Notice what a conversation needs before you jump in.</p></div></article>
-        <article class="starter-card"><span class="sc-num">03</span><div><h3>Leave more ready.</h3><p>Carry one small, practiced habit into your week.</p></div></article>
-      </div>
-
-      <div class="evidence rv">
-        <div class="evidence-cap">What employers actually screen for</div>
-        <div class="bar-row"><span class="bar-label">Problem-solving</span><span class="bar-track"><span class="bar-fill" style="--w:90%;--d:0ms"></span></span><span class="bar-val">90%</span></div>
-        <div class="bar-row"><span class="bar-label">Teamwork</span><span class="bar-track"><span class="bar-fill" style="--w:80%;--d:130ms"></span></span><span class="bar-val">80%</span></div>
-        <div class="bar-row"><span class="bar-label">Verbal communication</span><span class="bar-track"><span class="bar-fill" style="--w:66%;--d:260ms"></span></span><span class="bar-val">66%</span></div>
-        <div class="bar-row dim"><span class="bar-label">Grades&nbsp;/&nbsp;GPA</span><span class="bar-track"><span class="bar-fill" style="--w:37%;--d:540ms"></span></span><span class="bar-val">37%</span></div>
-        <p class="evidence-src">Share of employers who look for each attribute on a candidate's résumé — the skills SICA trains outrank the number school optimizes for. <em>Source: NACE Job Outlook 2024&ndash;2025.</em></p>
-        <div class="evidence-note">
-          <b class="en-lead">Even in the &ldquo;pure skill&rdquo; jobs.</b> You'd think engineering is the one field where the work speaks for itself. It isn't. Research on engineering careers has found that up to <b>70% of career advancement</b> traces back to communication &mdash; not technical output. The technical skill gets you hired; the ability to explain it, defend it, and get people behind it decides how far you go.
-        </div>
-      </div>
+      <div class="kicker rv"><i></i><span class="eyebrow">What is SICA?</span></div>
+      <h2 class="h2 bloom">A weekly <em>practice club.</em></h2>
+      <p class="sub rv">SICA is a student-led club where members build communication through real conversations, interactive challenges, and structured feedback.</p>
+      <p class="statement rv">Every meeting focuses on practicing a real-life situation <b>you&rsquo;ll eventually face anyway.</b></p>
+      <p class="short-note rv">No lectures. No memorizing speeches. <b>No experience required.</b></p>
     </div>
   </section>
 
-  <!-- 02 WHY JOIN -->
-  <section class="sec" id="why-join">
+  <!-- 02 WHY WE BUILT IT -->
+  <section class="sec" id="founder">
     <div class="num" aria-hidden="true">02</div>
     <div class="wrap">
-      <div class="kicker rv"><i></i><span class="eyebrow">Why join SICA</span></div>
-      <h2 class="h2 bloom">Same person. <em>More options.</em></h2>
-      <div class="gap-grid">
-        <div class="story rv">
-          <p class="hook">Two students walk into the <b>same group project.</b> Same ideas. Same chance to contribute.</p>
-
-          <div class="duel">
-            <div class="duel-card duel-a">
-              <span class="duel-tag">Starting point</span>
-              <p class="duel-line">Waits for the perfect moment. Their idea stays half-formed in their head.</p>
-              <span class="duel-outcome">Leaves unsure what to say</span>
-            </div>
-            <div class="duel-vs" aria-hidden="true">Same room.<br>Same idea.</div>
-            <div class="duel-card duel-b">
-              <span class="duel-tag">After practice</span>
-              <p class="duel-line">Asks a useful question, shares a clear thought, and helps the group decide what to do next.</p>
-              <span class="duel-outcome">Becomes someone people rely on</span>
-            </div>
+      <div class="kicker rv"><i></i><span class="eyebrow">Why we built it</span></div>
+      <h2 class="h2 bloom">Grades had <em>almost nothing to do with it.</em></h2>
+      <div class="founder-grid">
+        <div class="editorial">
+          <p class="drop rv">As Vice President of <a class="lnk" href="https://CodeStarters.org/#team" target="_blank" rel="noopener noreferrer">Codestarters</a>, I watched it happen constantly: who got picked for leadership roles, who actually performed once they had them &mdash; and grades had <b>almost nothing to do with it.</b> It came down to communication. The ability to give your ideas real weight, to influence a room instead of getting talked over.</p>
+          <p class="turn rv">That&rsquo;s why I built SICA: a club that teaches you to be <b>listened to.</b> Not just heard &mdash; listened to.</p>
+          <div class="sig-wrap rv">
+            <svg class="sig-draw" id="sig" viewBox="0 0 320 110" aria-hidden="true">
+              <text class="sig-text" x="4" y="66">Reyansh N.</text>
+              <path class="sig-underline" d="M 8 84 C 70 96, 190 94, 272 78 C 288 75, 291 82, 280 83"/>
+            </svg>
+            <div class="by">Founder &middot; Cupertino High School</div>
           </div>
+        </div>
 
-          <p>The difference is not talent or volume. It is practice—the kind most classes cannot make time for.</p>
-          <p class="turn">SICA makes that practice feel normal: asking questions, reading a room, speaking without a perfect script, and handling a conversation you have been avoiding. <b>Start where you are.</b></p>
-        </div>
-        <div class="able rv">
-          <h3>By the end, you'll be able to</h3>
-          <ul>
-            <li>Walk into a room of strangers and leave with real connections</li>
-            <li>Negotiate when interests conflict</li>
-            <li>Give an unscripted three-minute talk with composure</li>
-            <li>Handle a difficult conversation without avoiding it</li>
-            <li>Run an interview and actually perform</li>
-            <li>Command a room instead of just entering it</li>
-          </ul>
-        </div>
+        <!-- Portrait slot. Drop the real photo in as <img src="..." alt="..."> and
+             delete the two placeholder children; the frame already crops it. -->
+        <figure class="portrait rv">
+          <div class="portrait-frame">
+            <span class="portrait-tag">Founder</span>
+            <p>Reyansh Nankani</p>
+          </div>
+          <figcaption>Reyansh N. &middot; Cupertino High School</figcaption>
+        </figure>
       </div>
     </div>
   </section>
-</div>
 
-<!-- ribbon -->
-<div class="ribbon" aria-hidden="true">
-  <div class="ribbon-track" id="ribbon">
-    <span>Presence</span><span>Negotiation</span><span>Storytelling</span><span>Status</span><span>Persuasion</span><span>Listening</span><span>Composure</span><span>Rapport</span>
-    <span>Presence</span><span>Negotiation</span><span>Storytelling</span><span>Status</span><span>Persuasion</span><span>Listening</span><span>Composure</span><span>Rapport</span>
+  <!-- The two sections doing the most work on a hesitant reader: what a meeting
+       actually is, and one real example of one. Given extra room and a soft
+       full-section glow (never a hard-edged box) so neither gets skimmed past. -->
+  <div class="band">
+
+    <!-- 03 WHAT HAPPENS AT A MEETING -->
+    <section class="sec" id="meeting">
+      <div class="num" aria-hidden="true">03</div>
+      <div class="wrap">
+        <div class="kicker rv"><i></i><span class="eyebrow">What happens at a meeting?</span></div>
+        <h2 class="h2 bloom">Every meeting follows <em>the same rhythm.</em></h2>
+        <p class="sub rv">Rather than describe it, here it is. Keep scrolling.</p>
+
+        <!-- The rhythm, played out instead of listed: two people, a
+             conversation, a note, another go. Each stage lights as it
+             reaches the middle of the screen — scroll-driven, not pinned,
+             because the page already holds you still twice. -->
+        <div class="demo" id="demo">
+          <div class="demo-stage" data-stage="1">
+            <div class="demo-k"><span class="demo-n">01</span>Learn</div>
+            <p class="demo-h">One practical idea, taught in ten minutes.</p>
+            <div class="demo-board"><span>Most people listen to reply, not to understand.</span></div>
+          </div>
+
+          <div class="demo-arrow" aria-hidden="true"><i></i></div>
+
+          <div class="demo-stage" data-stage="2">
+            <div class="demo-k"><span class="demo-n">02</span>Practice</div>
+            <p class="demo-h">You turn to one person. Not the room.</p>
+            <div class="demo-pair">
+              <div class="demo-who"><span class="demo-av">You</span></div>
+              <div class="demo-talk">
+                <span class="bubl b1">So what actually happened?</span>
+                <span class="bubl b2">Wait &mdash; say more about that.</span>
+              </div>
+              <div class="demo-who"><span class="demo-av alt">Them</span></div>
+            </div>
+          </div>
+
+          <div class="demo-arrow" aria-hidden="true"><i></i></div>
+
+          <div class="demo-stage" data-stage="3">
+            <div class="demo-k"><span class="demo-n">03</span>Feedback</div>
+            <p class="demo-h">Specific, and only ever two parts.</p>
+            <div class="demo-card">
+              <span class="fb-l">What worked</span>
+              <p>You asked twice before saying anything about yourself.</p>
+              <span class="fb-l">One thing to try</span>
+              <p>Leave a beat of silence after they finish.</p>
+            </div>
+          </div>
+
+          <div class="demo-arrow" aria-hidden="true"><i></i></div>
+
+          <div class="demo-stage" data-stage="4">
+            <div class="demo-k"><span class="demo-n">04</span>Try again</div>
+            <p class="demo-h">Same skill. Same week. Different result.</p>
+            <div class="demo-pair">
+              <div class="demo-who"><span class="demo-av">You</span></div>
+              <div class="demo-talk">
+                <span class="bubl b1 strong">What made that hard for you?</span>
+              </div>
+              <div class="demo-who"><span class="demo-av alt">Them</span></div>
+            </div>
+          </div>
+        </div>
+
+        <p class="mc-reassure rv">You&rsquo;re never thrown on stage. Most activities begin in pairs before moving into small groups. <b>Everyone starts somewhere.</b></p>
+      </div>
+    </section>
+
+    <!-- EXAMPLE MEETING — one real, named meeting instead of a framework -->
+    <section class="sec" id="example">
+      <div class="wrap">
+        <div class="kicker rv"><i></i><span class="eyebrow">Example meeting</span></div>
+        <h2 class="h2 bloom">Active <em>Listening.</em></h2>
+        <div class="meetingcard rv">
+          <div class="mc-timeline">
+            <div class="mc-step">
+              <i class="mc-dot"></i>
+              <span class="mc-time">10 minutes</span>
+              <p>Learn why most people listen only to respond.</p>
+            </div>
+            <div class="mc-step">
+              <i class="mc-dot"></i>
+              <span class="mc-time">25 minutes</span>
+              <p>Work with a partner. One person talks. The other can only ask questions and summarize. No interrupting.</p>
+            </div>
+            <div class="mc-step">
+              <i class="mc-dot"></i>
+              <span class="mc-time">Weekly challenge</span>
+              <p>Have one conversation this week where you ask five genuine questions before sharing your own opinion.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </div>
-</div>
 
-<div class="sheet" style="border-radius:0">
-
-  <!-- 03 MEETING -->
-  <section class="sec" id="meeting">
-    <div class="num" aria-hidden="true">03</div>
-    <div class="wrap">
-      <div class="kicker rv"><i></i><span class="eyebrow">What a meeting looks like</span></div>
-      <h2 class="h2 bloom">Not a lecture. <em>A practice room.</em></h2>
-      <p class="sub rv">You don't learn communication by hearing about it. You learn it by doing it, getting feedback, and doing it again. Here's an actual meeting, not a framework.</p>
-
-      <div class="meetingcard rv">
-        <div class="mc-tag">Meeting 5 &mdash; Active Listening</div>
-        <div class="mc-timeline">
-          <div class="mc-step">
-            <i class="mc-dot"></i>
-            <span class="mc-time">The idea &mdash; 10 min</span>
-            <p>There are three levels of listening. Almost everyone operates at level one &mdash; waiting for their turn to talk.</p>
-          </div>
-          <div class="mc-step">
-            <i class="mc-dot"></i>
-            <span class="mc-time">The practice &mdash; 25 min</span>
-            <p>You pair up. Your partner talks for three minutes about something that actually matters to them. You can't speak &mdash; not one word. Then you repeat back what they said, including what they didn't say out loud.</p>
-          </div>
-          <div class="mc-step">
-            <i class="mc-dot"></i>
-            <span class="mc-time">The challenge &mdash; this week</span>
-            <p>Have one conversation where you ask five questions and make zero statements about yourself.</p>
-          </div>
-        </div>
-        <p class="mc-reassure">You're never put on a stage. You're never called on cold. <b>Everything starts in pairs.</b></p>
-      </div>
-    </div>
-  </section>
-
-  <!-- 04 — horizontal rail -->
+  <!-- 04 THE CURRICULUM — horizontal rail -->
   <section class="rail" id="curriculum">
     <div class="rail-pin">
       <div class="rail-head">
-        <div class="kicker rv"><i></i><span class="eyebrow">The Curriculum</span></div>
-        <h2 class="h2 rv" style="max-width:20ch">Six phases. Thirty weeks. <em>It builds.</em></h2>
+        <div class="kicker rv"><i></i><span class="eyebrow">The curriculum</span></div>
+        <h2 class="h2 rv" style="max-width:20ch">Communication isn&rsquo;t <em>one skill.</em></h2>
+        <p class="sub rv">It&rsquo;s many small skills built over time. 30 weeks. Six phases. Each week builds on the last.</p>
       </div>
       <div class="rail-track" id="track">
-        <article class="card"><div class="ph">01</div><h4>Know yourself</h4><p>Notice what you do under pressure, listen with intent, and build steadier confidence.</p><div class="wk">Weeks 1—5</div></article>
-        <article class="card"><div class="ph">02</div><h4>Read the room</h4><p>Pick up on group dynamics, ask better questions, and make people feel included.</p><div class="wk">Weeks 6—10</div></article>
-        <article class="card"><div class="ph">03</div><h4>Say it clearly</h4><p>Turn an idea into a story, think on your feet, and speak so people can follow.</p><div class="wk">Weeks 11—15</div></article>
-        <article class="card"><div class="ph">04</div><h4>Handle the hard part</h4><p>Disagree with respect, negotiate for a better outcome, and work through conflict.</p><div class="wk">Weeks 16—20</div></article>
-        <article class="card"><div class="ph">05</div><h4>Show up as a leader</h4><p>Lead a conversation, make a first impression, and help a team move forward.</p><div class="wk">Weeks 21—25</div></article>
-        <article class="card"><div class="ph">06</div><h4>Put it together</h4><p>Use what you have practiced in a collaborative final challenge.</p><div class="wk">Weeks 26—30</div></article>
+        <article class="card"><div class="ph">01</div><h4>Know yourself</h4><p>Notice what you do under pressure and build steadier confidence.</p><div class="wk">Weeks 1—5</div></article>
+        <article class="card"><div class="ph">02</div><h4>Understand people</h4><p>Pick up on what a group needs and ask better questions.</p><div class="wk">Weeks 6—10</div></article>
+        <article class="card"><div class="ph">03</div><h4>Communicate clearly</h4><p>Turn an idea into words other people can follow.</p><div class="wk">Weeks 11—15</div></article>
+        <article class="card"><div class="ph">04</div><h4>Navigate disagreement</h4><p>Disagree with respect and work through conflict.</p><div class="wk">Weeks 16—20</div></article>
+        <article class="card"><div class="ph">05</div><h4>Lead conversations</h4><p>Start a conversation, guide it, and help a group decide.</p><div class="wk">Weeks 21—25</div></article>
+        <article class="card"><div class="ph">06</div><h4>Apply everything together</h4><p>Use everything you&rsquo;ve practiced in a final challenge.</p><div class="wk">Weeks 26—30</div></article>
       </div>
       <div class="rail-bar"><i id="railBar"></i></div>
     </div>
   </section>
 
-  <!-- stat band -->
-  <div class="statband rv" id="stats" aria-label="SICA by the numbers">
-    <div class="stat"><b data-count="30">30</b><span>Weeks of practice</span></div>
-    <div class="stat"><b data-count="6">6</b><span>Phases that build</span></div>
-    <div class="stat"><b data-count="8">8</b><span>Skills measured</span></div>
-  </div>
-
-  <!-- 04 WHERE IT SHOWS UP -->
-  <section class="sec" id="apps">
+  <!-- 04 SAME PERSON. MORE OPTIONS. -->
+  <section class="sec" id="options">
     <div class="num" aria-hidden="true">04</div>
     <div class="wrap">
-      <div class="kicker rv"><i></i><span class="eyebrow">Where it shows up</span></div>
-      <h2 class="h2 bloom">More than a skill for <em>the classroom.</em></h2>
-      <div class="editorial">
-        <p class="drop rv">The skills travel with you: to a new friend’s lunch table, an interview, a team meeting, a presentation, or the conversation you have been putting off.</p>
-        <p class="rv">You do not need to become a different person. You need more ways to express the person you already are—especially when you feel nervous, rushed, or out of place.</p>
-        <p class="turn rv">The goal is simple: leave with a set of habits you can use anywhere. <b>Not a line for a résumé. A change you can feel.</b></p>
+      <div class="kicker rv"><i></i><span class="eyebrow">Same person. More options.</span></div>
+      <h2 class="h2 bloom">It expands <em>your toolkit.</em></h2>
+      <p class="sub rv">SICA doesn&rsquo;t change your personality.</p>
+      <div class="shift rv" id="shift">
+        <div class="morph"><span class="morph-tag">Before</span><span class="morph-line"><span class="mf">&ldquo;I don&rsquo;t know what to say.&rdquo;</span><span class="mt">&ldquo;I know how to start.&rdquo;</span></span></div>
+        <div class="morph"><span class="morph-tag">Before</span><span class="morph-line"><span class="mf">&ldquo;I&rsquo;ll stay quiet.&rdquo;</span><span class="mt">&ldquo;I can explain my idea.&rdquo;</span></span></div>
+        <div class="morph"><span class="morph-tag">Before</span><span class="morph-line"><span class="mf">&ldquo;That was awkward.&rdquo;</span><span class="mt">&ldquo;I&rsquo;ve practiced this before.&rdquo;</span></span></div>
       </div>
     </div>
   </section>
 
-  <!-- 05 WHY SICA -->
-  <section class="sec" id="why">
+  <!-- 05 WHO BELONGS HERE — specific personas, so a visitor self-identifies -->
+  <section class="sec" id="who">
     <div class="num" aria-hidden="true">05</div>
     <div class="wrap">
-      <div class="kicker rv"><i></i><span class="eyebrow">Why SICA</span></div>
-      <h2 class="h2 bloom">Not another <em>speech club.</em></h2>
-      <div class="editorial">
-        <p class="drop rv">You will not spend meetings memorizing speeches or competing to sound the smartest. You will practice the conversations that happen before, after, and between the big moments.</p>
-        <p class="turn rv">That means room for the student who already loves the stage and the student who would rather begin in a pair. <b>Everyone gets repetitions.</b></p>
+      <div class="kicker rv"><i></i><span class="eyebrow">Who belongs here?</span></div>
+      <h2 class="h2 bloom">Every grade. Every personality. <em>Every starting point.</em></h2>
+      <div class="evts who-grid">
+        <article class="evt rv"><div class="ix">9th</div><h4>Freshmen making friends.</h4></article>
+        <article class="evt rv"><div class="ix">10th</div><h4>Sophomores finding confidence.</h4></article>
+        <article class="evt rv"><div class="ix">11th</div><h4>Juniors preparing for interviews.</h4></article>
+        <article class="evt rv"><div class="ix">12th</div><h4>Seniors getting ready for college and beyond.</h4></article>
       </div>
-      <p class="verdict-line bloom">It is a place to become more <b>clear, calm, and capable with people.</b></p>
+      <p class="verdict-line bloom">Whether you&rsquo;re naturally quiet or naturally outgoing, <b>there&rsquo;s room for you here.</b></p>
     </div>
   </section>
 
-  <!-- 06 THE COST -->
-  <section class="sec" id="cost">
+  <!-- 06 WHY THIS MATTERS — the legitimacy section: real, sourced numbers only -->
+  <section class="sec" id="why-this-matters">
     <div class="num" aria-hidden="true">06</div>
     <div class="wrap">
-      <div class="kicker rv"><i></i><span class="eyebrow">The cost of skipping this</span></div>
-      <h2 class="h2 bloom">It doesn't show up on a <em>report card.</em></h2>
-      <p class="short-note rv">The moments that shape your life rarely come with a study guide. <b>SICA gives you a place to rehearse them.</b></p>
-      <div class="editorial">
-        <p class="drop rv">Look at the founders and the dropouts who actually made it. It wasn't because their idea was the smartest one in the room — it was because they <b>connected with the right people</b>, built real networks, and carried a presence other people could actually feel.</p>
-        <p class="rv">Name any profession — doctor, engineer, founder, lawyer, athlete, executive. The pattern holds every time. SICA shows up in every single one.</p>
-        <p class="rv">Here's what nobody tells you: coasting through high school with good grades and zero communication practice doesn't catch up with you senior year.</p>
-        <blockquote class="pull rv">It catches up at <em>22</em> — across the table from someone who spent three years learning to read a room, while you spent <em>zero hours.</em></blockquote>
-        <p class="turn rv">The gap never shows on a report card. It shows up the first time it costs you something real: the internship, the offer, <b>the room where the decision about you gets made.</b></p>
+      <div class="kicker rv"><i></i><span class="eyebrow">Why this matters</span></div>
+      <h2 class="h2 bloom">Even in the fields <em>you&rsquo;d least expect.</em></h2>
+      <p class="sub rv">Grades matter. Technical skills matter. People skills matter too.</p>
+
+      <div class="evidence rv">
+        <div class="evidence-note">
+          Research on engineering careers found that up to <b>70% of career advancement</b> traced back to communication skills, not technical output.
+        </div>
+        <div class="evidence-cap">Across industries</div>
+        <div class="bar-row"><span class="bar-label">Problem-solving</span><span class="bar-track"><span class="bar-fill" style="--w:88%;--d:0ms"></span></span><span class="bar-val">~90%</span></div>
+        <div class="bar-row"><span class="bar-label">Teamwork</span><span class="bar-track"><span class="bar-fill" style="--w:78%;--d:130ms"></span></span><span class="bar-val">~80%</span></div>
+        <div class="bar-row dim"><span class="bar-label">GPA as a screen</span><span class="bar-track"><span class="bar-fill" style="--w:38%;--d:290ms"></span></span><span class="bar-val">&lt;40%</span></div>
+        <p class="evidence-src">Nearly 90% of employers screen for problem-solving and nearly 80% for teamwork &mdash; while reliance on GPA as a screening tool has fallen below 40% and keeps dropping. <em>Sources: NACE Job Outlook 2024&ndash;2025; research on engineering career advancement.</em></p>
       </div>
+
+      <p class="verdict-line bloom">These aren&rsquo;t just school skills. <b>They&rsquo;re the ones that actually decide outcomes.</b></p>
     </div>
   </section>
 
-  <!-- 07 EVENTS -->
-  <section class="sec" id="events">
-    <div class="num" aria-hidden="true">07</div>
-    <div class="wrap">
-      <div class="kicker rv"><i></i><span class="eyebrow">Ways we practice</span></div>
-      <h2 class="h2 bloom">The work should feel <em>real.</em></h2>
-      <div class="evts">
-        <article class="evt rv"><div class="ix">01</div><h4>Paired practice</h4><p>Try a new conversation skill with one person before using it in a bigger group.</p></article>
-        <article class="evt rv"><div class="ix">02</div><h4>Scenario rooms</h4><p>Work through familiar moments: an introduction, a disagreement, or a hard ask.</p></article>
-        <article class="evt rv"><div class="ix">03</div><h4>Small-group feedback</h4><p>Get specific, kind feedback while there is still time to try again.</p></article>
-        <article class="evt rv"><div class="ix">04</div><h4>Conversation labs</h4><p>Practice asking better questions and making a room feel easier to enter.</p></article>
-        <article class="evt rv"><div class="ix">05</div><h4>Team challenges</h4><p>Use a communication skill to solve something together, not just talk about it.</p></article>
-        <article class="evt rv"><div class="ix">06</div><h4>Reflection</h4><p>Notice what worked, what felt difficult, and one small thing to try next week.</p></article>
-      </div>
-    </div>
-  </section>
 
-  <!-- AUTHENTIC CLUB DOCUMENTATION: replace these frames with real images as available -->
-  <section class="sec" id="club-life">
-    <div class="wrap">
-      <div class="kicker rv"><i></i><span class="eyebrow">Club life</span></div>
-      <h2 class="h2 bloom">Built by students, <em>in the room.</em></h2>
-      <p class="sub rv">As SICA grows, this will become an honest record of the club: practice sessions, workshop notes, the officers who run them, and the people who make the room feel welcoming.</p>
-      <div class="club-archive rv" aria-label="Reserved spaces for authentic SICA photography">
-        <div class="archive-frame"><small>Future meeting photo</small><p>Workshop and discussion moments</p></div>
-        <div class="archive-stack"><div class="archive-frame"><small>Future officer portrait</small><p>The people behind SICA</p></div><div class="archive-frame"><small>Future classroom photo</small><p>Practice in progress</p></div></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 08 FOUNDING STORY -->
-  <section class="sec" id="founder">
-    <div class="num" aria-hidden="true">08</div>
-    <div class="wrap">
-      <div class="kicker rv"><i></i><span class="eyebrow">Founding story</span></div>
-      <h2 class="h2 bloom">I built a club that teaches you to be <em>listened to.</em></h2>
-      <p class="short-note rv">Grades can show what you know. They cannot show whether people understand you. <b>That is the gap SICA was built to practice.</b></p>
-      <div class="editorial">
-        <p class="drop rv">As Vice President of Codestarters, I watched it happen constantly — who got picked for leadership, who actually performed once they had it. Grades had <b>almost nothing to do with it.</b> It came down to communication: the ability to give your ideas real weight, to influence a room instead of getting talked over.</p>
-        <blockquote class="pull rv">So I built a club that teaches you to be <em>listened to.</em> Not just heard.</blockquote>
-        <p class="rv">The kind of presence where every time you speak, people think, &ldquo;This person can actually get things done.&rdquo;</p>
-        <p class="turn rv">That's the power I want <b>every SICA student</b> to have.</p>
-        <div class="sig-wrap rv">
-          <svg class="sig-draw" id="sig" viewBox="0 0 320 110" aria-hidden="true">
-            <text class="sig-text" x="4" y="66">Reyansh N.</text>
-            <path class="sig-underline" d="M 8 84 C 70 96, 190 94, 272 78 C 288 75, 291 82, 280 83"/>
-          </svg>
-          <div class="by">Founder &middot; SICA</div>
+  <!-- ─────────── SIGNATURE MOMENT: the conversation ───────────
+       The whole point of the club, told as one thread that gains
+       confidence. Bubbles accumulate on scroll and the stack rides
+       upward, so it reads as a chat you are scrolling through. -->
+  <section class="convo" id="convo">
+    <div class="convo-pin">
+      <p class="convo-lead">One member, thirty weeks</p>
+      <div class="convo-vp">
+        <div class="convo-stack" id="convoStack">
+          <div class="bub bub-them typing"><i></i><i></i><i></i></div>
+          <div class="bub bub-them">I don&rsquo;t know what to say.</div>
+          <div class="bub bub-us">Practice.</div>
+          <div class="bub bub-them">That was awkward.</div>
+          <div class="bub bub-us">Try again.</div>
+          <div class="bub bub-them">I know how to start.</div>
+          <div class="bub bub-them strong">I&rsquo;ve practiced this before.</div>
+          <div class="bub bub-final">Welcome to SICA.</div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- JOIN (unnumbered — the ask, not a numbered argument) -->
+  <!-- COME VISIT (unnumbered — the ask, not a numbered argument) -->
   <section class="sec" id="join">
     <div class="wrap">
       <div class="join rv">
-        <div class="kicker" style="color:var(--brass-lit)"><i></i><span class="eyebrow">Join</span></div>
-        <h2 class="h2">The people who change rooms <em>weren't born knowing how.</em></h2>
-        <p class="sub">They learned it. So can you. Meetings are open to every grade, and you do not need any experience to begin.</p>
-        <div class="acts"><a class="btn btn--solid" style="background:var(--brass-lit);color:var(--ink)" href="mailto:thesicaorg@gmail.com?subject=I%20want%20to%20join%20SICA"><span>Ask about the next meeting</span><i class="dot"></i></a></div>
+        <div class="kicker" style="color:var(--brass-lit)"><i></i><span class="eyebrow">Come visit</span></div>
+        <h2 class="h2">Come once. <em>See what a meeting feels like.</em></h2>
+        <p class="sub">Meet people. Try a challenge. Leave with one conversation you&rsquo;ll handle better than you would have last week.</p>
+        <p class="join-note">No preparation. No pressure. <b>Just practice.</b></p>
+        <div class="acts"><a class="btn btn--gold" href="mailto:thesicaorg@gmail.com?subject=Joining%20the%20next%20SICA%20meeting"><span>Join the Next Meeting</span><i class="dot"></i></a></div>
       </div>
     </div>
   </section>
@@ -1023,11 +1183,12 @@ html.js .rv.in{opacity:1;transform:none}
       <div class="kicker rv"><i></i><span class="eyebrow">Questions</span></div>
       <h2 class="h2 rv">Before you <em>come by.</em></h2>
       <div class="faq rv" id="faqList">
-        <div class="q"><button type="button">I’m shy. Is this for me?<i class="sign"></i></button><div class="ans"><div><p>Yes. You do not have to arrive confident. Activities begin in pairs and small groups, so you can build comfort without being put on the spot.</p></div></div></div>
-        <div class="q"><button type="button">What actually happens at a meeting?<i class="sign"></i></button><div class="ans"><div><p>Expect a short idea, a chance to practice it, useful feedback, and a small challenge to try in real life.</p></div></div></div>
-        <div class="q"><button type="button">Will I have to give speeches?<i class="sign"></i></button><div class="ans"><div><p>You will practice speaking over time, but this is not a speech club. The focus is everyday communication, and you will not be called on cold.</p></div></div></div>
-        <div class="q"><button type="button">Do I need experience?<i class="sign"></i></button><div class="ans"><div><p>No. Curiosity is enough. The point is to get repetitions in a supportive room.</p></div></div></div>
-        <div class="q"><button type="button">How can I find the next meeting?<i class="sign"></i></button><div class="ans"><div><p>Email thesicaorg@gmail.com and the team will share the current meeting details.</p></div></div></div>
+        <div class="q"><button type="button">I&rsquo;m shy. Is this for me?<i class="sign"></i></button><div class="ans"><div><p>Many members are. You can participate at your own pace.</p></div></div></div>
+        <div class="q"><button type="button">Do I have to give speeches?<i class="sign"></i></button><div class="ans"><div><p>No. Most activities begin in pairs or small groups.</p></div></div></div>
+        <div class="q"><button type="button">Is this debate?<i class="sign"></i></button><div class="ans"><div><p>No. The goal isn&rsquo;t winning arguments. It&rsquo;s becoming better at working with people.</p></div></div></div>
+        <div class="q"><button type="button">Do I need experience?<i class="sign"></i></button><div class="ans"><div><p>None. Everyone starts somewhere.</p></div></div></div>
+        <div class="q"><button type="button">What grade can join?<i class="sign"></i></button><div class="ans"><div><p>Any grade. Every skill level. Beginner to advanced.</p></div></div></div>
+        <div class="q"><button type="button">How do I join?<i class="sign"></i></button><div class="ans"><div><p>Come to a meeting. That&rsquo;s all.</p></div></div></div>
       </div>
     </div>
   </section>
@@ -1037,24 +1198,42 @@ html.js .rv.in{opacity:1;transform:none}
 <footer class="foot">
   <div class="wrap">
     <div class="foot-grid">
-      <p class="tag">The skills schools don't teach.</p>
+      <p class="tag">The conversations you practice today become the opportunities you earn tomorrow.</p>
       <nav>
-        <a href="#mission">Mission</a>
+        <a href="#what-is">About</a>
+        <a href="#meeting">Meetings</a>
         <a href="#curriculum">Curriculum</a>
-        <a href="#events">Events</a>
-        <a href="#founder">Founding</a>
-        <a href="#join">Join</a>
+        <a href="#why-this-matters">Why it matters</a>
+        <a href="#join">Visit</a>
+        <button type="button" class="foot-officers" id="officerBtnFoot">Officers</button>
       </nav>
     </div>
   </div>
   <div class="foot-mark" aria-hidden="true">SICA</div>
   <div class="wrap">
     <div class="foot-base">
-      <span>Cupertino High School · <a href="mailto:thesicaorg@gmail.com">thesicaorg@gmail.com</a></span>
-      <span>© 2026 Student Influence &amp; Communication Association</span>
+      <span>Student Influence &amp; Communication Association · Cupertino High School</span>
+      <span><a href="mailto:thesicaorg@gmail.com">thesicaorg@gmail.com</a></span>
     </div>
   </div>
 </footer>
+
+<!-- Officer gate. A latch on the front door, not a lock: the code lives in
+     this file, so treat it as "keep the workspace out of casual reach". -->
+<div class="gate" id="gate" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
+  <div class="gate-card">
+    <h3 id="gateTitle">Officer access</h3>
+    <p>The SICA workspace is for officers. Enter the current access code.</p>
+    <form id="gateForm">
+      <input id="gateCode" type="password" inputmode="text" autocomplete="off" placeholder="ACCESS CODE" aria-label="Access code">
+      <div class="err" id="gateErr" role="alert"></div>
+      <div class="row">
+        <button type="button" class="cancel" id="gateCancel">Cancel</button>
+        <button type="submit" class="btn btn--gold"><span>Enter</span><i class="dot"></i></button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <script>
 (function(){
@@ -1063,60 +1242,308 @@ html.js .rv.in{opacity:1;transform:none}
   var $ = function(id){ return document.getElementById(id); };
 
   /* ─── hero entrance ──────────────────────────────────────
-     Plain timers, never rAF: rAF is suspended in a background
-     tab, which would leave the hero permanently blank.       */
-  var word = $('word'), rule = $('rule'), hero = $('hero');
+     One gesture — up 20px and in — on every hero element, staggered 200ms
+     apart in document order. Plain timers, never rAF: rAF is suspended in a
+     background tab, which would leave the hero permanently blank. */
+  var rule = $('rule'), hero = $('hero'), word = $('word');
   var ruleFill = $('ruleFill'), ruleSpark = $('ruleSpark');
-  var masks = ['m1','m2','m3'].map($);
-  var done = false;
+  var heroR = [].slice.call(document.querySelectorAll('.hero-r'));
 
-  /* Commit the drawn width inline before switching animations, same reason as
-     the wordmark's lockWordmark(): once 'shine' replaces 'draw' on .fill, the
-     draw animation's forwards-held width stops applying, and without this the
-     bar would snap back to its base (collapsed) width right as the shine starts. */
-  function lockRule(){
-    ruleFill.style.width = '100%';
-  }
+  /* Commit the drawn width inline before swapping animations: once .shine
+     replaces .draw on the fill, the draw animation's forwards-held width
+     stops applying, and the bar would snap back to zero just as the shine
+     starts travelling it. */
+  function lockRule(){ ruleFill.style.width = '100%'; }
 
-  /* .rake keeps the gradient on the letters after the sweep so the white shine
-     lingers on the wordmark — that resting glow is intentional and stays. */
   function land(){
-    done = true;
-    word.classList.add('in', 'rake');
+    heroR.forEach(function(el, i){
+      el.style.transitionDelay = (reduced ? 0 : i * 200) + 'ms';
+      el.classList.add('in');
+    });
     rule.classList.add('in');
-    lockRule();
-    rule.classList.add('shine');
-    ruleSpark.classList.add('burst');
-    masks.forEach(function(m){ m.classList.add('in'); });
-    hero.classList.add('lit');
+  }
+  setTimeout(land, reduced ? 0 : 140);
+
+  /* One light: it rakes across the letters once they've settled, then travels
+     the rule beneath them and twinkles off its end. Never under reduced
+     motion — .rake makes the glyphs transparent, so a suppressed animation
+     there would leave the wordmark invisible rather than merely still. */
+  if (!reduced){
+    setTimeout(function(){ word.classList.add('rake'); }, 900);
+    /* the rule finishes drawing at ~1240ms (140 + 1100) — the light picks it
+       up from there, and the star fires the moment it reaches the end */
+    setTimeout(function(){ lockRule(); rule.classList.add('shine'); }, 1400);
+    setTimeout(function(){ ruleSpark.classList.add('burst'); }, 3000);
   }
 
-  if (reduced) {
-    land();
-  } else {
-    setTimeout(function(){ word.classList.add('in', 'rake'); }, 120);
-    setTimeout(function(){ rule.classList.add('in'); }, 900);
-    setTimeout(function(){ masks[0].classList.add('in'); }, 1150);
-    setTimeout(function(){ masks[1].classList.add('in'); }, 1270);
-    setTimeout(function(){ masks[2].classList.add('in'); }, 1390);
-    setTimeout(function(){ hero.classList.add('lit'); }, 1600);
-    /* the line has reached its endpoint (900ms start + 1100ms draw) — now run
-       the exact same shine as SICA along it */
-    setTimeout(function(){ lockRule(); rule.classList.add('shine'); }, 2000);
-    /* the shine arrives at the end (2000ms + 1600ms travel) — twinkle */
-    setTimeout(function(){ ruleSpark.classList.add('burst'); }, 3600);
-    setTimeout(function(){ if (!done) land(); }, 5200);   // watchdog
+  /* ─── global smooth scroll ───────────────────────────────
+     Lenis-style: this drives the *real* scroll position rather than
+     transforming a wrapper, so position:sticky (the pinned section below),
+     IntersectionObserver and anchor links all keep working — a transform
+     scroller would silently break every one of them.
+
+     Pointer-fine devices only. Touch already has momentum scrolling that
+     feels better than anything we'd lerp, and hijacking it there is how
+     smooth-scroll libraries earn their bad reputation. */
+  var smoothOn = !reduced && matchMedia('(hover:hover) and (pointer:fine)').matches;
+  var sTarget = 0, sCurrent = 0;
+
+  function maxScroll(){
+    return Math.max(0, document.documentElement.scrollHeight - innerHeight);
   }
 
-  /* ─── cursor rake light ──────────────────────────────── */
-  if (matchMedia('(hover:hover)').matches){
-    hero.addEventListener('mousemove', function(e){
-      hero.style.setProperty('--mx', e.clientX + 'px');
-      hero.style.setProperty('--my', e.clientY + 'px');
+  if (smoothOn){
+    /* CSS smooth scrolling would animate every scrollTo we make below,
+       double-smoothing the lerp into mush. We own the easing now. */
+    document.documentElement.style.scrollBehavior = 'auto';
+    sTarget = sCurrent = scrollY;
+
+    addEventListener('wheel', function(e){
+      if (e.ctrlKey) return;                       // leave pinch-zoom alone
+      e.preventDefault();
+      var d = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? innerHeight : 1);
+      sTarget = Math.max(0, Math.min(sTarget + d, maxScroll()));
+    }, {passive:false});
+
+    /* Anything that moved the page without us — keyboard, scrollbar drag,
+       find-in-page — lands far from where we think we are. Resync instead of
+       fighting it. Our own scrollTo lands within a pixel, so it never trips. */
+    addEventListener('scroll', function(){
+      if (Math.abs(scrollY - sCurrent) > 3) sTarget = sCurrent = scrollY;
+    }, {passive:true});
+
+    addEventListener('resize', function(){
+      sTarget = Math.min(sTarget, maxScroll());
+    });
+  }
+
+  function stepSmooth(){
+    if (!smoothOn) return;
+    var d = sTarget - sCurrent;
+    if (Math.abs(d) < 0.5){ sCurrent = sTarget; return; }
+    sCurrent += d * 0.12;
+    scrollTo(0, sCurrent);
+  }
+
+  /* In-page links ride the same easing, so the CTA and the footer nav feel
+     like the wheel rather than like a jump. */
+  document.querySelectorAll('a[href^="#"]').forEach(function(a){
+    a.addEventListener('click', function(e){
+      var id = a.getAttribute('href');
+      if (id === '#') return;
+      var t = document.querySelector(id);
+      if (!t) return;
+      e.preventDefault();
+      var y = Math.max(0, Math.min(t.getBoundingClientRect().top + scrollY, maxScroll()));
+      if (smoothOn) sTarget = y;
+      else scrollTo({top:y, behavior: reduced ? 'auto' : 'smooth'});
+      if (history.replaceState) history.replaceState(null, '', id);
+    });
+  });
+
+  var morphFallbacks = [];
+  function clamp01(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
+  function ease(x){ x = clamp01(x); return x * x * (3 - 2 * x); }
+
+  /* ─── before → after: dissolve and reassemble ────────────
+     Each line is split into per-character boxes so the sentence can come
+     apart letter by letter instead of cross-fading as one block. Runs
+     once per row when the row reaches the middle of the screen. */
+  function splitChars(el){
+    var t = el.textContent, frag = document.createDocumentFragment();
+    for (var i = 0; i < t.length; i++){
+      var c = document.createElement('i');
+      c.textContent = t[i];
+      frag.appendChild(c);
+    }
+    el.textContent = '';
+    el.appendChild(frag);
+    return [].slice.call(el.children);
+  }
+
+  [].slice.call(document.querySelectorAll('.morph')).forEach(function(row, ri){
+    var from = row.querySelector('.mf'), to = row.querySelector('.mt');
+    var tag = row.querySelector('.morph-tag');
+    if (!from || !to) return;
+    var a = splitChars(from), b = splitChars(to);
+
+    if (reduced){
+      a.forEach(function(c){ c.style.opacity = 0; });
+      b.forEach(function(c){ c.style.opacity = 1; });
+      tag.textContent = 'After'; row.classList.add('done');
+      return;
+    }
+
+    var played = false;
+    function play(){
+      if (played) return;
+      played = true;
+      /* letters leave from the end back to the start, so the sentence
+         visibly unravels rather than dimming uniformly */
+      a.forEach(function(c, i){
+        var d = (a.length - i) * 13;
+        c.style.transition = 'opacity .5s ease ' + d + 'ms, transform .6s cubic-bezier(.4,0,.2,1) ' + d + 'ms';
+        c.style.opacity = 0;
+        c.style.transform = 'translateY(-9px) rotate(' + ((i % 2 ? -1 : 1) * 7) + 'deg)';
+      });
+      var lead = a.length * 13 + 260;
+      b.forEach(function(c, i){
+        var d = lead + i * 17;
+        c.style.transition = 'opacity .55s ease ' + d + 'ms, transform .7s cubic-bezier(.16,1,.3,1) ' + d + 'ms';
+        c.style.transform = 'translateY(8px)';
+        requestAnimationFrame(function(){
+          c.style.opacity = 1; c.style.transform = 'none';
+        });
+      });
+      setTimeout(function(){ tag.textContent = 'After'; row.classList.add('done'); }, lead + 120);
+    }
+
+    var mo = new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if (e.isIntersecting){ setTimeout(play, ri * 220); mo.disconnect(); }
+      });
+    }, {threshold:0.6});
+    mo.observe(row);
+    morphFallbacks.push(function(){ if (row.getBoundingClientRect().top < innerHeight * 0.7) play(); });
+  });
+
+  /* ─── the conversation ───────────────────────────────────
+     Bubbles arrive one at a time on scroll and the stack rides upward so
+     the newest line stays centred in its window — a chat being scrolled,
+     not a list fading in. */
+  var convo = $('convo'), convoStack = $('convoStack');
+  var bubs = convo ? [].slice.call(convoStack.children) : [];
+  var convoLead = convo ? convo.querySelector('.convo-lead') : null;
+  if (convo && reduced) convo.classList.add('is-static');
+
+  function updateConvo(){
+    if (!convo || convo.classList.contains('is-static')) return;
+    var r = convo.getBoundingClientRect(), vh = innerHeight;
+    var travel = convo.offsetHeight - vh;
+    var p = travel > 0 ? clamp01(-r.top / travel) : 0;
+    var entering = ease(clamp01((vh - r.top) / vh));
+    if (convoLead) convoLead.style.opacity = entering.toFixed(3);
+
+    /* hold the last beat on screen for the final stretch of the pin */
+    var span = 0.86, step = span / bubs.length;
+    var shown = 0, offset = 0;
+    var vp = convoStack.parentNode.clientHeight;
+
+    bubs.forEach(function(b, i){
+      var t = ease((p - i * step) / (step * 0.62));
+      b.style.opacity = t.toFixed(3);
+      b.style.transform = 'translate3d(0,' + (14 * (1 - t)).toFixed(1) + 'px,0)';
+      if (t > 0.5) shown = i;
+    });
+
+    /* centre the newest visible bubble inside the window */
+    for (var i = 0; i <= shown; i++) offset += bubs[i].offsetHeight + 14;
+    var last = bubs[shown].offsetHeight;
+    var want = Math.max(0, offset - last - (vp / 2) + last / 2);
+    convoStack.style.transform = 'translate3d(0,' + (-want).toFixed(1) + 'px,0)';
+  }
+
+  /* ─── meeting demo: each stage lights as it nears the middle ───── */
+  var demoStages = [].slice.call(document.querySelectorAll('.demo-stage'));
+  function updateDemo(){
+    if (!demoStages.length) return;
+    var mid = innerHeight / 2;
+    demoStages.forEach(function(s){
+      var r = s.getBoundingClientRect();
+      if (r.bottom < 0 || r.top > innerHeight){ s.style.setProperty('--lit', 0); return; }
+      var d = Math.abs((r.top + r.height / 2) - mid) / (innerHeight * 0.5);
+      s.style.setProperty('--lit', (1 - clamp01(d)).toFixed(3));
+    });
+  }
+
+  /* ─── who belongs here: whichever card is nearest the middle of the
+     screen holds full contrast, the rest sit back ─────────────────── */
+  var whoCards = [].slice.call(document.querySelectorAll('.who-grid .evt'));
+  function updateWho(){
+    if (!whoCards.length || reduced) return;
+    var mid = innerHeight / 2;
+    whoCards.forEach(function(c){
+      var r = c.getBoundingClientRect();
+      if (r.bottom < 0 || r.top > innerHeight){ c.style.setProperty('--stage', 0); return; }
+      var d = Math.abs((r.top + r.height / 2) - mid) / (innerHeight * 0.55);
+      c.style.setProperty('--stage', (1 - clamp01(d)).toFixed(3));
+    });
+  }
+
+  /* ─── numbers count up as their bar grows ────────────────
+     The HTML ships the final figures, so with no JS the correct numbers
+     are already on screen; we only reset to zero when about to animate. */
+  var evidence = document.querySelector('.evidence');
+  if (evidence && !reduced){
+    var eio = new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if (!e.isIntersecting) return;
+        eio.disconnect();
+        evidence.querySelectorAll('.bar-val').forEach(function(el, i){
+          var raw = el.textContent, target = parseInt(raw.replace(/\D/g, ''), 10);
+          if (!target) return;
+          var pre = raw.slice(0, raw.search(/\d/)), post = raw.slice(raw.search(/\d/) + String(target).length);
+          var dur = 1200, t0 = null, delay = i * 130;
+          el.textContent = pre + '0' + post;
+          setTimeout(function(){
+            function tick(now){
+              if (t0 === null) t0 = now;
+              var q = Math.min((now - t0) / dur, 1);
+              el.textContent = pre + Math.round((1 - Math.pow(1 - q, 3)) * target) + post;
+              if (q < 1) requestAnimationFrame(tick);
+            }
+            requestAnimationFrame(tick);
+            setTimeout(function(){ el.textContent = raw; }, dur + 800);  // watchdog
+          }, delay);
+        });
+      });
+    }, {threshold:0.4});
+    eio.observe(evidence);
+  }
+
+  /* ─── officer passcode gate ──────────────────────────────
+     A front-door latch, not security: the code sits in this file, so it
+     keeps the workspace out of casual reach and nothing more. Anything
+     genuinely private belongs behind a real login. */
+  var gate = $('gate');
+  if (gate){
+    var gateInput = $('gateCode'), gateErr = $('gateErr'), lastFocus = null;
+    function openGate(){
+      lastFocus = document.activeElement;
+      gate.classList.add('open');
+      gate.setAttribute('aria-hidden', 'false');
+      gateErr.textContent = '';
+      setTimeout(function(){ gateInput.focus(); }, 60);
+    }
+    function closeGate(){
+      gate.classList.remove('open');
+      gate.setAttribute('aria-hidden', 'true');
+      gateInput.value = '';
+      if (lastFocus) lastFocus.focus();
+    }
+    ['officerBtn','officerBtnFoot'].forEach(function(id){
+      var b = $(id);
+      if (b) b.addEventListener('click', openGate);
+    });
+    $('gateCancel').addEventListener('click', closeGate);
+    gate.addEventListener('click', function(e){ if (e.target === gate) closeGate(); });
+    addEventListener('keydown', function(e){ if (e.key === 'Escape' && gate.classList.contains('open')) closeGate(); });
+    $('gateForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      if (gateInput.value.trim().toUpperCase() === 'SICA2026'){
+        gateErr.textContent = '';
+        try { sessionStorage.setItem('sica-officer', '1'); } catch(err){}
+        location.href = 'officers.html';
+      } else {
+        gateErr.textContent = 'That code is not right. Ask Reyansh for the current one.';
+        gateInput.value = '';
+        gateInput.focus();
+      }
     });
   }
 
   /* ─── magnetic buttons ───────────────────────────────── */
+
   if (matchMedia('(hover:hover)').matches){
     document.querySelectorAll('.btn').forEach(function(b){
       b.addEventListener('mousemove', function(e){
@@ -1171,7 +1598,87 @@ html.js .rv.in{opacity:1;transform:none}
   }
   drive();
 
-  /* ─── reveals + ink bloom: once, then rest ───────────── */
+  /* ─── SIGNATURE MOMENT: the pinned "Have you ever…" ──────
+     Everything here is a pure function of scroll position — no timers, no
+     autoplay. Scroll up and the statements walk backwards, which is the
+     whole point: the reader is driving, and it should feel like it.
+
+     The section is 2.5 screens tall and the stage inside it is sticky, so
+     the browser does the pinning natively; we only paint the crossfade. */
+  var hye = $('have-you-ever');
+  var hyeLines = hye ? [].slice.call(hye.querySelectorAll('.hye-line')) : [];
+  var hyeLead  = hye ? hye.querySelector('.hye-lead') : null;
+  var hyeFinal = hye ? hye.querySelector('.hye-final') : null;
+
+  /* Windows overlap by exactly FADE, so statement i's exit *is* statement
+     i+1's entrance — one crossfade, never a blink through an empty stage. */
+  var STEP = 0.175,       // scroll distance between entrances
+      FADE = 0.06,        // length of every crossfade
+      FINAL_AT = 0.70,    // the last statement hands off to the release here
+      DRIFT = 20;         // px each statement travels while fading
+
+  if (hye && reduced) hye.classList.add('is-static');
+
+  function paint(el, o, y){
+    el.style.opacity = o.toFixed(3);
+    el.style.transform = 'translate3d(0,' + y.toFixed(1) + 'px,0)';
+  }
+
+  function updateHye(){
+    if (!hye || hye.classList.contains('is-static')) return;
+
+    var r = hye.getBoundingClientRect(), vh = innerHeight;
+    var travel = hye.offsetHeight - vh;
+    var p = travel > 0 ? clamp01(-r.top / travel) : 0;
+
+    /* The stage is sticky, so it rides up into view *before* the pin engages.
+       Statement one fades in on that approach — otherwise the reader watches
+       a blank screen scroll past for a full viewport. */
+    var entering = ease(clamp01((vh - r.top) / vh));
+
+    if (hyeLead){
+      hyeLead.style.opacity = (entering * (1 - ease((p - 0.60) / 0.10))).toFixed(3);
+    }
+
+    hyeLines.forEach(function(el, i){
+      var a = i * STEP;
+      if (i > 0 && p < a){ paint(el, 0, DRIFT); return; }
+      if (p > a + STEP + FADE){ paint(el, 0, -DRIFT); return; }
+      /* the first statement rides in on the approach, not on pin progress */
+      var into = i === 0 ? entering : ease((p - a) / FADE);
+      var out  = ease((p - (a + STEP)) / FADE);
+      paint(el, into * (1 - out), DRIFT * (1 - into) - DRIFT * out);
+    });
+
+    if (hyeFinal){
+      var tf = ease((p - FINAL_AT) / FADE);   // crossfades with the last exit
+      paint(hyeFinal, tf, 26 * (1 - tf));
+    }
+  }
+
+  /* One rAF loop drives the lerp and every scroll-linked paint, so they can
+     never disagree about where the page is. Cheap when nothing moves. */
+  var lastY = -1, lastH = -1;
+  function frame(){
+    stepSmooth();
+    var y = scrollY, h = document.documentElement.scrollHeight;
+    if (y !== lastY || h !== lastH){
+      lastY = y; lastH = h;
+      updateHye();
+      updateConvo();
+      updateDemo();
+      updateWho();
+      drive();
+    }
+    requestAnimationFrame(frame);
+  }
+  updateHye();
+  updateConvo();
+  updateDemo();
+  updateWho();
+  requestAnimationFrame(frame);
+
+  /* ─── reveals: once, then rest ───────────────────────── */
   var io = new IntersectionObserver(function(es){
     es.forEach(function(e){
       if (!e.isIntersecting) return;
@@ -1192,36 +1699,8 @@ html.js .rv.in{opacity:1;transform:none}
     document.querySelectorAll('.rv:not(.in), .bloom:not(.in)').forEach(function(el){
       if (el.getBoundingClientRect().top < innerHeight * 1.25) el.classList.add('in');
     });
+    morphFallbacks.forEach(function(fn){ fn(); });
   }, 2600);
-
-  /* ─── count-up stats ─────────────────────────────────────
-     The HTML ships the final numbers, so with no JS (or reduced
-     motion) the correct figures are already on screen. We reset
-     to zero only when we're about to animate, and a watchdog
-     restores the targets if rAF is suspended (background tab). */
-  var statband = $('stats');
-  if (statband && !reduced){
-    var sio = new IntersectionObserver(function(es){
-      es.forEach(function(e){
-        if (!e.isIntersecting) return;
-        sio.unobserve(statband);
-        statband.querySelectorAll('b[data-count]').forEach(function(b){
-          var target = parseInt(b.getAttribute('data-count'), 10) || 0;
-          var dur = 1500, t0 = null;
-          b.textContent = '0';
-          function tick(now){
-            if (t0 === null) t0 = now;
-            var p = Math.min((now - t0) / dur, 1);
-            b.textContent = Math.round((1 - Math.pow(1 - p, 3)) * target);
-            if (p < 1) requestAnimationFrame(tick);
-          }
-          requestAnimationFrame(tick);
-          setTimeout(function(){ b.textContent = target; }, dur + 900); // watchdog
-        });
-      });
-    }, {threshold:0.45});
-    sio.observe(statband);
-  }
 
   /* ─── signature draw ─────────────────────────────────── */
   var sig = $('sig');
