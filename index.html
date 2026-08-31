@@ -153,22 +153,27 @@ html.js .rule.shine .fill{animation:ruleShine 1600ms cubic-bezier(.5,0,.2,1) for
 
 /* the twinkle waiting at the line's end — fires once the shine arrives */
 .spark{
-  position:absolute;top:50%;right:-2px;width:14px;height:14px;margin:-7px -7px 0 0;
+  position:absolute;top:50%;right:-3px;width:20px;height:20px;margin:-10px -10px 0 0;
   pointer-events:none;
 }
 html.js .spark{opacity:0}
-.spark.burst{opacity:1}
+/* must out-specify `html.js .spark` above (0,2,1) or the twinkle never
+   becomes visible — the burst class alone loses the cascade */
+html.js .spark.burst{opacity:1}
 .spark-core{
   position:absolute;inset:0;background:#FFFFFF;
   clip-path:polygon(50% 0%,58.5% 41.5%,100% 50%,58.5% 58.5%,50% 100%,41.5% 58.5%,0% 50%,41.5% 41.5%);
   filter:drop-shadow(0 0 6px rgba(255,255,255,.85));
   transform:scale(.3);
 }
-.spark.burst .spark-core{animation:sparkBurst 900ms cubic-bezier(.16,1,.3,1) forwards}
+.spark.burst .spark-core{animation:sparkBurst 1500ms cubic-bezier(.16,1,.3,1) forwards}
 @keyframes sparkBurst{
-  0%{transform:scale(.3);filter:drop-shadow(0 0 6px rgba(255,255,255,.85)) brightness(1)}
-  30%{transform:scale(2.2);filter:drop-shadow(0 0 20px rgba(255,255,255,1)) brightness(2.4)}
-  100%{transform:scale(1);filter:drop-shadow(0 0 10px rgba(201,163,79,.85)) brightness(1.15)}
+  0%{transform:scale(.2) rotate(-25deg);opacity:0;filter:drop-shadow(0 0 6px rgba(255,255,255,.9)) brightness(1)}
+  18%{opacity:1}
+  32%{transform:scale(2.6) rotate(0deg);filter:drop-shadow(0 0 26px rgba(255,255,255,1)) brightness(2.6)}
+  55%{transform:scale(.85) rotate(8deg);filter:drop-shadow(0 0 12px rgba(255,244,214,.95)) brightness(1.5)}
+  72%{transform:scale(1.35) rotate(4deg);filter:drop-shadow(0 0 18px rgba(255,255,255,.95)) brightness(2)}
+  100%{transform:scale(1) rotate(0deg);opacity:1;filter:drop-shadow(0 0 12px rgba(201,163,79,.9)) brightness(1.2)}
 }
 /* ─── hero foot ──────────────────────────────────────────── */
 .hero-foot{
@@ -213,13 +218,11 @@ html.js .hero-arrow.in svg{animation:nudge 3s cubic-bezier(.4,0,.2,1) 2.4s infin
 
 /* ─── buttons ────────────────────────────────────────────── */
 .btn{
-  --bx:0px;--by:0px;
   display:inline-flex;align-items:center;gap:.7em;
   font-family:var(--ui);font-size:12px;font-weight:500;letter-spacing:.06em;
   padding:13px 24px;border-radius:6px;border:1px solid transparent;cursor:pointer;
   white-space:nowrap;position:relative;overflow:hidden;
-  transform:translate(var(--bx),var(--by));
-  transition:transform .45s cubic-bezier(.16,1,.3,1),background .4s ease,color .4s ease,border-color .4s ease;
+  transition:background .4s ease,color .4s ease,border-color .4s ease;
 }
 .btn span{position:relative;z-index:1}
 .btn .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.55;position:relative;z-index:1}
@@ -335,8 +338,24 @@ html.js .hero-arrow.in svg{animation:nudge 3s cubic-bezier(.4,0,.2,1) 2.4s infin
   content:'';position:absolute;right:-72px;bottom:-72px;width:184px;height:184px;
   border:1px solid rgba(201,163,79,.2);border-radius:50%;
 }
-/* a real photo fills the frame and covers the placeholder beneath it */
-.portrait-frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2}
+/* The photo carries the site's own treatment rather than sitting in it as
+   a raw snapshot: desaturated to the page's neutral, contrast lifted so it
+   holds against near-black, and warmed very slightly back toward brass so
+   it reads as part of the palette instead of a grey cut-out. */
+.portrait-frame img{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  object-position:70% 28%;      /* crop: keeps the face off-centre-right */
+  z-index:2;
+  filter:grayscale(1) contrast(1.12) brightness(.94);
+}
+.portrait-frame::before{
+  content:'';position:absolute;inset:0;z-index:3;pointer-events:none;
+  background:linear-gradient(160deg,rgba(201,163,79,.16),transparent 55%),
+             linear-gradient(0deg,rgba(10,9,9,.55),transparent 45%);
+  mix-blend-mode:normal;
+}
+/* nothing to tint if the photo has not been added yet */
+.portrait-frame.no-photo::before{display:none}
 .portrait-tag{
   position:relative;z-index:1;font-size:10px;font-weight:600;
   letter-spacing:.16em;text-transform:uppercase;color:var(--brass-lit);
@@ -482,7 +501,7 @@ html.js .sig-draw.in .sig-underline{animation:sign 700ms cubic-bezier(.5,0,.3,1)
   background:linear-gradient(90deg,var(--brass),var(--brass-lit));
   /* --d staggers each bar so they race left-to-right, GPA landing last and
      shortest — the punchline lands on its own without copy pointing at it */
-  transition:width 1.2s cubic-bezier(.16,1,.3,1);
+  transition:width 2.6s cubic-bezier(.06,.82,.14,1);
   transition-delay:var(--d,0ms);
 }
 html.js .evidence.in .bar-fill{width:var(--w,0)}
@@ -956,12 +975,14 @@ html:not(.js) .demo-stage{--lit:1}
 
         <!-- Portrait slot. Drop the real photo in as <img src="..." alt="..."> and
              delete the two placeholder children; the frame already crops it. -->
+        <!-- Drop the photo in at founder.jpg and it fills the frame.
+             Until the file exists the browser hides the broken image and
+             the empty frame reads as intentional. -->
         <figure class="portrait rv">
           <div class="portrait-frame">
-            <span class="portrait-tag">Founder</span>
-            <p>Reyansh Nankani</p>
+            <img src="founder.jpg" alt="Reyansh Nankani" loading="lazy"
+                 onerror="this.style.display='none';this.parentNode.classList.add('no-photo')">
           </div>
-          <figcaption>Reyansh N. &middot; Cupertino High School</figcaption>
         </figure>
       </div>
     </div>
@@ -1386,16 +1407,18 @@ html:not(.js) .demo-stage{--lit:1}
         c.style.opacity = 0;
         c.style.transform = 'translateY(-9px) rotate(' + ((i % 2 ? -1 : 1) * 7) + 'deg)';
       });
-      var lead = a.length * 13 + 260;
+      /* the reassembly is the satisfying half, so it gets a longer lead-in,
+         wider spacing between letters and a slower settle than the dissolve */
+      var lead = a.length * 13 + 520;
       b.forEach(function(c, i){
-        var d = lead + i * 17;
-        c.style.transition = 'opacity .55s ease ' + d + 'ms, transform .7s cubic-bezier(.16,1,.3,1) ' + d + 'ms';
+        var d = lead + i * 34;
+        c.style.transition = 'opacity 1.05s ease ' + d + 'ms, transform 1.25s cubic-bezier(.16,1,.3,1) ' + d + 'ms';
         c.style.transform = 'translateY(8px)';
         requestAnimationFrame(function(){
           c.style.opacity = 1; c.style.transform = 'none';
         });
       });
-      setTimeout(function(){ tag.textContent = 'After'; row.classList.add('done'); }, lead + 120);
+      setTimeout(function(){ tag.textContent = 'After'; row.classList.add('done'); }, lead + 260);
     }
 
     var mo = new IntersectionObserver(function(es){
@@ -1483,17 +1506,27 @@ html:not(.js) .demo-stage{--lit:1}
           var raw = el.textContent, target = parseInt(raw.replace(/\D/g, ''), 10);
           if (!target) return;
           var pre = raw.slice(0, raw.search(/\d/)), post = raw.slice(raw.search(/\d/) + String(target).length);
-          var dur = 1200, t0 = null, delay = i * 130;
+          /* A 6th-power ease-out: roughly 70% of the count is spent in the
+             first fifth of the time, then it crawls the last few digits in.
+             The bar underneath is given the identical curve and duration so
+             the number and its length always agree. */
+          var dur = 2600, t0 = null, delay = i * 130;
+          var bar = el.parentNode.querySelector('.bar-fill');
+          if (bar){
+            bar.style.transition = 'width ' + dur + 'ms cubic-bezier(.06,.82,.14,1)';
+            bar.style.transitionDelay = delay + 'ms';
+          }
           el.textContent = pre + '0' + post;
           setTimeout(function(){
             function tick(now){
               if (t0 === null) t0 = now;
               var q = Math.min((now - t0) / dur, 1);
-              el.textContent = pre + Math.round((1 - Math.pow(1 - q, 3)) * target) + post;
+              var eased = 1 - Math.pow(1 - q, 6);
+              el.textContent = pre + Math.round(eased * target) + post;
               if (q < 1) requestAnimationFrame(tick);
             }
             requestAnimationFrame(tick);
-            setTimeout(function(){ el.textContent = raw; }, dur + 800);  // watchdog
+            setTimeout(function(){ el.textContent = raw; }, dur + 900);  // watchdog
           }, delay);
         });
       });
@@ -1542,20 +1575,8 @@ html:not(.js) .demo-stage{--lit:1}
     });
   }
 
-  /* ─── magnetic buttons ───────────────────────────────── */
-
-  if (matchMedia('(hover:hover)').matches){
-    document.querySelectorAll('.btn').forEach(function(b){
-      b.addEventListener('mousemove', function(e){
-        var r = b.getBoundingClientRect();
-        b.style.setProperty('--bx', ((e.clientX - r.left - r.width/2) * 0.16).toFixed(1) + 'px');
-        b.style.setProperty('--by', ((e.clientY - r.top - r.height/2) * 0.24).toFixed(1) + 'px');
-      });
-      b.addEventListener('mouseleave', function(){
-        b.style.setProperty('--bx','0px'); b.style.setProperty('--by','0px');
-      });
-    });
-  }
+  /* Buttons sit still. A cursor-chasing call to action undercuts the calm
+     the rest of the page is working for. */
 
   /* ─── horizontal curriculum rail ─────────────────────────
      Written synchronously, not batched through rAF: a rAF
