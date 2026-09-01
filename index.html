@@ -692,6 +692,20 @@ html.js .mc-reassure{opacity:0;transform:translateY(10px);transition:opacity .7s
 }
 .about-body--turn b{color:var(--bone);font-weight:600}
 
+/* ─── the skills grid ─────────────────────────────────────
+   Ten plain chips. No icons and no cards: the point is the length of
+   the list, and decorating each item would slow the scan down. */
+.skills{
+  list-style:none;display:flex;flex-wrap:wrap;gap:9px;
+  margin-top:clamp(30px,4.5vh,44px);max-width:74ch;
+}
+.skills li{
+  border:1px solid rgba(237,232,220,.16);border-radius:100px;
+  padding:9px 17px;font-size:clamp(13.5px,1.5vw,15.5px);color:var(--on-bone);
+  transition:border-color .3s ease,color .3s ease;
+}
+.skills li:hover{border-color:rgba(201,163,79,.42);color:var(--bone)}
+
 /* ─── the meeting demo ────────────────────────────────────
    Four stages you scroll through rather than read. Each sits back at 55%
    opacity until it reaches the middle of the viewport, then comes fully
@@ -942,10 +956,12 @@ html:not(.js) .demo-stage{--lit:1}
   <div class="topnav-in">
     <a class="topnav-mk" href="#hero">SICA</a>
     <div class="topnav-links" id="topnavLinks">
-      <a href="#about">About</a>
+      <a href="#what-is">About</a>
+      <a href="#practice">Practice</a>
+      <a href="#about">Why SICA</a>
       <a href="#meeting">Meetings</a>
       <a href="#curriculum">Curriculum</a>
-      <a href="#why-this-matters">Why SICA</a>
+      <a href="#why-this-matters">Evidence</a>
       <a href="#faq">FAQ</a>
       <a href="#join">Join</a>
     </div>
@@ -1011,12 +1027,46 @@ html:not(.js) .demo-stage{--lit:1}
     </div>
   </section>
 
+  <!-- Thirty seconds: one sentence, then the analogy. -->
+  <section class="sec" id="what-is">
+    <div class="num" aria-hidden="true">01</div>
+    <div class="wrap">
+      <div class="kicker rv"><i></i><span class="eyebrow">What is SICA?</span></div>
+      <h2 class="h2 bloom">A weekly club where you practice the conversations <em>that actually decide things.</em></h2>
+      <p class="sub rv">Think of it as a gym for communication &mdash; you show up, you practice, you improve.</p>
+    </div>
+  </section>
+
+  <!-- The bridge. Without this the reader reaches a meeting walkthrough
+       without knowing what is being trained, which is a gym site showing
+       you a workout before saying what you would be working out for. -->
+  <section class="sec" id="practice">
+    <div class="num" aria-hidden="true">02</div>
+    <div class="wrap">
+      <div class="kicker rv"><i></i><span class="eyebrow">What you&rsquo;ll actually practice</span></div>
+      <h2 class="h2 bloom">Communication isn&rsquo;t one skill. <em>It&rsquo;s dozens of small ones.</em></h2>
+      <p class="sub rv">Every week focuses on one everyday communication skill that school rarely makes time for.</p>
+      <ul class="skills rv">
+        <li>Leading group projects</li>
+        <li>Reading people</li>
+        <li>Asking better questions</li>
+        <li>Listening properly</li>
+        <li>Handling disagreement</li>
+        <li>Networking naturally</li>
+        <li>Building trust</li>
+        <li>Persuasion</li>
+        <li>Interviews</li>
+        <li>Difficult conversations</li>
+      </ul>
+    </div>
+  </section>
+
   <!-- THE COMPARISON THIS PAGE KEPT INVITING: without this, a visitor
        files SICA under "speech club" and stops reading. -->
   <section class="sec" id="about">
-    <div class="num" aria-hidden="true">01</div>
+    <div class="num" aria-hidden="true">03</div>
     <div class="wrap">
-      <div class="kicker rv"><i></i><span class="eyebrow">What this actually is</span></div>
+      <div class="kicker rv"><i></i><span class="eyebrow">Why SICA is different</span></div>
       <h2 class="h2 bloom">This isn&rsquo;t <em>public speaking.</em></h2>
       <p class="about-body rv">Think about a group project. One person naturally gets everyone talking &mdash; they listen, keep things on track, get people to agree, and lead. Someone else in that same group is quiet, maybe even the smartest person there, but never says much.</p>
       <p class="about-body about-body--turn rv">That gap isn&rsquo;t talent. It&rsquo;s a skill nobody ever taught either of them. <b>SICA is about that gap &mdash; everyday conversations, not stages or speeches.</b></p>
@@ -1025,13 +1075,13 @@ html:not(.js) .demo-stage{--lit:1}
 
   <!-- 02 WHY WE BUILT IT -->
   <section class="sec" id="founder">
-    <div class="num" aria-hidden="true">02</div>
+    <div class="num" aria-hidden="true">04</div>
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">Why we built it</span></div>
-      <h2 class="h2 bloom">Grades had <em>almost nothing to do with it.</em></h2>
+      <h2 class="h2 bloom">Not just heard. <em>Listened to.</em></h2>
       <div class="founder-grid">
         <div class="editorial">
-          <p class="drop rv">As Vice President of <a class="lnk" href="https://CodeStarters.org/#team" target="_blank" rel="noopener noreferrer">Codestarters</a>, I watched it happen constantly: who got picked for leadership roles, who actually performed once they had them &mdash; and grades had <b>almost nothing to do with it.</b> It came down to communication. The ability to give your ideas real weight, to influence a room instead of getting talked over.</p>
+          <p class="drop rv">As Vice President of <a class="lnk" href="https://CodeStarters.org/#team" target="_blank" rel="noopener noreferrer">Codestarters</a>, I watched something strange happen over and over: the students who got picked for leadership roles &mdash; and who actually performed once they had them &mdash; weren&rsquo;t always the ones with the best grades. It came down to communication. The ability to give your ideas real weight, to influence a room instead of getting talked over.</p>
           <p class="turn rv">That&rsquo;s why I built SICA: a club that teaches you to be <b>listened to.</b> Not just heard &mdash; listened to.</p>
           <div class="sig-wrap rv">
             <svg class="sig-draw" id="sig" viewBox="0 0 320 110" aria-hidden="true">
@@ -1060,7 +1110,7 @@ html:not(.js) .demo-stage{--lit:1}
 
     <!-- 03 WHAT HAPPENS AT A MEETING -->
     <section class="sec" id="meeting">
-      <div class="num" aria-hidden="true">03</div>
+      <div class="num" aria-hidden="true">05</div>
       <div class="wrap">
         <div class="kicker rv"><i></i><span class="eyebrow">A real meeting &mdash; Active Listening</span></div>
         <h2 class="h2 bloom">Every meeting follows <em>the same rhythm.</em></h2>
@@ -1120,7 +1170,6 @@ html:not(.js) .demo-stage{--lit:1}
           </div>
         </div>
 
-        <p class="mc-gym rv">Think of it as a gym for communication &mdash; you show up, you practice, you improve.</p>
         <p class="mc-reassure rv">No lectures. No memorising speeches. No experience required &mdash; and you&rsquo;re never thrown on stage. Everything starts in pairs. <b>Everyone starts somewhere.</b></p>
       </div>
     </section>
@@ -1149,7 +1198,7 @@ html:not(.js) .demo-stage{--lit:1}
 
   <!-- 05 WHO BELONGS HERE — specific personas, so a visitor self-identifies -->
   <section class="sec" id="who">
-    <div class="num" aria-hidden="true">04</div>
+    <div class="num" aria-hidden="true">06</div>
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">Who belongs here?</span></div>
       <h2 class="h2 bloom">Every grade. Every personality. <em>Every starting point.</em></h2>
@@ -1165,7 +1214,7 @@ html:not(.js) .demo-stage{--lit:1}
 
   <!-- 06 WHY THIS MATTERS — the legitimacy section: real, sourced numbers only -->
   <section class="sec" id="why-this-matters">
-    <div class="num" aria-hidden="true">05</div>
+    <div class="num" aria-hidden="true">07</div>
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">Why this matters</span></div>
       <h2 class="h2 bloom">Even in the fields <em>you&rsquo;d least expect.</em></h2>
