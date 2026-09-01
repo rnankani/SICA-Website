@@ -235,7 +235,7 @@ html.js .spark.burst{opacity:1}
 }
 .claim b{font-style:normal;font-weight:700}
 .hero-note{font-size:13.5px;color:var(--on-ink);max-width:44ch;margin-top:14px;line-height:1.62}
-.hero-note b{display:block;margin-top:10px;color:var(--bone);font-weight:500}
+.hero-note b{color:var(--bone);font-weight:600}
 .lockup{
   font-size:11px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;
   color:var(--on-ink);margin-top:clamp(14px,2vh,20px);
@@ -692,6 +692,34 @@ html.js .mc-reassure{opacity:0;transform:translateY(10px);transition:opacity .7s
 }
 .about-body--turn b{color:var(--bone);font-weight:600}
 
+/* ─── what it feels like ──────────────────────────────────
+   A pause, not a section: no numeral, no kicker rule, three lines. */
+.feels{padding-block:clamp(70px,11vh,130px);text-align:center;position:relative}
+.feels-k{
+  font-size:10px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--brass);margin-bottom:clamp(24px,4vh,38px);
+}
+.feels-l{
+  font-size:clamp(19px,2.8vw,32px);line-height:1.35;color:var(--on-bone);
+  max-width:24ch;margin-inline:auto;
+}
+.feels-l + .feels-l{margin-top:.5em}
+.feels-l--last{color:var(--bone);max-width:30ch}
+
+/* ─── what it feels like ──────────────────────────────────
+   A pause, not a section: no numeral, no kicker rule, three lines. */
+.feels{padding-block:clamp(70px,11vh,130px);text-align:center;position:relative}
+.feels-k{
+  font-size:10px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--brass);margin-bottom:clamp(24px,4vh,38px);
+}
+.feels-l{
+  font-size:clamp(19px,2.8vw,32px);line-height:1.35;color:var(--on-bone);
+  max-width:24ch;margin-inline:auto;
+}
+.feels-l + .feels-l{margin-top:.5em}
+.feels-l--last{color:var(--bone);max-width:30ch}
+
 /* ─── what SICA is not ────────────────────────────────────
    Named clubs, because "not public speaking" only lands once the
    reader sees the exact thing they were picturing written down. */
@@ -711,10 +739,18 @@ html.js .mc-reassure{opacity:0;transform:translateY(10px);transition:opacity .7s
 /* ─── the skills grid ─────────────────────────────────────
    Ten plain chips. No icons and no cards: the point is the length of
    the list, and decorating each item would slow the scan down. */
-.skills{
-  list-style:none;display:flex;flex-wrap:wrap;gap:9px;
-  margin-top:clamp(30px,4.5vh,44px);max-width:74ch;
+/* Grouped by where the skill shows up, so the takeaway is "this applies
+   everywhere" rather than "here is a long list". */
+.skillsets{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:clamp(20px,3vw,40px);margin-top:clamp(30px,4.5vh,44px);
 }
+.skillset h3{
+  font-size:10.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--brass);padding-bottom:12px;border-bottom:1px solid rgba(237,232,220,.14);
+}
+.skills{list-style:none;display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+@media (max-width:760px){.skillsets{grid-template-columns:1fr;gap:22px}}
 .skills li{
   border:1px solid rgba(237,232,220,.16);border-radius:100px;
   padding:9px 17px;font-size:clamp(13.5px,1.5vw,15.5px);color:var(--on-bone);
@@ -947,9 +983,9 @@ html:not(.js) .demo-stage{--lit:1}
 
   <div class="hero-foot">
     <div>
-      <p class="hero-def hero-r">A student club at Cupertino High School. You practice leading a group project, handling a disagreement, asking better questions &mdash; the conversations school never makes time for.</p>
-      <p class="claim hero-r">The people skills behind <b>every opportunity.</b></p>
-      <p class="hero-note hero-r">Not speeches. Not debate. Not a presentation contest.<b>Twenty minutes a week, practising with one other person.</b></p>
+      <p class="claim hero-r">A student club at Cupertino High School where you practice <b>the conversations that shape everyday life.</b></p>
+      <p class="hero-def hero-r">Leading group projects. Making friends. Networking. Handling disagreements. Building trust.</p>
+      <p class="hero-note hero-r">Not speeches. Not debate. <b>Just practice.</b></p>
     </div>
     <div class="hero-cta">
       <div class="acts hero-r">
@@ -995,7 +1031,6 @@ html:not(.js) .demo-stage{--lit:1}
       <div class="kicker rv"><i></i><span class="eyebrow">What is SICA?</span></div>
       <h2 class="h2 bloom">One skill a week. <em>Twenty minutes practising it with one other person.</em></h2>
       <p class="sub rv">A meeting is forty minutes at lunch. You learn one idea for ten. You pair up and practise it for twenty. You get one specific piece of feedback. You leave with one thing to try that week. That is the entire club.</p>
-      <p class="short-note rv">Think of it as a gym for communication &mdash; <b>you show up, you practice, you improve.</b></p>
     </div>
   </section>
 
@@ -1008,21 +1043,36 @@ html:not(.js) .demo-stage{--lit:1}
       <div class="kicker rv"><i></i><span class="eyebrow">So which skills?</span></div>
       <h2 class="h2 bloom">It isn&rsquo;t one skill. <em>It&rsquo;s dozens of tiny ones that stack.</em></h2>
       <p class="sub rv">Each of these is its own week. None of them is public speaking.</p>
-      <ul class="skills rv">
-        <li>Leading a group project</li>
-        <li>Making friends</li>
-        <li>Reading people</li>
-        <li>Asking better questions</li>
-        <li>Listening properly</li>
-        <li>Handling disagreement</li>
-        <li>Building trust</li>
-        <li>Networking</li>
-        <li>Explaining an idea</li>
-        <li>Remembering conversations</li>
-        <li>Interviews</li>
-        <li>Persuasion</li>
-      </ul>
-      <p class="verdict-line bloom">Most schools expect you to pick these up somehow. <b>SICA gives you a room to practise them.</b></p>
+      <div class="skillsets rv">
+        <div class="skillset">
+          <h3>At school</h3>
+          <ul class="skills">
+            <li>Leading group projects</li>
+            <li>Speaking up in class</li>
+            <li>Explaining ideas</li>
+            <li>Handling disagreement</li>
+          </ul>
+        </div>
+        <div class="skillset">
+          <h3>With people</h3>
+          <ul class="skills">
+            <li>Making friends</li>
+            <li>Building trust</li>
+            <li>Reading people</li>
+            <li>Asking better questions</li>
+            <li>Listening properly</li>
+          </ul>
+        </div>
+        <div class="skillset">
+          <h3>Later in life</h3>
+          <ul class="skills">
+            <li>Interviews</li>
+            <li>Networking</li>
+            <li>Persuasion</li>
+          </ul>
+        </div>
+      </div>
+      <p class="verdict-line bloom">School expects you to learn these naturally. <b>SICA gives you somewhere to practise them intentionally.</b></p>
     </div>
   </section>
 
@@ -1036,10 +1086,10 @@ html:not(.js) .demo-stage{--lit:1}
       <p class="about-body rv">Think about a group project. One person naturally gets everyone talking &mdash; they listen, keep things on track, get people to agree, and lead. Someone else in that same group is quiet, maybe even the smartest person there, but never says much.</p>
       <p class="about-body about-body--turn rv">That gap isn&rsquo;t talent. It&rsquo;s a skill nobody ever taught either of them. <b>SICA is about that gap.</b></p>
       <div class="notlist rv">
-        <div><span>Debate</span> is about winning an argument.</div>
-        <div><span>Speech</span> and Toastmasters are about performing to a room.</div>
-        <div><span>FBLA</span> presentations are about a judged deliverable.</div>
-        <div class="notlist-is"><span>SICA</span> is about the ordinary conversations in between &mdash; the ones that quietly decide who gets listened to.</div>
+        <div><span>Debate</span> teaches arguing.</div>
+        <div><span>Toastmasters</span> teaches presenting.</div>
+        <div><span>FBLA</span> teaches competitive presentations.</div>
+        <div class="notlist-is"><span>SICA</span> teaches everyday conversations.</div>
       </div>
     </div>
   </section>
@@ -1133,13 +1183,24 @@ html:not(.js) .demo-stage{--lit:1}
 
   </div>
 
+  <!-- The question the walkthrough leaves behind is not "what happens"
+       but "what is it like". Three sentences, no section number. -->
+  <section class="feels rv" id="feels">
+    <div class="wrap">
+      <p class="feels-k">What it&rsquo;s actually like</p>
+      <p class="feels-l">You&rsquo;ll probably laugh.</p>
+      <p class="feels-l">You&rsquo;ll probably mess up.</p>
+      <p class="feels-l feels-l--last">You&rsquo;ll leave knowing two more people than when you walked in.</p>
+    </div>
+  </section>
+
   <!-- 04 THE CURRICULUM — horizontal rail -->
   <section class="rail" id="curriculum">
     <div class="rail-pin">
       <div class="rail-head">
         <div class="kicker rv"><i></i><span class="eyebrow">And over a whole year?</span></div>
-        <h2 class="h2 rv" style="max-width:20ch">Communication isn&rsquo;t <em>one skill.</em></h2>
-        <p class="sub rv">It&rsquo;s many small skills built over time. 30 weeks. Six phases. Each week builds on the last.</p>
+        <h2 class="h2 rv" style="max-width:22ch">So how do you build <em>all of those?</em></h2>
+        <p class="sub rv">30 weeks. Six phases. Each one builds on the last.</p>
       </div>
       <div class="rail-track" id="track">
         <article class="card"><div class="ph">01</div><h4>Know yourself</h4><p>Notice what you do under pressure and build steadier confidence.</p><div class="wk">Weeks 1—5</div></article>
@@ -1158,18 +1219,18 @@ html:not(.js) .demo-stage{--lit:1}
     <div class="num" aria-hidden="true">06</div>
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">Does any of this actually matter?</span></div>
-      <h2 class="h2 bloom">Even in the fields <em>you&rsquo;d least expect.</em></h2>
-      <p class="sub rv">Grades matter. Technical skills matter. People skills matter too.</p>
+      <h2 class="h2 bloom">Employers screen for this <em>before they screen for grades.</em></h2>
+      <p class="sub rv">Employers consistently rank communication and teamwork among the most important things they look for.</p>
 
       <div class="evidence rv">
-        <div class="evidence-note">
-          Research on engineering careers found that up to <b>70% of career advancement</b> traced back to communication skills, not technical output.
-        </div>
-        <div class="evidence-cap">Across industries</div>
+        <div class="evidence-cap">What employers screen for</div>
         <div class="bar-row"><span class="bar-label">Problem-solving</span><span class="bar-track"><span class="bar-fill" style="--w:88%;--d:0ms"></span></span><span class="bar-val">~90%</span></div>
         <div class="bar-row"><span class="bar-label">Teamwork</span><span class="bar-track"><span class="bar-fill" style="--w:78%;--d:130ms"></span></span><span class="bar-val">~80%</span></div>
         <div class="bar-row dim"><span class="bar-label">GPA as a screen</span><span class="bar-track"><span class="bar-fill" style="--w:38%;--d:290ms"></span></span><span class="bar-val">&lt;40%</span></div>
-        <p class="evidence-src">Nearly 90% of employers screen for problem-solving and nearly 80% for teamwork &mdash; while reliance on GPA as a screening tool has fallen below 40% and keeps dropping. <em>Sources: NACE Job Outlook 2024&ndash;2025; research on engineering career advancement.</em></p>
+        <p class="evidence-src">Nearly 90% of employers screen for problem-solving and nearly 80% for teamwork &mdash; while reliance on GPA as a screening tool has fallen below 40% and keeps dropping. <em>Source: NACE Job Outlook 2024&ndash;2025.</em></p>
+        <div class="evidence-note">
+          It holds even where you would least expect it: research on engineering careers found that up to <b>70% of career advancement</b> traced back to communication, not technical output.
+        </div>
       </div>
 
       <p class="verdict-line bloom">These aren&rsquo;t just school skills. <b>They&rsquo;re the ones that actually decide outcomes.</b></p>
