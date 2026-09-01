@@ -7,7 +7,7 @@
 <meta name="description" content="The people skills behind every opportunity. SICA is a weekly communication practice club at Cupertino High School.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Inter:wght@300;400;500;600&family=Alex+Brush&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600&family=Alex+Brush&display=swap" rel="stylesheet">
 <script>document.documentElement.className+=' js';</script>
 <style>
 /* ═══════════════════════════════════════════════════════════
@@ -25,7 +25,8 @@
   --on-ink:#8C867C;
   --on-bone:#9C9585;
 
-  --display:'Bodoni Moda', 'Didot', Georgia, serif;
+  --display:'Bodoni Moda', 'Didot', Georgia, serif;  /* wordmarks only */
+  --head:'Inter', system-ui, sans-serif;             /* every heading */
   --ui:'Inter', system-ui, sans-serif;
 
   --pad:clamp(20px,5vw,84px);
@@ -59,6 +60,42 @@ img,svg{display:block;max-width:100%}
   letter-spacing:.16em;text-transform:uppercase;
 }
 
+/* ─── sticky nav ──────────────────────────────────────────
+   Transparent while the hero owns the screen, then a blurred bar. It
+   carries the wordmark so the hero does not need its own top row. */
+.topnav{
+  position:fixed;top:0;left:0;right:0;z-index:40;
+  transition:background .35s ease,border-color .35s ease,backdrop-filter .35s ease;
+  border-bottom:1px solid transparent;
+}
+.topnav.solid{
+  background:rgba(10,9,9,.82);border-bottom-color:rgba(237,232,220,.08);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+}
+.topnav-in{
+  max-width:1340px;margin-inline:auto;padding:13px var(--pad);
+  display:flex;align-items:center;gap:clamp(14px,3vw,40px);
+}
+.topnav-mk{
+  font-family:var(--display);font-weight:700;font-size:16px;letter-spacing:.02em;
+  color:var(--bone);flex:none;
+}
+.topnav-links{display:flex;align-items:center;gap:clamp(12px,2.2vw,28px);margin-left:auto;overflow-x:auto}
+.topnav-links a{
+  font-size:11.5px;font-weight:500;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--on-ink);white-space:nowrap;padding:6px 0;position:relative;
+  transition:color .3s ease;
+}
+.topnav-links a:hover{color:var(--bone)}
+.topnav-links a.on{color:var(--brass-lit)}
+.topnav-links a.on::after{
+  content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--brass-lit);
+}
+@media (max-width:640px){
+  .topnav-in{padding-block:10px}
+  .topnav-links{gap:16px;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}
+}
+
 /* ═══════════════════════════════════════════════════════════
    HERO
    ═══════════════════════════════════════════════════════════ */
@@ -68,7 +105,7 @@ img,svg{display:block;max-width:100%}
   background:var(--ink-deep);
   overflow:hidden;
   display:grid;grid-template-rows:auto 1fr auto;
-  padding:clamp(18px,3vh,34px) var(--pad) clamp(22px,4vh,40px);
+  padding:clamp(58px,9vh,78px) var(--pad) clamp(22px,4vh,40px);
 }
 
 /* the ghost word behind everything */
@@ -108,7 +145,7 @@ img,svg{display:block;max-width:100%}
    box four letters wide — four small boxes, staggered, read as travel. */
 .word{
   display:flex;align-items:flex-end;
-  font-size:clamp(104px,min(28vw,38vh),400px);
+  font-size:clamp(88px,min(23vw,30vh),330px);
   margin-left:-.014em;           /* optical: pull the S to the true left edge */
 }
 .word .l{display:block}
@@ -182,6 +219,8 @@ html.js .spark.burst{opacity:1}
 
 /* The plain-language anchor. Body face, no display serif: it has to read
    as a fact about the club, not as another line of the tagline. */
+.hero-def--2{color:rgba(237,232,220,.5);margin-top:-.4em}
+
 .hero-def{
   font-family:var(--ui);font-weight:300;
   font-size:clamp(12.5px,1.35vw,15px);line-height:1.55;
@@ -190,7 +229,7 @@ html.js .spark.burst{opacity:1}
 }
 
 .claim{
-  font-family:var(--display);font-weight:400;font-style:italic;
+  font-family:var(--head);font-weight:400;font-style:italic;
   font-size:clamp(19px,2.4vw,30px);line-height:1.24;letter-spacing:-.01em;
   max-width:20ch;color:var(--bone);
 }
@@ -270,7 +309,7 @@ html.js .hero-arrow.in svg{animation:nudge 3s cubic-bezier(.4,0,.2,1) 2.4s infin
 /* oversized ghost numeral per section */
 .num{
   position:absolute;right:var(--pad);top:calc(var(--gap) - .18em);
-  font-family:var(--display);font-weight:700;font-size:clamp(110px,19vw,300px);
+  font-family:var(--head);font-weight:700;font-size:clamp(110px,19vw,300px);
   line-height:1;color:transparent;-webkit-text-stroke:1px rgba(237,232,220,.07);
   pointer-events:none;user-select:none;z-index:0;
 }
@@ -279,10 +318,10 @@ html.js .hero-arrow.in svg{animation:nudge 3s cubic-bezier(.4,0,.2,1) 2.4s infin
 .kicker{display:flex;align-items:center;gap:12px;color:var(--brass)}
 .kicker i{width:28px;height:1px;background:currentColor;display:block}
 .h2{
-  font-family:var(--display);font-weight:700;letter-spacing:-.028em;line-height:.95;
-  font-size:clamp(38px,7vw,96px);margin-top:22px;max-width:16ch;
+  font-family:var(--head);font-weight:700;letter-spacing:-.035em;line-height:1.03;
+  font-size:clamp(33px,5.6vw,74px);margin-top:22px;max-width:20ch;
 }
-.h2 em{font-style:italic;font-weight:400}
+.h2 em{font-style:normal;font-weight:400;color:var(--on-bone)}
 .sub{font-size:clamp(15px,1.5vw,17.5px);color:var(--on-bone);max-width:56ch;margin-top:24px;line-height:1.65}
 
 /* ─── 03 curriculum: horizontal rail ─────────────────────── */
@@ -298,8 +337,8 @@ html.js .hero-arrow.in svg{animation:nudge 3s cubic-bezier(.4,0,.2,1) 2.4s infin
   transition:background .5s ease;
 }
 .card:hover{background:#2A2620}
-.card .ph{font-family:var(--display);font-weight:700;font-size:clamp(54px,7vw,92px);line-height:.85;letter-spacing:-.04em;color:var(--bone);opacity:.13}
-.card h4{font-family:var(--display);font-weight:700;font-size:clamp(24px,2.6vw,34px);letter-spacing:-.02em;margin-top:auto}
+.card .ph{font-family:var(--head);font-weight:700;font-size:clamp(54px,7vw,92px);line-height:.85;letter-spacing:-.04em;color:var(--bone);opacity:.13}
+.card h4{font-family:var(--head);font-weight:700;font-size:clamp(24px,2.6vw,34px);letter-spacing:-.02em;margin-top:auto}
 .card p{font-size:14.5px;color:var(--on-bone);margin-top:12px;line-height:1.6}
 .card .wk{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--brass);margin-top:18px}
 .rail-bar{height:1px;background:rgba(237,232,220,.16);margin:clamp(26px,4vh,44px) var(--pad) 0;position:relative}
@@ -323,7 +362,7 @@ html.js .hero-arrow.in svg{animation:nudge 3s cubic-bezier(.4,0,.2,1) 2.4s infin
 .evt:hover::before{transform:translateY(0)}
 .evt > *{position:relative;z-index:1}
 .evt .ix{font-size:11px;color:var(--brass);letter-spacing:.14em}
-.evt h4{font-family:var(--display);font-weight:700;font-size:clamp(22px,2.4vw,32px);letter-spacing:-.02em;line-height:1.05;margin-top:auto}
+.evt h4{font-family:var(--head);font-weight:700;font-size:clamp(22px,2.4vw,32px);letter-spacing:-.02em;line-height:1.05;margin-top:auto}
 .evt p{font-size:14.5px;margin-top:12px;line-height:1.6;opacity:.72}
 
 /* ─── founder: the story, with room for a real portrait ───
@@ -370,7 +409,7 @@ html.js .hero-arrow.in svg{animation:nudge 3s cubic-bezier(.4,0,.2,1) 2.4s infin
 }
 .portrait-frame p{
   position:relative;z-index:1;color:var(--bone);
-  font-family:var(--display);font-weight:600;font-size:clamp(19px,2.1vw,27px);
+  font-family:var(--head);font-weight:600;font-size:clamp(19px,2.1vw,27px);
   line-height:1.08;max-width:10ch;
 }
 .portrait figcaption{margin-top:14px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--on-bone)}
@@ -398,7 +437,7 @@ html.js .hero-arrow.in svg{animation:nudge 3s cubic-bezier(.4,0,.2,1) 2.4s infin
 .q button{
   width:100%;background:none;border:0;color:var(--bone);cursor:pointer;text-align:left;
   display:flex;justify-content:space-between;align-items:center;gap:24px;padding:26px 0;
-  font-family:var(--display);font-weight:700;letter-spacing:-.02em;
+  font-family:var(--head);font-weight:700;letter-spacing:-.02em;
   font-size:clamp(18px,2.3vw,28px);transition:color .4s ease,padding-left .5s cubic-bezier(.16,1,.3,1);
 }
 .q button:hover{color:var(--brass);padding-left:12px}
@@ -418,13 +457,23 @@ html.js .hero-arrow.in svg{animation:nudge 3s cubic-bezier(.4,0,.2,1) 2.4s infin
 .foot nav{display:flex;gap:clamp(18px,3vw,44px);flex-wrap:wrap}
 .foot nav a{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--on-ink);transition:color .4s ease}
 .foot nav a:hover{color:var(--brass-lit)}
-.foot .tag{font-family:var(--display);font-weight:400;font-style:italic;font-size:clamp(17px,2vw,23px);max-width:30ch;letter-spacing:-.01em}
+.foot .tag{font-family:var(--head);font-weight:400;font-style:italic;font-size:clamp(17px,2vw,23px);max-width:30ch;letter-spacing:-.01em}
 .foot-mark{
   font-family:var(--display);font-weight:700;letter-spacing:-.045em;line-height:.76;
   font-size:clamp(90px,25.5vw,400px);color:transparent;
   -webkit-text-stroke:1px rgba(237,232,220,.17);
   padding-inline:var(--pad);margin-bottom:-.14em;user-select:none;
 }
+.foot-ask{
+  display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;
+  border-top:1px solid rgba(237,232,220,.12);padding:20px 0 4px;font-size:13px;
+}
+.foot-ask-l{font-weight:500;color:var(--bone)}
+.foot-ask a{color:var(--brass-lit);border-bottom:1px solid rgba(201,163,79,.4)}
+.foot-ask a:hover{border-bottom-color:var(--brass-lit)}
+.foot-ask-soon{color:#5C574F;font-size:12px}
+.foot-base{border-top:0!important}
+
 .foot-base{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;border-top:1px solid rgba(237,232,220,.12);padding:22px 0 26px;font-size:11px;letter-spacing:.08em;color:#65605A;text-transform:uppercase}
 
 /* ─── headline reveal ────────────────────────────────────
@@ -444,19 +493,19 @@ html.js .bloom.in{opacity:1;transform:none}
 .editorial > p:first-child{margin-top:0}
 .editorial b{color:var(--bone);font-weight:500}
 .editorial .drop::first-letter{
-  font-family:var(--display);font-weight:700;color:var(--brass-lit);
+  font-family:var(--head);font-weight:700;color:var(--brass-lit);
   float:left;font-size:clamp(66px,9vw,104px);line-height:.68;
   padding:10px 14px 0 0;
 }
 .editorial .turn{
-  color:var(--bone);font-family:var(--display);font-weight:400;font-style:italic;
+  color:var(--bone);font-family:var(--head);font-weight:400;font-style:italic;
   font-size:clamp(19px,2.3vw,27px);line-height:1.38;letter-spacing:-.014em;max-width:26ch;
 }
 .editorial .turn b{color:var(--brass-lit);font-style:normal;font-weight:700}
 
 /* ─── mission statement ──────────────────────────────────── */
 .statement{
-  font-family:var(--display);font-weight:400;font-style:italic;
+  font-family:var(--head);font-weight:400;font-style:italic;
   font-size:clamp(22px,3.2vw,40px);line-height:1.24;letter-spacing:-.02em;
   color:var(--on-bone);max-width:24ch;margin-top:clamp(32px,5vh,56px);
 }
@@ -512,7 +561,7 @@ html.js .sig-draw.in .sig-underline{animation:sign 700ms cubic-bezier(.5,0,.3,1)
   transition-delay:var(--d,0ms);
 }
 html.js .evidence.in .bar-fill{width:var(--w,0)}
-.bar-val{font-family:var(--display);font-weight:700;font-size:16px;color:var(--brass-lit);font-variant-numeric:tabular-nums;text-align:right}
+.bar-val{font-family:var(--head);font-weight:700;font-size:16px;color:var(--brass-lit);font-variant-numeric:tabular-nums;text-align:right}
 .bar-row.dim .bar-fill{background:rgba(237,232,220,.22)}
 .bar-row.dim .bar-label,.bar-row.dim .bar-val{color:var(--on-bone)}
 .evidence-src{font-size:11px;color:var(--on-bone);margin-top:clamp(22px,3.5vh,30px);line-height:1.5;max-width:52ch}
@@ -530,7 +579,7 @@ html.js .evidence.in .bar-fill{width:var(--w,0)}
    scroll position, so the pace stays under the reader's own hand. No
    particles, no blur ramp, no second effect — the reveal is the moment.
    ═══════════════════════════════════════════════════════════ */
-.hye{position:relative;height:150vh}
+.hye{position:relative;height:215vh}
 .hye-pin{
   position:sticky;top:0;height:100vh;overflow:hidden;
   display:grid;place-content:center;justify-items:center;
@@ -548,7 +597,7 @@ html.js .hye-lead{opacity:0}
 .hye-line{
   position:absolute;inset:0;margin:0;
   display:grid;place-content:center;text-align:center;
-  font-family:var(--display);font-weight:400;
+  font-family:var(--head);font-weight:400;
   font-size:clamp(23px,4.1vw,52px);line-height:1.18;letter-spacing:-.022em;color:var(--bone);
   will-change:opacity,transform;
 }
@@ -567,7 +616,7 @@ html.js .hye-final{opacity:0}
   color:var(--on-bone);margin-bottom:clamp(20px,3.4vh,34px);
 }
 .hye-final-line{
-  font-family:var(--display);font-weight:700;
+  font-family:var(--head);font-weight:700;
   font-size:clamp(33px,6.4vw,88px);line-height:1.03;letter-spacing:-.032em;color:var(--bone);
 }
 .hye-final-line em{display:block;font-style:italic;font-weight:400;color:var(--brass-lit);margin-top:.08em}
@@ -586,7 +635,7 @@ html:not(.js) .hye-stage,.hye.is-static .hye-stage{height:auto;display:grid;gap:
 html:not(.js) .hye-line,.hye.is-static .hye-line{position:static;opacity:1;font-size:clamp(19px,2.4vw,29px)}
 html:not(.js) .hye-final,.hye.is-static .hye-final{position:static;opacity:1;margin-top:clamp(52px,8vh,92px);padding-inline:0}
 
-@media (max-width:720px){.hye{height:140vh}}
+@media (max-width:720px){.hye{height:195vh}}
 
 
 /* ─── sample meeting (concrete, replaces the abstract 3-card diagram) ─────
@@ -630,12 +679,18 @@ html.js .mc-step{opacity:0;transform:translateY(14px);transition:opacity .7s cub
 }
 
 .mc-reassure{
-  margin-top:clamp(30px,4.5vh,44px);font-family:var(--display);font-style:italic;font-weight:400;
+  margin-top:clamp(30px,4.5vh,44px);font-family:var(--head);font-style:italic;font-weight:400;
   font-size:clamp(15.5px,1.7vw,18px);color:var(--on-bone);line-height:1.55;max-width:52ch;
 }
 html.js .mc-reassure{opacity:0;transform:translateY(10px);transition:opacity .7s ease,transform .7s ease;transition-delay:980ms}
 .meetingcard.in .mc-reassure{opacity:1;transform:none}
 .mc-reassure b{font-style:normal;font-weight:600;color:var(--brass-lit)}
+
+.about-body{
+  font-size:clamp(16px,1.8vw,19px);line-height:1.68;color:var(--on-bone);
+  max-width:60ch;margin-top:clamp(24px,3.5vh,34px);
+}
+.about-body--turn b{color:var(--bone);font-weight:600}
 
 /* ─── the meeting demo ────────────────────────────────────
    Four stages you scroll through rather than read. Each sits back at 55%
@@ -662,7 +717,7 @@ html.js .mc-reassure{opacity:0;transform:translateY(10px);transition:opacity .7s
   border-radius:100px;padding:2px 9px;margin-left:4px;
 }
 .demo-h{
-  font-family:var(--display);font-weight:400;font-style:italic;
+  font-family:var(--head);font-weight:400;font-style:italic;
   font-size:clamp(19px,2.6vw,30px);line-height:1.28;letter-spacing:-.015em;
   color:var(--bone);margin-top:12px;
 }
@@ -713,7 +768,7 @@ html.js .mc-reassure{opacity:0;transform:translateY(10px);transition:opacity .7s
    Shared by Why SICA and elsewhere: a considered claim, not a scorecard. */
 .verdict-line{
   margin-top:clamp(28px,4vh,40px);
-  font-family:var(--display);font-weight:400;font-style:italic;
+  font-family:var(--head);font-weight:400;font-style:italic;
   font-size:clamp(20px,2.6vw,30px);line-height:1.28;letter-spacing:-.015em;color:var(--bone);max-width:34ch;
 }
 .verdict-line b{font-style:normal;font-weight:700}
@@ -734,7 +789,7 @@ html.js .mc-reassure{opacity:0;transform:translateY(10px);transition:opacity .7s
 
 /* the five-beat rhythm — one phrase per step, no time label */
 .mc-beat{
-  font-family:var(--display);font-weight:400;
+  font-family:var(--head);font-weight:400;
   font-size:clamp(19px,2.3vw,27px);line-height:1.28;letter-spacing:-.018em;color:var(--bone);
 }
 
@@ -756,7 +811,7 @@ html.js .mc-reassure{opacity:0;transform:translateY(10px);transition:opacity .7s
 .convo-claim{
   position:absolute;top:clamp(96px,17vh,164px);left:50%;transform:translateX(-50%);
   width:min(30ch,84vw);text-align:center;z-index:2;
-  font-family:var(--display);font-style:italic;font-weight:400;
+  font-family:var(--head);font-style:italic;font-weight:400;
   font-size:clamp(15px,1.9vw,21px);line-height:1.35;color:var(--on-bone);
 }
 html.js .convo-claim{opacity:0}
@@ -783,7 +838,7 @@ html.js .bub{opacity:0}
 .bub-us{align-self:flex-end;background:rgba(201,163,79,.13);border:1px solid rgba(201,163,79,.3);color:var(--brass-lit);border-bottom-right-radius:5px}
 .bub-final{
   align-self:center;max-width:100%;background:none;border:0;padding:8px 0;
-  font-family:var(--display);font-weight:700;font-style:italic;
+  font-family:var(--head);font-weight:700;font-style:italic;
   font-size:clamp(27px,4.6vw,54px);line-height:1.1;letter-spacing:-.025em;color:var(--brass-lit);
 }
 .bub.typing{display:flex;gap:5px;padding:17px 19px}
@@ -814,7 +869,7 @@ html:not(.js) .bub,.convo.is-static .bub{opacity:1}
   box-shadow:0 40px 90px rgba(0,0,0,.6);
 }
 .gate.open .gate-card{transform:none}
-.gate h3{font-family:var(--display);font-weight:700;font-size:26px;letter-spacing:-.02em}
+.gate h3{font-family:var(--head);font-weight:700;font-size:26px;letter-spacing:-.02em}
 .gate p{font-size:13.5px;color:var(--on-bone);margin-top:9px;line-height:1.55}
 .gate form{display:flex;flex-direction:column;gap:11px;margin-top:22px}
 .gate input{
@@ -840,7 +895,7 @@ html:not(.js) .bub,.convo.is-static .bub{opacity:1}
 }
 .who-grid .evt h4{max-width:16ch}
 
-.join-note{margin-top:clamp(20px,3vh,28px);font-family:var(--display);font-style:italic;font-size:clamp(17px,2vw,22px);color:var(--on-ink)}
+.join-note{margin-top:clamp(20px,3vh,28px);font-family:var(--head);font-style:italic;font-size:clamp(17px,2vw,22px);color:var(--on-ink)}
 .join-note b{font-style:normal;font-weight:700;color:var(--brass-lit)}
 
 .by{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--on-bone)}
@@ -881,14 +936,25 @@ html:not(.js) .demo-stage{--lit:1}
 </head>
 <body>
 
+<!-- Sticky nav: invisible over the hero, then a blurred bar once the
+     sheet comes up. Marks the section you are actually in. -->
+<nav class="topnav" id="topnav">
+  <div class="topnav-in">
+    <a class="topnav-mk" href="#hero">SICA</a>
+    <div class="topnav-links" id="topnavLinks">
+      <a href="#about">About</a>
+      <a href="#meeting">Meetings</a>
+      <a href="#curriculum">Curriculum</a>
+      <a href="#why-this-matters">Why SICA</a>
+      <a href="#faq">FAQ</a>
+      <a href="#join">Join</a>
+    </div>
+  </div>
+</nav>
+
 <!-- ══════════════════ HERO ══════════════════ -->
 <header class="hero" id="hero">
   <div class="ghost" aria-hidden="true">Influence</div>
-
-  <div class="hero-bar">
-    <div class="mk">SICA</div>
-    <div class="eyebrow">Cupertino High School · Est. 2026</div>
-  </div>
 
   <div class="hero-mid">
     <h1 class="word display hero-r" id="word" aria-label="SICA">
@@ -904,6 +970,7 @@ html:not(.js) .demo-stage{--lit:1}
   <div class="hero-foot">
     <div>
       <p class="hero-def hero-r">A student club at Cupertino High School where you practice the people skills schools rarely teach &mdash; real conversations, not lectures.</p>
+      <p class="hero-def hero-def--2 hero-r">Not speeches. Not debate rounds. The conversations you&rsquo;re already having &mdash; just with practice behind them.</p>
       <p class="claim hero-r">The people skills behind <b>every opportunity.</b></p>
       <p class="hero-note hero-r">Making friends. Explaining an idea. Handling disagreement.<b>SICA is where you practice those moments before they matter.</b></p>
     </div>
@@ -944,9 +1011,21 @@ html:not(.js) .demo-stage{--lit:1}
     </div>
   </section>
 
+  <!-- THE COMPARISON THIS PAGE KEPT INVITING: without this, a visitor
+       files SICA under "speech club" and stops reading. -->
+  <section class="sec" id="about">
+    <div class="num" aria-hidden="true">01</div>
+    <div class="wrap">
+      <div class="kicker rv"><i></i><span class="eyebrow">What this actually is</span></div>
+      <h2 class="h2 bloom">This isn&rsquo;t <em>public speaking.</em></h2>
+      <p class="about-body rv">Think about a group project. One person naturally gets everyone talking &mdash; they listen, keep things on track, get people to agree, and lead. Someone else in that same group is quiet, maybe even the smartest person there, but never says much.</p>
+      <p class="about-body about-body--turn rv">That gap isn&rsquo;t talent. It&rsquo;s a skill nobody ever taught either of them. <b>SICA is about that gap &mdash; everyday conversations, not stages or speeches.</b></p>
+    </div>
+  </section>
+
   <!-- 02 WHY WE BUILT IT -->
   <section class="sec" id="founder">
-    <div class="num" aria-hidden="true">01</div>
+    <div class="num" aria-hidden="true">02</div>
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">Why we built it</span></div>
       <h2 class="h2 bloom">Grades had <em>almost nothing to do with it.</em></h2>
@@ -981,7 +1060,7 @@ html:not(.js) .demo-stage{--lit:1}
 
     <!-- 03 WHAT HAPPENS AT A MEETING -->
     <section class="sec" id="meeting">
-      <div class="num" aria-hidden="true">02</div>
+      <div class="num" aria-hidden="true">03</div>
       <div class="wrap">
         <div class="kicker rv"><i></i><span class="eyebrow">A real meeting &mdash; Active Listening</span></div>
         <h2 class="h2 bloom">Every meeting follows <em>the same rhythm.</em></h2>
@@ -1070,7 +1149,7 @@ html:not(.js) .demo-stage{--lit:1}
 
   <!-- 05 WHO BELONGS HERE — specific personas, so a visitor self-identifies -->
   <section class="sec" id="who">
-    <div class="num" aria-hidden="true">03</div>
+    <div class="num" aria-hidden="true">04</div>
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">Who belongs here?</span></div>
       <h2 class="h2 bloom">Every grade. Every personality. <em>Every starting point.</em></h2>
@@ -1086,7 +1165,7 @@ html:not(.js) .demo-stage{--lit:1}
 
   <!-- 06 WHY THIS MATTERS — the legitimacy section: real, sourced numbers only -->
   <section class="sec" id="why-this-matters">
-    <div class="num" aria-hidden="true">04</div>
+    <div class="num" aria-hidden="true">05</div>
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">Why this matters</span></div>
       <h2 class="h2 bloom">Even in the fields <em>you&rsquo;d least expect.</em></h2>
@@ -1177,6 +1256,13 @@ html:not(.js) .demo-stage{--lit:1}
   </div>
   <div class="foot-mark" aria-hidden="true">SICA</div>
   <div class="wrap">
+    <div class="foot-ask">
+      <span class="foot-ask-l">Questions?</span>
+      <a href="mailto:thesicaorg@gmail.com">thesicaorg@gmail.com</a>
+      <!-- Add the Instagram handle here once the club is approved:
+           <a href="https://instagram.com/…" target="_blank" rel="noopener">@sica</a> -->
+      <span class="foot-ask-soon">Instagram &mdash; coming after approval</span>
+    </div>
     <div class="foot-base">
       <span>Student Influence &amp; Communication Association · Cupertino High School</span>
       <span><a href="mailto:thesicaorg@gmail.com">thesicaorg@gmail.com</a></span>
@@ -1586,6 +1672,7 @@ html:not(.js) .demo-stage{--lit:1}
       updateHye();
       updateConvo();
       updateDemo();
+      updateNav();
       updateWho();
       drive();
     }
@@ -1595,7 +1682,28 @@ html:not(.js) .demo-stage{--lit:1}
   updateConvo();
   updateDemo();
   updateWho();
+  updateNav();
   requestAnimationFrame(frame);
+
+  /* ─── sticky nav: solid past the hero, marking the live section ── */
+  var topnav = $('topnav');
+  var navLinks = [].slice.call(document.querySelectorAll('#topnavLinks a'));
+  var navTargets = navLinks.map(function(a){ return document.querySelector(a.getAttribute('href')); });
+
+  function updateNav(){
+    if (!topnav) return;
+    topnav.classList.toggle('solid', scrollY > innerHeight * 0.72);
+    /* The live section is the one nearest above the bar — chosen by
+       position, not by link order. Join sits above FAQ in the document,
+       so "last link that has passed" marked Join while reading the FAQ. */
+    var best = -1, bestTop = -Infinity, line = innerHeight * 0.34;
+    navTargets.forEach(function(t, i){
+      if (!t) return;
+      var top = t.getBoundingClientRect().top;
+      if (top <= line && top > bestTop){ bestTop = top; best = i; }
+    });
+    navLinks.forEach(function(a, i){ a.classList.toggle('on', i === best); });
+  }
 
   /* ─── reveals: once, then rest ───────────────────────── */
   var io = new IntersectionObserver(function(es){
