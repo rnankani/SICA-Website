@@ -29,7 +29,7 @@
   --ui:'Inter', system-ui, sans-serif;
 
   --pad:clamp(20px,5vw,84px);
-  --gap:clamp(96px,14vh,190px);
+  --gap:clamp(76px,11vh,150px);
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -523,7 +523,7 @@ html.js .evidence.in .bar-fill{width:var(--w,0)}
    scroll position, so the pace stays under the reader's own hand. No
    particles, no blur ramp, no second effect — the reveal is the moment.
    ═══════════════════════════════════════════════════════════ */
-.hye{position:relative;height:170vh}
+.hye{position:relative;height:150vh}
 .hye-pin{
   position:sticky;top:0;height:100vh;overflow:hidden;
   display:grid;place-content:center;justify-items:center;
@@ -579,7 +579,7 @@ html:not(.js) .hye-stage,.hye.is-static .hye-stage{height:auto;display:grid;gap:
 html:not(.js) .hye-line,.hye.is-static .hye-line{position:static;opacity:1;font-size:clamp(19px,2.4vw,29px)}
 html:not(.js) .hye-final,.hye.is-static .hye-final{position:static;opacity:1;margin-top:clamp(52px,8vh,92px);padding-inline:0}
 
-@media (max-width:720px){.hye{height:155vh}}
+@media (max-width:720px){.hye{height:140vh}}
 
 
 /* ─── sample meeting (concrete, replaces the abstract 3-card diagram) ─────
@@ -633,7 +633,7 @@ html.js .mc-reassure{opacity:0;transform:translateY(10px);transition:opacity .7s
 .demo-stage{
   --lit:0;
   width:100%;max-width:660px;text-align:center;
-  padding:clamp(22px,3.5vh,40px) 0;
+  padding:clamp(16px,2.4vh,28px) 0;
   opacity:calc(.42 + .58 * var(--lit));
   transform:translateY(calc((1 - var(--lit)) * 16px));
   transition:opacity .5s ease,transform .5s ease;
@@ -688,10 +688,11 @@ html.js .mc-reassure{opacity:0;transform:translateY(10px);transition:opacity .7s
 .demo-card p{font-size:14.5px;color:var(--bone);margin:7px 0 16px}
 .demo-card p:last-child{margin-bottom:0}
 
-.demo-arrow{height:clamp(34px,6vh,58px);display:grid;place-items:center}
+.demo-arrow{height:clamp(26px,4vh,42px);display:grid;place-items:center}
 .demo-arrow i{display:block;width:1px;height:100%;background:linear-gradient(180deg,transparent,rgba(201,163,79,.5))}
 
 @media (max-width:620px){
+  .convo-vp{height:min(400px,58vh)}
   .demo-pair{grid-template-columns:1fr;justify-items:center}
   .demo-talk{width:100%}
 }
@@ -730,22 +731,58 @@ html.js .mc-reassure{opacity:0;transform:translateY(10px);transition:opacity .7s
    character by character, so the sentence visibly comes apart and a new
    one builds in its place rather than two columns sitting side by side. */
 .shift{display:flex;flex-direction:column;gap:clamp(26px,4vh,44px);margin-top:clamp(44px,7vh,80px)}
-.morph{display:flex;flex-direction:column;gap:10px}
-.morph-tag{
-  font-family:var(--ui);font-size:10px;font-weight:500;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--on-bone);transition:color .5s ease;
+/* ─── the conversation ────────────────────────────────────
+   The site's whole argument as one thread: the bubbles accumulate on
+   scroll and the stack rides upward, so the newest line stays centred
+   and the tone visibly gains confidence on the way down. */
+.convo{position:relative;height:200vh;background:var(--ink-deep)}
+.convo-pin{position:sticky;top:0;height:100vh;overflow:hidden;display:grid;place-content:center;padding-inline:var(--pad)}
+.convo-pin::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 62% 48% at 50% 50%,rgba(201,163,79,.07),transparent 72%);
 }
-.morph.done .morph-tag{color:var(--brass-lit)}
-.morph-line{position:relative;display:block;min-height:1.35em}
-.morph-line .mf,.morph-line .mt{
-  font-family:var(--display);font-weight:400;font-style:italic;
-  font-size:clamp(18px,2.4vw,29px);line-height:1.32;letter-spacing:-.015em;
+.convo-claim{
+  position:absolute;top:clamp(96px,17vh,164px);left:50%;transform:translateX(-50%);
+  width:min(30ch,84vw);text-align:center;z-index:2;
+  font-family:var(--display);font-style:italic;font-weight:400;
+  font-size:clamp(15px,1.9vw,21px);line-height:1.35;color:var(--on-bone);
 }
-.morph-line .mf{color:var(--on-bone)}
-.morph-line .mt{position:absolute;left:0;top:0;color:var(--bone);white-space:normal}
-/* each letter is its own box so it can leave on its own timing */
-.morph-line i{display:inline-block;font-style:inherit;white-space:pre;will-change:opacity,transform}
-html.js .morph-line .mt i{opacity:0}
+html.js .convo-claim{opacity:0}
+.convo-lead{
+  position:absolute;top:clamp(64px,12vh,120px);left:50%;transform:translateX(-50%);
+  font-family:var(--ui);font-size:clamp(10px,1.1vw,12px);font-weight:500;
+  letter-spacing:.24em;text-transform:uppercase;color:var(--brass);white-space:nowrap;z-index:2;
+}
+html.js .convo-lead{opacity:0}
+/* a fixed window the stack scrolls inside, masked top and bottom */
+.convo-vp{
+  position:relative;z-index:1;width:min(620px,88vw);height:min(460px,62vh);overflow:hidden;
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 16%,#000 84%,transparent);
+  mask-image:linear-gradient(180deg,transparent,#000 16%,#000 84%,transparent);
+}
+.convo-stack{display:flex;flex-direction:column;gap:14px;align-items:flex-start;will-change:transform}
+.bub{
+  max-width:82%;padding:14px 19px;border-radius:16px;
+  font-size:clamp(15px,1.8vw,19px);line-height:1.4;
+}
+html.js .bub{opacity:0}
+.bub-them{background:var(--bone-dim);border:1px solid rgba(237,232,220,.10);color:var(--on-bone);border-bottom-left-radius:5px}
+.bub-them.strong{color:var(--bone)}
+.bub-us{align-self:flex-end;background:rgba(201,163,79,.13);border:1px solid rgba(201,163,79,.3);color:var(--brass-lit);border-bottom-right-radius:5px}
+.bub-final{
+  align-self:center;max-width:100%;background:none;border:0;padding:8px 0;
+  font-family:var(--display);font-weight:700;font-style:italic;
+  font-size:clamp(27px,4.6vw,54px);line-height:1.1;letter-spacing:-.025em;color:var(--brass-lit);
+}
+.bub.typing{display:flex;gap:5px;padding:17px 19px}
+.bub.typing i{width:6px;height:6px;border-radius:50%;background:var(--on-bone);display:block}
+
+html:not(.js) .convo,.convo.is-static{height:auto}
+html:not(.js) .convo-pin,.convo.is-static .convo-pin{position:static;height:auto;padding-block:clamp(90px,15vh,170px)}
+html:not(.js) .convo-lead,.convo.is-static .convo-lead{position:static;transform:none;opacity:1;margin-bottom:10px}
+html:not(.js) .convo-claim,.convo.is-static .convo-claim{position:static;transform:none;opacity:1;width:auto;margin-bottom:34px}
+html:not(.js) .convo-vp,.convo.is-static .convo-vp{height:auto;overflow:visible;-webkit-mask-image:none;mask-image:none}
+html:not(.js) .bub,.convo.is-static .bub{opacity:1}
 
 /* ─── officer passcode gate ───────────────────────────────── */
 .officers{background:none;border:0;cursor:pointer;font-family:var(--ui)}
@@ -1017,24 +1054,9 @@ html:not(.js) .demo-stage{--lit:1}
     </div>
   </section>
 
-  <!-- 04 SAME PERSON. MORE OPTIONS. -->
-  <section class="sec" id="options">
-    <div class="num" aria-hidden="true">03</div>
-    <div class="wrap">
-      <div class="kicker rv"><i></i><span class="eyebrow">Same person. More options.</span></div>
-      <h2 class="h2 bloom">It expands <em>your toolkit.</em></h2>
-      <p class="sub rv">SICA doesn&rsquo;t change your personality.</p>
-      <div class="shift rv" id="shift">
-        <div class="morph"><span class="morph-tag">Before</span><span class="morph-line"><span class="mf">&ldquo;I don&rsquo;t know what to say.&rdquo;</span><span class="mt">&ldquo;I know how to start.&rdquo;</span></span></div>
-        <div class="morph"><span class="morph-tag">Before</span><span class="morph-line"><span class="mf">&ldquo;I&rsquo;ll stay quiet.&rdquo;</span><span class="mt">&ldquo;I can explain my idea.&rdquo;</span></span></div>
-        <div class="morph"><span class="morph-tag">Before</span><span class="morph-line"><span class="mf">&ldquo;That was awkward.&rdquo;</span><span class="mt">&ldquo;I&rsquo;ve practiced this before.&rdquo;</span></span></div>
-      </div>
-    </div>
-  </section>
-
   <!-- 05 WHO BELONGS HERE — specific personas, so a visitor self-identifies -->
   <section class="sec" id="who">
-    <div class="num" aria-hidden="true">04</div>
+    <div class="num" aria-hidden="true">03</div>
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">Who belongs here?</span></div>
       <h2 class="h2 bloom">Every grade. Every personality. <em>Every starting point.</em></h2>
@@ -1050,7 +1072,7 @@ html:not(.js) .demo-stage{--lit:1}
 
   <!-- 06 WHY THIS MATTERS — the legitimacy section: real, sourced numbers only -->
   <section class="sec" id="why-this-matters">
-    <div class="num" aria-hidden="true">05</div>
+    <div class="num" aria-hidden="true">04</div>
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">Why this matters</span></div>
       <h2 class="h2 bloom">Even in the fields <em>you&rsquo;d least expect.</em></h2>
@@ -1076,6 +1098,25 @@ html:not(.js) .demo-stage{--lit:1}
        The whole point of the club, told as one thread that gains
        confidence. Bubbles accumulate on scroll and the stack rides
        upward, so it reads as a chat you are scrolling through. -->
+  <section class="convo" id="convo">
+    <div class="convo-pin">
+      <p class="convo-lead">Same person. More options.</p>
+      <p class="convo-claim">SICA doesn&rsquo;t change your personality. It expands your toolkit.</p>
+      <div class="convo-vp">
+        <div class="convo-stack" id="convoStack">
+          <div class="bub bub-them typing"><i></i><i></i><i></i></div>
+          <div class="bub bub-them">I don&rsquo;t know what to say.</div>
+          <div class="bub bub-us">Practice.</div>
+          <div class="bub bub-them">That was awkward.</div>
+          <div class="bub bub-us">Try again.</div>
+          <div class="bub bub-them">I know how to start.</div>
+          <div class="bub bub-them strong">I&rsquo;ve practiced this before.</div>
+          <div class="bub bub-final">Welcome to SICA.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- COME VISIT (unnumbered — the ask, not a numbered argument) -->
   <section class="sec" id="join">
     <div class="wrap">
@@ -1252,78 +1293,47 @@ html:not(.js) .demo-stage{--lit:1}
     });
   });
 
-  var morphFallbacks = [];
   function clamp01(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
   function ease(x){ x = clamp01(x); return x * x * (3 - 2 * x); }
-
-  /* ─── before → after: dissolve and reassemble ────────────
-     Each line is split into per-character boxes so the sentence can come
-     apart letter by letter instead of cross-fading as one block. Runs
-     once per row when the row reaches the middle of the screen. */
-  function splitChars(el){
-    var t = el.textContent, frag = document.createDocumentFragment();
-    for (var i = 0; i < t.length; i++){
-      var c = document.createElement('i');
-      c.textContent = t[i];
-      frag.appendChild(c);
-    }
-    el.textContent = '';
-    el.appendChild(frag);
-    return [].slice.call(el.children);
-  }
-
-  [].slice.call(document.querySelectorAll('.morph')).forEach(function(row, ri){
-    var from = row.querySelector('.mf'), to = row.querySelector('.mt');
-    var tag = row.querySelector('.morph-tag');
-    if (!from || !to) return;
-    var a = splitChars(from), b = splitChars(to);
-
-    if (reduced){
-      a.forEach(function(c){ c.style.opacity = 0; });
-      b.forEach(function(c){ c.style.opacity = 1; });
-      tag.textContent = 'After'; row.classList.add('done');
-      return;
-    }
-
-    var played = false;
-    function play(){
-      if (played) return;
-      played = true;
-      /* letters leave from the end back to the start, so the sentence
-         visibly unravels rather than dimming uniformly */
-      a.forEach(function(c, i){
-        var d = (a.length - i) * 13;
-        c.style.transition = 'opacity .5s ease ' + d + 'ms, transform .6s cubic-bezier(.4,0,.2,1) ' + d + 'ms';
-        c.style.opacity = 0;
-        c.style.transform = 'translateY(-9px) rotate(' + ((i % 2 ? -1 : 1) * 7) + 'deg)';
-      });
-      /* the reassembly is the satisfying half, so it gets a longer lead-in,
-         wider spacing between letters and a slower settle than the dissolve */
-      var lead = a.length * 13 + 520;
-      b.forEach(function(c, i){
-        var d = lead + i * 34;
-        c.style.transition = 'opacity 1.05s ease ' + d + 'ms, transform 1.25s cubic-bezier(.16,1,.3,1) ' + d + 'ms';
-        c.style.transform = 'translateY(8px)';
-        requestAnimationFrame(function(){
-          c.style.opacity = 1; c.style.transform = 'none';
-        });
-      });
-      setTimeout(function(){ tag.textContent = 'After'; row.classList.add('done'); }, lead + 260);
-    }
-
-    var mo = new IntersectionObserver(function(es){
-      es.forEach(function(e){
-        if (e.isIntersecting){ setTimeout(play, ri * 220); mo.disconnect(); }
-      });
-    }, {threshold:0.6});
-    mo.observe(row);
-    morphFallbacks.push(function(){ if (row.getBoundingClientRect().top < innerHeight * 0.7) play(); });
-  });
 
   /* ─── the conversation ───────────────────────────────────
      Bubbles arrive one at a time on scroll and the stack rides upward so
      the newest line stays centred in its window — a chat being scrolled,
      not a list fading in. */
+  var convo = $('convo'), convoStack = $('convoStack');
+  var bubs = convo ? [].slice.call(convoStack.children) : [];
+  var convoLead = convo ? convo.querySelector('.convo-lead') : null;
+  var convoClaim = convo ? convo.querySelector('.convo-claim') : null;
+  if (convo && reduced) convo.classList.add('is-static');
+
+  function updateConvo(){
+    if (!convo || convo.classList.contains('is-static')) return;
+    var r = convo.getBoundingClientRect(), vh = innerHeight;
+    var travel = convo.offsetHeight - vh;
+    var p = travel > 0 ? clamp01(-r.top / travel) : 0;
+    var entering = ease(clamp01((vh - r.top) / vh));
+    if (convoLead) convoLead.style.opacity = entering.toFixed(3);
+    if (convoClaim) convoClaim.style.opacity = entering.toFixed(3);
+
+    /* hold the last beat on screen for the final stretch of the pin */
+    var span = 0.86, step = span / bubs.length;
+    var shown = 0, offset = 0;
+    var vp = convoStack.parentNode.clientHeight;
+
+    bubs.forEach(function(b, i){
+      var t = ease((p - i * step) / (step * 0.62));
+      b.style.opacity = t.toFixed(3);
+      b.style.transform = 'translate3d(0,' + (14 * (1 - t)).toFixed(1) + 'px,0)';
+      if (t > 0.5) shown = i;
+    });
+
+    /* centre the newest visible bubble inside the window */
+    for (var i = 0; i <= shown; i++) offset += bubs[i].offsetHeight + 14;
+    var last = bubs[shown].offsetHeight;
+    var want = Math.max(0, offset - last - (vp / 2) + last / 2);
+    convoStack.style.transform = 'translate3d(0,' + (-want).toFixed(1) + 'px,0)';
+  }
+
   /* ─── meeting demo: each stage lights as it nears the middle ───── */
   var demoStages = [].slice.call(document.querySelectorAll('.demo-stage'));
   function updateDemo(){
@@ -1560,6 +1570,7 @@ html:not(.js) .demo-stage{--lit:1}
     if (y !== lastY || h !== lastH){
       lastY = y; lastH = h;
       updateHye();
+      updateConvo();
       updateDemo();
       updateWho();
       drive();
@@ -1567,6 +1578,7 @@ html:not(.js) .demo-stage{--lit:1}
     requestAnimationFrame(frame);
   }
   updateHye();
+  updateConvo();
   updateDemo();
   updateWho();
   requestAnimationFrame(frame);
@@ -1592,7 +1604,6 @@ html:not(.js) .demo-stage{--lit:1}
     document.querySelectorAll('.rv:not(.in), .bloom:not(.in)').forEach(function(el){
       if (el.getBoundingClientRect().top < innerHeight * 1.25) el.classList.add('in');
     });
-    morphFallbacks.forEach(function(fn){ fn(); });
   }, 2600);
 
   /* ─── signature draw ─────────────────────────────────── */
