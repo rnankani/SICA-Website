@@ -523,7 +523,7 @@ html.js .evidence.in .bar-fill{width:var(--w,0)}
    scroll position, so the pace stays under the reader's own hand. No
    particles, no blur ramp, no second effect — the reveal is the moment.
    ═══════════════════════════════════════════════════════════ */
-.hye{position:relative;height:250vh}
+.hye{position:relative;height:170vh}
 .hye-pin{
   position:sticky;top:0;height:100vh;overflow:hidden;
   display:grid;place-content:center;justify-items:center;
@@ -566,11 +566,9 @@ html.js .hye-final{opacity:0}
 .hye-final-line em{display:block;font-style:italic;font-weight:400;color:var(--brass-lit);margin-top:.08em}
 
 /* the pin releases into this, in normal flow */
-.hye-after{padding-block:clamp(80px,13vh,150px);text-align:center;position:relative}
-.hye-coda{
-  font-family:var(--display);font-weight:400;font-style:italic;
-  font-size:clamp(21px,2.9vw,36px);line-height:1.3;letter-spacing:-.02em;
-  color:var(--bone);max-width:26ch;margin-inline:auto;
+.hye-final-coda{
+  font-family:var(--ui);font-size:clamp(13px,1.5vw,15.5px);line-height:1.5;
+  color:var(--on-bone);max-width:38ch;margin:clamp(22px,3.5vh,34px) auto 0;
 }
 
 /* No JS, or reduced motion: the same copy, stacked and readable, no pin. */
@@ -581,7 +579,7 @@ html:not(.js) .hye-stage,.hye.is-static .hye-stage{height:auto;display:grid;gap:
 html:not(.js) .hye-line,.hye.is-static .hye-line{position:static;opacity:1;font-size:clamp(19px,2.4vw,29px)}
 html:not(.js) .hye-final,.hye.is-static .hye-final{position:static;opacity:1;margin-top:clamp(52px,8vh,92px);padding-inline:0}
 
-@media (max-width:720px){.hye{height:220vh}}
+@media (max-width:720px){.hye{height:155vh}}
 
 
 /* ─── sample meeting (concrete, replaces the abstract 3-card diagram) ─────
@@ -646,6 +644,11 @@ html.js .mc-reassure{opacity:0;transform:translateY(10px);transition:opacity .7s
   color:var(--brass);
 }
 .demo-n{font-family:var(--ui);color:var(--on-bone);font-weight:500}
+.demo-t{
+  font-family:var(--ui);font-size:10px;font-weight:500;letter-spacing:.1em;
+  color:var(--on-bone);border:1px solid rgba(237,232,220,.16);
+  border-radius:100px;padding:2px 9px;margin-left:4px;
+}
 .demo-h{
   font-family:var(--display);font-weight:400;font-style:italic;
   font-size:clamp(19px,2.6vw,30px);line-height:1.28;letter-spacing:-.015em;
@@ -744,51 +747,6 @@ html.js .mc-reassure{opacity:0;transform:translateY(10px);transition:opacity .7s
 .morph-line i{display:inline-block;font-style:inherit;white-space:pre;will-change:opacity,transform}
 html.js .morph-line .mt i{opacity:0}
 
-/* ─── the conversation ────────────────────────────────────
-   The site's whole argument as one thread: the bubbles accumulate on
-   scroll and the stack rides upward, so the newest line stays centred
-   and the tone visibly gains confidence on the way down. */
-.convo{position:relative;height:300vh;background:var(--ink-deep)}
-.convo-pin{position:sticky;top:0;height:100vh;overflow:hidden;display:grid;place-content:center;padding-inline:var(--pad)}
-.convo-pin::before{
-  content:'';position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(ellipse 62% 48% at 50% 50%,rgba(201,163,79,.07),transparent 72%);
-}
-.convo-lead{
-  position:absolute;top:clamp(64px,12vh,120px);left:50%;transform:translateX(-50%);
-  font-family:var(--ui);font-size:clamp(10px,1.1vw,12px);font-weight:500;
-  letter-spacing:.24em;text-transform:uppercase;color:var(--brass);white-space:nowrap;z-index:2;
-}
-html.js .convo-lead{opacity:0}
-/* a fixed window the stack scrolls inside, masked top and bottom */
-.convo-vp{
-  position:relative;z-index:1;width:min(620px,88vw);height:min(460px,62vh);overflow:hidden;
-  -webkit-mask-image:linear-gradient(180deg,transparent,#000 16%,#000 84%,transparent);
-  mask-image:linear-gradient(180deg,transparent,#000 16%,#000 84%,transparent);
-}
-.convo-stack{display:flex;flex-direction:column;gap:14px;align-items:flex-start;will-change:transform}
-.bub{
-  max-width:82%;padding:14px 19px;border-radius:16px;
-  font-size:clamp(15px,1.8vw,19px);line-height:1.4;
-}
-html.js .bub{opacity:0}
-.bub-them{background:var(--bone-dim);border:1px solid rgba(237,232,220,.10);color:var(--on-bone);border-bottom-left-radius:5px}
-.bub-them.strong{color:var(--bone)}
-.bub-us{align-self:flex-end;background:rgba(201,163,79,.13);border:1px solid rgba(201,163,79,.3);color:var(--brass-lit);border-bottom-right-radius:5px}
-.bub-final{
-  align-self:center;max-width:100%;background:none;border:0;padding:8px 0;
-  font-family:var(--display);font-weight:700;font-style:italic;
-  font-size:clamp(27px,4.6vw,54px);line-height:1.1;letter-spacing:-.025em;color:var(--brass-lit);
-}
-.bub.typing{display:flex;gap:5px;padding:17px 19px}
-.bub.typing i{width:6px;height:6px;border-radius:50%;background:var(--on-bone);display:block}
-
-html:not(.js) .convo,.convo.is-static{height:auto}
-html:not(.js) .convo-pin,.convo.is-static .convo-pin{position:static;height:auto;padding-block:clamp(90px,15vh,170px)}
-html:not(.js) .convo-lead,.convo.is-static .convo-lead{position:static;transform:none;opacity:1;margin-bottom:34px}
-html:not(.js) .convo-vp,.convo.is-static .convo-vp{height:auto;overflow:visible;-webkit-mask-image:none;mask-image:none}
-html:not(.js) .bub,.convo.is-static .bub{opacity:1}
-
 /* ─── officer passcode gate ───────────────────────────────── */
 .officers{background:none;border:0;cursor:pointer;font-family:var(--ui)}
 .foot-officers{background:none;border:0;cursor:pointer;font-family:var(--ui);font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:0}
@@ -852,7 +810,6 @@ html.js .rv.in{opacity:1;transform:none}
   .hero-foot{grid-template-columns:1fr;align-items:start}
 }
 @media (max-width:720px){
-  .convo-vp{height:min(400px,58vh)}
   /* rail becomes a native swipe strip — no pinning on touch */
   .rail{height:auto}
   .rail-pin{position:static;height:auto;padding-block:var(--gap)}
@@ -932,31 +889,14 @@ html:not(.js) .demo-stage{--lit:1}
       <div class="hye-final">
         <p class="hye-final-kicker">Those moments happen to everyone.</p>
         <p class="hye-final-line">They aren&rsquo;t personality traits.<em>They&rsquo;re skills.</em></p>
+        <p class="hye-final-coda">If you&rsquo;ve experienced even one of those, you&rsquo;re exactly who SICA was built for.</p>
       </div>
-    </div>
-  </section>
-
-  <section class="hye-after">
-    <div class="wrap">
-      <p class="hye-coda rv">If you&rsquo;ve experienced even one of those, you&rsquo;re exactly who SICA was built for.</p>
-    </div>
-  </section>
-
-  <!-- 01 WHAT IS SICA -->
-  <section class="sec" id="what-is">
-    <div class="num" aria-hidden="true">01</div>
-    <div class="wrap">
-      <div class="kicker rv"><i></i><span class="eyebrow">What is SICA?</span></div>
-      <h2 class="h2 bloom">A weekly <em>practice club.</em></h2>
-      <p class="sub rv">SICA is a student-led club where members build communication through real conversations, interactive challenges, and structured feedback.</p>
-      <p class="statement rv">Every meeting focuses on practicing a real-life situation <b>you&rsquo;ll eventually face anyway.</b></p>
-      <p class="short-note rv">No lectures. No memorizing speeches. <b>No experience required.</b></p>
     </div>
   </section>
 
   <!-- 02 WHY WE BUILT IT -->
   <section class="sec" id="founder">
-    <div class="num" aria-hidden="true">02</div>
+    <div class="num" aria-hidden="true">01</div>
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">Why we built it</span></div>
       <h2 class="h2 bloom">Grades had <em>almost nothing to do with it.</em></h2>
@@ -973,16 +913,12 @@ html:not(.js) .demo-stage{--lit:1}
           </div>
         </div>
 
-        <!-- Portrait slot. Drop the real photo in as <img src="..." alt="..."> and
-             delete the two placeholder children; the frame already crops it. -->
-        <!-- Drop the photo in at founder.jpg and it fills the frame.
-             Until the file exists the browser hides the broken image and
-             the empty frame reads as intentional. -->
+        <!-- Portrait slot. Save the photo as founder.jpg beside this file and
+             it appears, cropped and toned by .portrait-frame img. The image is
+             attached by JS only once it loads, so a missing file costs nothing
+             and never leaves a broken-image box. -->
         <figure class="portrait rv">
-          <div class="portrait-frame">
-            <img src="founder.jpg" alt="Reyansh Nankani" loading="lazy"
-                 onerror="this.style.display='none';this.parentNode.classList.add('no-photo')">
-          </div>
+          <div class="portrait-frame" id="portraitFrame" data-photo="founder.jpg"></div>
         </figure>
       </div>
     </div>
@@ -995,11 +931,11 @@ html:not(.js) .demo-stage{--lit:1}
 
     <!-- 03 WHAT HAPPENS AT A MEETING -->
     <section class="sec" id="meeting">
-      <div class="num" aria-hidden="true">03</div>
+      <div class="num" aria-hidden="true">02</div>
       <div class="wrap">
-        <div class="kicker rv"><i></i><span class="eyebrow">What happens at a meeting?</span></div>
+        <div class="kicker rv"><i></i><span class="eyebrow">A real meeting &mdash; Active Listening</span></div>
         <h2 class="h2 bloom">Every meeting follows <em>the same rhythm.</em></h2>
-        <p class="sub rv">Rather than describe it, here it is. Keep scrolling.</p>
+        <p class="sub rv">Forty minutes, four beats, every week. Rather than describe it, here it is.</p>
 
         <!-- The rhythm, played out instead of listed: two people, a
              conversation, a note, another go. Each stage lights as it
@@ -1007,16 +943,16 @@ html:not(.js) .demo-stage{--lit:1}
              because the page already holds you still twice. -->
         <div class="demo" id="demo">
           <div class="demo-stage" data-stage="1">
-            <div class="demo-k"><span class="demo-n">01</span>Learn</div>
-            <p class="demo-h">One practical idea, taught in ten minutes.</p>
+            <div class="demo-k"><span class="demo-n">01</span>Learn<span class="demo-t">10 min</span></div>
+            <p class="demo-h">One practical idea. This week: why most people listen only to respond.</p>
             <div class="demo-board"><span>Most people listen to reply, not to understand.</span></div>
           </div>
 
           <div class="demo-arrow" aria-hidden="true"><i></i></div>
 
           <div class="demo-stage" data-stage="2">
-            <div class="demo-k"><span class="demo-n">02</span>Practice</div>
-            <p class="demo-h">You turn to one person. Not the room.</p>
+            <div class="demo-k"><span class="demo-n">02</span>Practice<span class="demo-t">25 min</span></div>
+            <p class="demo-h">You turn to one person, not the room. They talk; you can only ask and summarise.</p>
             <div class="demo-pair">
               <div class="demo-who"><span class="demo-av">You</span></div>
               <div class="demo-talk">
@@ -1043,8 +979,8 @@ html:not(.js) .demo-stage{--lit:1}
           <div class="demo-arrow" aria-hidden="true"><i></i></div>
 
           <div class="demo-stage" data-stage="4">
-            <div class="demo-k"><span class="demo-n">04</span>Try again</div>
-            <p class="demo-h">Same skill. Same week. Different result.</p>
+            <div class="demo-k"><span class="demo-n">04</span>Try again<span class="demo-t">This week</span></div>
+            <p class="demo-h">Have one conversation where you ask five questions before giving an opinion.</p>
             <div class="demo-pair">
               <div class="demo-who"><span class="demo-av">You</span></div>
               <div class="demo-talk">
@@ -1055,34 +991,7 @@ html:not(.js) .demo-stage{--lit:1}
           </div>
         </div>
 
-        <p class="mc-reassure rv">You&rsquo;re never thrown on stage. Most activities begin in pairs before moving into small groups. <b>Everyone starts somewhere.</b></p>
-      </div>
-    </section>
-
-    <!-- EXAMPLE MEETING — one real, named meeting instead of a framework -->
-    <section class="sec" id="example">
-      <div class="wrap">
-        <div class="kicker rv"><i></i><span class="eyebrow">Example meeting</span></div>
-        <h2 class="h2 bloom">Active <em>Listening.</em></h2>
-        <div class="meetingcard rv">
-          <div class="mc-timeline">
-            <div class="mc-step">
-              <i class="mc-dot"></i>
-              <span class="mc-time">10 minutes</span>
-              <p>Learn why most people listen only to respond.</p>
-            </div>
-            <div class="mc-step">
-              <i class="mc-dot"></i>
-              <span class="mc-time">25 minutes</span>
-              <p>Work with a partner. One person talks. The other can only ask questions and summarize. No interrupting.</p>
-            </div>
-            <div class="mc-step">
-              <i class="mc-dot"></i>
-              <span class="mc-time">Weekly challenge</span>
-              <p>Have one conversation this week where you ask five genuine questions before sharing your own opinion.</p>
-            </div>
-          </div>
-        </div>
+        <p class="mc-reassure rv">No lectures. No memorising speeches. No experience required &mdash; and you&rsquo;re never thrown on stage. Everything starts in pairs. <b>Everyone starts somewhere.</b></p>
       </div>
     </section>
 
@@ -1110,7 +1019,7 @@ html:not(.js) .demo-stage{--lit:1}
 
   <!-- 04 SAME PERSON. MORE OPTIONS. -->
   <section class="sec" id="options">
-    <div class="num" aria-hidden="true">04</div>
+    <div class="num" aria-hidden="true">03</div>
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">Same person. More options.</span></div>
       <h2 class="h2 bloom">It expands <em>your toolkit.</em></h2>
@@ -1125,7 +1034,7 @@ html:not(.js) .demo-stage{--lit:1}
 
   <!-- 05 WHO BELONGS HERE — specific personas, so a visitor self-identifies -->
   <section class="sec" id="who">
-    <div class="num" aria-hidden="true">05</div>
+    <div class="num" aria-hidden="true">04</div>
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">Who belongs here?</span></div>
       <h2 class="h2 bloom">Every grade. Every personality. <em>Every starting point.</em></h2>
@@ -1141,7 +1050,7 @@ html:not(.js) .demo-stage{--lit:1}
 
   <!-- 06 WHY THIS MATTERS — the legitimacy section: real, sourced numbers only -->
   <section class="sec" id="why-this-matters">
-    <div class="num" aria-hidden="true">06</div>
+    <div class="num" aria-hidden="true">05</div>
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">Why this matters</span></div>
       <h2 class="h2 bloom">Even in the fields <em>you&rsquo;d least expect.</em></h2>
@@ -1167,24 +1076,6 @@ html:not(.js) .demo-stage{--lit:1}
        The whole point of the club, told as one thread that gains
        confidence. Bubbles accumulate on scroll and the stack rides
        upward, so it reads as a chat you are scrolling through. -->
-  <section class="convo" id="convo">
-    <div class="convo-pin">
-      <p class="convo-lead">One member, thirty weeks</p>
-      <div class="convo-vp">
-        <div class="convo-stack" id="convoStack">
-          <div class="bub bub-them typing"><i></i><i></i><i></i></div>
-          <div class="bub bub-them">I don&rsquo;t know what to say.</div>
-          <div class="bub bub-us">Practice.</div>
-          <div class="bub bub-them">That was awkward.</div>
-          <div class="bub bub-us">Try again.</div>
-          <div class="bub bub-them">I know how to start.</div>
-          <div class="bub bub-them strong">I&rsquo;ve practiced this before.</div>
-          <div class="bub bub-final">Welcome to SICA.</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- COME VISIT (unnumbered — the ask, not a numbered argument) -->
   <section class="sec" id="join">
     <div class="wrap">
@@ -1221,7 +1112,6 @@ html:not(.js) .demo-stage{--lit:1}
     <div class="foot-grid">
       <p class="tag">The conversations you practice today become the opportunities you earn tomorrow.</p>
       <nav>
-        <a href="#what-is">About</a>
         <a href="#meeting">Meetings</a>
         <a href="#curriculum">Curriculum</a>
         <a href="#why-this-matters">Why it matters</a>
@@ -1434,38 +1324,6 @@ html:not(.js) .demo-stage{--lit:1}
      Bubbles arrive one at a time on scroll and the stack rides upward so
      the newest line stays centred in its window — a chat being scrolled,
      not a list fading in. */
-  var convo = $('convo'), convoStack = $('convoStack');
-  var bubs = convo ? [].slice.call(convoStack.children) : [];
-  var convoLead = convo ? convo.querySelector('.convo-lead') : null;
-  if (convo && reduced) convo.classList.add('is-static');
-
-  function updateConvo(){
-    if (!convo || convo.classList.contains('is-static')) return;
-    var r = convo.getBoundingClientRect(), vh = innerHeight;
-    var travel = convo.offsetHeight - vh;
-    var p = travel > 0 ? clamp01(-r.top / travel) : 0;
-    var entering = ease(clamp01((vh - r.top) / vh));
-    if (convoLead) convoLead.style.opacity = entering.toFixed(3);
-
-    /* hold the last beat on screen for the final stretch of the pin */
-    var span = 0.86, step = span / bubs.length;
-    var shown = 0, offset = 0;
-    var vp = convoStack.parentNode.clientHeight;
-
-    bubs.forEach(function(b, i){
-      var t = ease((p - i * step) / (step * 0.62));
-      b.style.opacity = t.toFixed(3);
-      b.style.transform = 'translate3d(0,' + (14 * (1 - t)).toFixed(1) + 'px,0)';
-      if (t > 0.5) shown = i;
-    });
-
-    /* centre the newest visible bubble inside the window */
-    for (var i = 0; i <= shown; i++) offset += bubs[i].offsetHeight + 14;
-    var last = bubs[shown].offsetHeight;
-    var want = Math.max(0, offset - last - (vp / 2) + last / 2);
-    convoStack.style.transform = 'translate3d(0,' + (-want).toFixed(1) + 'px,0)';
-  }
-
   /* ─── meeting demo: each stage lights as it nears the middle ───── */
   var demoStages = [].slice.call(document.querySelectorAll('.demo-stage'));
   function updateDemo(){
@@ -1534,6 +1392,18 @@ html:not(.js) .demo-stage{--lit:1}
     eio.observe(evidence);
   }
 
+  /* ─── founder portrait: attach only if the file is really there ── */
+  var pf = $('portraitFrame');
+  if (pf && pf.dataset.photo){
+    var probe = new Image();
+    probe.onload = function(){
+      probe.alt = 'Reyansh Nankani';
+      pf.appendChild(probe);
+      pf.classList.add('has-photo');
+    };
+    probe.src = pf.dataset.photo;
+  }
+
   /* ─── officer passcode gate ──────────────────────────────
      A front-door latch, not security: the code sits in this file, so it
      keeps the workspace out of casual reach and nothing more. Anything
@@ -1598,7 +1468,11 @@ html:not(.js) .demo-stage{--lit:1}
     if (!pinned()){ rail.style.height = ''; track.style.transform = ''; return 0; }
     var pad  = parseFloat(getComputedStyle(track).paddingLeft) || 0;
     var span = Math.max(0, track.scrollWidth - window.innerWidth + pad);
-    rail.style.height = (window.innerHeight + span) + 'px';
+    /* The cards travel `span` px sideways, but asking for `span` px of
+       vertical scroll made the rail two and a half screens tall on its
+       own. At 0.62 they move a little faster than the wheel and the
+       section costs about a screen and a half. */
+    rail.style.height = (window.innerHeight + span * 0.62) + 'px';
     return span;
   }
 
@@ -1686,7 +1560,6 @@ html:not(.js) .demo-stage{--lit:1}
     if (y !== lastY || h !== lastH){
       lastY = y; lastH = h;
       updateHye();
-      updateConvo();
       updateDemo();
       updateWho();
       drive();
@@ -1694,7 +1567,6 @@ html:not(.js) .demo-stage{--lit:1}
     requestAnimationFrame(frame);
   }
   updateHye();
-  updateConvo();
   updateDemo();
   updateWho();
   requestAnimationFrame(frame);
