@@ -198,5 +198,68 @@
 
     main.innerHTML = h;
     document.title = 'SICA — ' + page.title;
+
+    /* Every em dash above is a value the database owns. With Supabase
+       connected this fills them in; without it they stay dashes, which
+       is the honest state rather than a placeholder number. */
+    if (window.SICA_DB) hydrate(key, main);
   };
+
+  /* ─── hydration ──────────────────────────────────────────
+     One place that knows how each page's live values are fetched. Until
+     SICA_DB.live is true every one of these resolves to null and the
+     dashes stay put. */
+  var FEEDS = {
+    applications: async function (DB) {
+      var c = await DB.applications.counts();
+      return { stats: [c.submitted, c.interview, c.approved, c.rejected, c.archived],
+               rows: await DB.applications.list() };
+    },
+    members: async function (DB) {
+      return { rows: await DB.members.list() };
+    }
+  };
+
+  async function hydrate(key, main) {
+    var DB = window.SICA_DB;
+    var bar = document.createElement('div');
+    bar.className = 'dbstate ' + (DB.live ? 'on' : 'off');
+    bar.innerHTML = DB.live
+      ? '<i></i>Connected &mdash; live data'
+      : '<i></i>Not connected &mdash; every <span class="na">&mdash;</span> below fills in once Supabase is wired';
+    main.insertBefore(bar, main.children[1] || null);
+
+    if (!DB.live || !FEEDS[key]) return;
+    try {
+      var data = await FEEDS[key](DB);
+      var cells = main.querySelectorAll('.mc-grid .stat-v');
+      (data.stats || []).forEach(function (v, i) {
+        if (cells[i] && v !== null && v !== undefined) cells[i].textContent = v;
+      });
+      if (data.rows && data.rows.length) renderRows(main, data.rows);
+    } catch (e) { /* leave the dashes; a failed fetch must not invent data */ }
+  }
+
+  function renderRows(main, rows) {
+    var panel = main.querySelector('.panel .tblwrap table tbody') ||
+                main.querySelector('.panel .tblwrap table');
+    var empty = main.querySelector('.tbl-empty');
+    if (!panel) return;
+    var head = [].slice.call(main.querySelectorAll('.panel .tblwrap th')).map(function (t) {
+      return t.textContent.trim().toLowerCase().replace(/ /g, '_');
+    });
+    var body = document.createElement('tbody');
+    rows.forEach(function (r) {
+      var tr = document.createElement('tr');
+      head.forEach(function (col) {
+        var td = document.createElement('td');
+        var v = r[col] !== undefined ? r[col] : (r[col.replace('_applied_for', '_applied')] || '');
+        td.textContent = v === null || v === '' ? '—' : v;
+        tr.appendChild(td);
+      });
+      body.appendChild(tr);
+    });
+    panel.appendChild(body);
+    if (empty) empty.remove();
+  }
 })();

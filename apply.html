@@ -3,68 +3,90 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SICA — Officer Applications</title>
-<meta name="description" content="Applications are open for the founding SICA officer team at Cupertino High School.">
+<title>SICA &mdash; Officer Application</title>
+<meta name="description" content="Apply for a founding officer role at SICA, Cupertino High School.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ink:#141210; --ink-deep:#0A0909; --bone:#EDE8DC; --bone-dim:#1E1B17;
+  --ink:#141210; --ground:#0A0909; --raised:#1C1917; --bone:#EDE8DC;
   --brass:#9B7B3A; --brass-lit:#C9A34F; --on-ink:#8C867C; --on-bone:#9C9585;
-  --display:'Bodoni Moda',Georgia,serif;
-  --head:'Inter',system-ui,sans-serif;
-  --ui:'Inter',system-ui,sans-serif;
-  --pad:clamp(20px,5vw,84px);
+  --line:rgba(237,232,220,.12); --warn:#C2685A; --ok:#7FA88A;
+  --display:'Bodoni Moda',Georgia,serif; --ui:'Inter',system-ui,sans-serif;
+  --pad:clamp(20px,5vw,64px);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+html{-webkit-text-size-adjust:100%;background:var(--ground);scroll-behavior:smooth}
 html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 ::-webkit-scrollbar,*::-webkit-scrollbar{width:0!important;height:0!important;display:none!important}
-body{background:var(--ink-deep);color:var(--bone);font-family:var(--ui);font-weight:300;line-height:1.6;-webkit-font-smoothing:antialiased}
+body{background:var(--ground);color:var(--bone);font-family:var(--ui);font-weight:300;line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh}
 a{color:inherit;text-decoration:none}
 :focus-visible{outline:2px solid var(--brass-lit);outline-offset:3px;border-radius:5px}
 ::selection{background:var(--brass-lit);color:var(--ink)}
 
-.bar{position:sticky;top:0;z-index:20;background:rgba(10,9,9,.86);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid rgba(237,232,220,.08)}
-.bar-in{max-width:1100px;margin-inline:auto;padding:13px var(--pad);display:flex;align-items:center;justify-content:space-between;gap:16px}
+.bar{position:sticky;top:0;z-index:20;background:rgba(10,9,9,.88);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.bar-in{max-width:960px;margin-inline:auto;padding:13px var(--pad);display:flex;align-items:center;justify-content:space-between;gap:16px}
 .mk{font-family:var(--display);font-weight:700;font-size:16px;letter-spacing:.02em}
 .back{font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--on-ink)}
 .back:hover{color:var(--brass-lit)}
 
-.wrap{max-width:820px;margin-inline:auto;padding:clamp(48px,9vh,96px) var(--pad) 120px}
+.wrap{max-width:760px;margin-inline:auto;padding:clamp(40px,7vh,80px) var(--pad) 120px}
 .eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:10.5px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--brass-lit);border:1px solid rgba(201,163,79,.4);background:rgba(201,163,79,.09);border-radius:100px;padding:6px 14px}
-.eyebrow i{width:6px;height:6px;border-radius:50%;background:var(--brass-lit);display:block}
-h1{font-family:var(--head);font-weight:700;font-size:clamp(34px,6vw,60px);line-height:1.04;letter-spacing:-.035em;margin-top:24px;max-width:18ch;text-wrap:balance}
-.lede{font-size:clamp(16px,1.9vw,19px);color:var(--on-bone);max-width:60ch;margin-top:20px;line-height:1.7}
+.eyebrow i{width:6px;height:6px;border-radius:50%;background:var(--brass-lit);display:block;flex:none}
+h1{font-weight:700;font-size:clamp(30px,5.4vw,52px);line-height:1.05;letter-spacing:-.035em;margin-top:22px;max-width:20ch;text-wrap:balance}
+.lede{font-size:clamp(15px,1.8vw,18px);color:var(--on-bone);max-width:60ch;margin-top:18px;line-height:1.7}
 
-h2{font-size:12px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--on-ink);margin:clamp(46px,7vh,76px) 0 18px}
+h2{font-size:11.5px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--on-ink);margin:clamp(38px,6vh,62px) 0 16px}
 
-.roles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.role{border:1px solid rgba(237,232,220,.14);border-radius:12px;padding:20px;background:var(--ink);display:flex;flex-direction:column;gap:8px;transition:border-color .3s ease}
-.role:hover{border-color:rgba(201,163,79,.34)}
-.role h3{font-family:var(--head);font-weight:600;font-size:17px;letter-spacing:-.01em;color:var(--bone)}
-.role p{font-size:13.5px;color:var(--on-bone);line-height:1.6}
-.role .tag{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--brass-lit)}
+.roles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.role{position:relative;border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:var(--ink);cursor:pointer;display:flex;flex-direction:column;gap:5px;transition:border-color .22s ease,background .22s ease}
+.role:hover{border-color:rgba(201,163,79,.36)}
+.role input{position:absolute;opacity:0;pointer-events:none}
+.role h3{font-size:15.5px;font-weight:600;color:var(--bone)}
+.role p{font-size:12.5px;color:var(--on-bone);line-height:1.55}
+.role .tag{font-size:9.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--on-ink)}
+.role:has(input:checked){border-color:var(--brass-lit);background:linear-gradient(150deg,rgba(201,163,79,.1),transparent 60%),var(--ink)}
+.role:has(input:checked) .tag{color:var(--brass-lit)}
+.role.taken{opacity:.45;cursor:not-allowed}
 
-.steps{list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:16px}
-.steps li{counter-increment:s;display:grid;grid-template-columns:28px minmax(0,1fr);gap:16px;align-items:start}
-.steps li::before{content:counter(s,decimal-leading-zero);font-size:11px;font-weight:600;color:var(--brass-lit);border:1px solid rgba(237,232,220,.16);border-radius:7px;height:28px;display:grid;place-items:center}
-.steps b{display:block;font-size:15px;font-weight:600;color:var(--bone);margin-bottom:3px}
-.steps p{font-size:14px;color:var(--on-bone);max-width:58ch}
+.f{display:flex;flex-direction:column;gap:7px;margin-bottom:18px}
+.f label{font-size:13px;font-weight:500;color:var(--bone)}
+.f .q{font-size:13.5px;color:var(--on-bone);line-height:1.6;margin-bottom:3px}
+.f input,.f textarea,.f select{
+  background:var(--ink);border:1px solid var(--line);border-radius:9px;color:var(--bone);
+  font-family:var(--ui);font-size:15px;padding:12px 14px;outline:none;width:100%;
+  transition:border-color .22s ease;resize:vertical;
+}
+.f textarea{min-height:96px;line-height:1.6}
+.f input:focus,.f textarea:focus,.f select:focus{border-color:var(--brass-lit)}
+.f input::placeholder,.f textarea::placeholder{color:#5C574F}
+.f .count{font-size:11px;color:#5C574F;text-align:right;font-variant-numeric:tabular-nums}
+.f.bad input,.f.bad textarea,.f.bad select{border-color:var(--warn)}
+.f .err{font-size:12px;color:var(--warn);min-height:1em}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 
-.panel{margin-top:clamp(40px,6vh,70px);border:1px solid rgba(201,163,79,.3);background:linear-gradient(160deg,rgba(201,163,79,.08),transparent 62%),var(--ink);border-radius:14px;padding:clamp(26px,4vw,40px)}
-.panel h3{font-family:var(--head);font-weight:700;font-size:clamp(21px,2.6vw,27px);letter-spacing:-.02em}
-.panel p{font-size:15px;color:var(--on-bone);margin-top:12px;max-width:56ch;line-height:1.68}
-.btn{display:inline-flex;align-items:center;gap:9px;font-size:12.5px;font-weight:600;letter-spacing:.06em;padding:13px 24px;border-radius:6px;border:0;cursor:pointer;background:var(--brass-lit);color:var(--ink);margin-top:22px;font-family:var(--ui);transition:filter .25s ease}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;font-size:13px;font-weight:600;letter-spacing:.04em;padding:14px 26px;border-radius:8px;border:0;cursor:pointer;background:var(--brass-lit);color:var(--ink);font-family:var(--ui);transition:filter .22s ease}
 .btn:hover{filter:brightness(1.08)}
-.btn.ghost{background:transparent;border:1px solid rgba(237,232,220,.24);color:var(--bone)}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--bone)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px;align-items:center}
 
-.note{margin-top:18px;font-size:12.5px;color:#6B665E;max-width:56ch;line-height:1.6}
-.foot{border-top:1px solid rgba(237,232,220,.1);margin-top:clamp(52px,8vh,90px);padding-top:24px;font-size:12px;color:#65605A;display:flex;flex-wrap:wrap;gap:8px 20px}
+.note{margin-top:16px;font-size:12.5px;color:#6B665E;line-height:1.6;max-width:60ch}
+.banner{margin-top:24px;border:1px solid rgba(201,163,79,.32);background:linear-gradient(160deg,rgba(201,163,79,.09),transparent 62%),var(--ink);border-radius:12px;padding:18px 20px}
+.banner b{display:block;font-size:14px;font-weight:600;color:var(--brass-lit);margin-bottom:6px}
+.banner p{font-size:13.5px;color:var(--on-bone);line-height:1.65}
+
+.done{display:none;text-align:center;padding:clamp(40px,8vh,80px) 0}
+.done.on{display:block}
+.done .ic{width:56px;height:56px;border-radius:50%;background:rgba(127,168,138,.14);border:1px solid rgba(127,168,138,.4);display:grid;place-items:center;margin:0 auto 20px}
+.done .ic svg{width:26px;height:26px;stroke:var(--ok);stroke-width:2;fill:none}
+.done h2{font-size:clamp(24px,3.6vw,34px);font-weight:700;letter-spacing:-.025em;color:var(--bone);text-transform:none;margin:0 0 12px}
+.done p{font-size:15px;color:var(--on-bone);max-width:48ch;margin:0 auto 10px;line-height:1.7}
+.form.hide{display:none}
+
+.foot{border-top:1px solid var(--line);margin-top:clamp(44px,7vh,80px);padding-top:22px;font-size:12px;color:#65605A;display:flex;flex-wrap:wrap;gap:8px 20px}
 .foot a{color:var(--brass-lit)}
-
-@media (max-width:680px){.roles{grid-template-columns:1fr}}
+@media (max-width:620px){.roles,.two{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition-duration:.001ms!important}}
 </style>
 </head>
@@ -78,59 +100,224 @@ h2{font-size:12px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;
 </div>
 
 <div class="wrap">
-  <span class="eyebrow"><i></i>Now accepting</span>
-  <h1>Officer applications for the founding team.</h1>
-  <p class="lede">SICA launches with five officers. This is the team that writes the first curriculum, runs the first meetings, and sets what the club becomes &mdash; before there is anything to inherit.</p>
+  <div class="form" id="form">
+    <span class="eyebrow"><i></i>Now accepting</span>
+    <h1>Apply for a founding officer role.</h1>
+    <p class="lede">SICA launches with six officers. This is the team that writes the first curriculum, runs the first meetings, and decides what the club becomes &mdash; before there is anything to inherit. About 45 minutes a week outside the meeting.</p>
 
-  <h2>The five roles</h2>
-  <div class="roles">
-    <div class="role">
-      <span class="tag">Filled</span>
-      <h3>President</h3>
-      <p>Sets the curriculum, teaches the idea each week, holds the clock. Currently Reyansh Nankani.</p>
+    <h2>Which role</h2>
+    <div class="roles" id="roles"></div>
+    <div class="err" id="roleErr" style="font-size:12px;color:var(--warn);min-height:1em;margin-top:8px"></div>
+
+    <h2>About you</h2>
+    <div class="two">
+      <div class="f"><label for="name">Full name</label><input id="name" autocomplete="name"><div class="err"></div></div>
+      <div class="f"><label for="grade">Grade</label>
+        <select id="grade">
+          <option value="">Select…</option>
+          <option value="9">9th</option><option value="10">10th</option>
+          <option value="11">11th</option><option value="12">12th</option>
+        </select><div class="err"></div></div>
     </div>
-    <div class="role">
-      <span class="tag">Open</span>
-      <h3>Vice President</h3>
-      <p>Runs the practice activity, pairs people up, watches for anyone left out. Teaches a full session by week four.</p>
+    <div class="f"><label for="email">School email</label>
+      <input id="email" type="email" placeholder="you@student.fuhsd.org" autocomplete="email"><div class="err"></div></div>
+
+    <h2>Three questions</h2>
+    <p class="lede" style="margin-top:0;font-size:14px">Short answers are fine &mdash; two or three sentences each. We are reading for how you think, not how much you write.</p>
+
+    <div class="f" data-min="40">
+      <label for="q1">1. Describe a conversation you handled badly. What would you do differently?</label>
+      <textarea id="q1"></textarea><div class="count"></div><div class="err"></div></div>
+
+    <div class="f" data-min="40">
+      <label for="q2">2. Someone in the room has not spoken in three weeks. What do you actually do?</label>
+      <textarea id="q2"></textarea><div class="count"></div><div class="err"></div></div>
+
+    <div class="f" data-min="30">
+      <label for="q3">3. What is a week where you would have to tell us you cannot do your SICA work?</label>
+      <p class="q">The most useful answer on this page. Everyone has one &mdash; saying so early is the point.</p>
+      <textarea id="q3"></textarea><div class="count"></div><div class="err"></div></div>
+
+    <div class="f"><label for="ref">Anything else? <span style="color:#5C574F;font-weight:400">(optional)</span></label>
+      <textarea id="ref" style="min-height:64px"></textarea></div>
+
+    <div class="actions">
+      <button class="btn" id="submit">Submit application</button>
+      <button class="btn ghost" id="saveDraft">Save draft</button>
     </div>
-    <div class="role">
-      <span class="tag">Open</span>
-      <h3>Treasurer + Secretary</h3>
-      <p>Attendance, minutes, and the club&rsquo;s money. Writes what happened into the record within 48 hours.</p>
+    <p class="note" id="modeNote"></p>
+
+    <div class="banner">
+      <b>What happens next</b>
+      <p>Two officers read every application. If it looks like a fit you get a fifteen-minute conversation, then one real piece of work with a week to do it &mdash; a run of show, a week&rsquo;s discussion questions, a flyer. We decide within three days of that and tell everyone either way, including the people we don&rsquo;t pick.</p>
     </div>
-    <div class="role">
-      <span class="tag">Open</span>
-      <h3>Public Relations</h3>
-      <p>Announcements, recruitment, and everything SICA says publicly.</p>
-    </div>
-    <div class="role">
-      <span class="tag">Open</span>
-      <h3>Media Director</h3>
-      <p>Photos and video during meetings &mdash; with consent, and never during a practice activity.</p>
+
+    <div class="foot">
+      <span>SICA &middot; Cupertino High School</span>
+      <a href="mailto:thesicaorg@gmail.com">thesicaorg@gmail.com</a>
+      <a href="index.html">Back to the site</a>
     </div>
   </div>
 
-  <h2>What we&rsquo;re selecting for</h2>
-  <ol class="steps">
-    <li><div><b>Follow-through over charisma</b><p>A quiet officer who delivers beats a compelling one who doesn&rsquo;t. There&rsquo;s a short trial task before any decision.</p></div></li>
-    <li><div><b>Warmth toward beginners</b><p>The test is simple: would the most nervous person in the room approach you?</p></div></li>
-    <li><div><b>About 45 minutes a week</b><p>Outside the meeting itself. Deliberately small enough to survive AP season.</p></div></li>
-  </ol>
-
-  <div class="panel">
-    <h3>The form isn&rsquo;t live yet</h3>
-    <p>Applications open here shortly. Until then, email the club and say which role you&rsquo;re interested in &mdash; that counts as an early application and we&rsquo;ll come back to you first.</p>
-    <a class="btn" href="mailto:thesicaorg@gmail.com?subject=SICA%20officer%20application">Email your interest</a>
-    <p class="note">Once the form is wired up this button becomes the application itself, and everything submitted is stored against your account.</p>
-  </div>
-
-  <div class="foot">
-    <span>SICA &middot; Cupertino High School</span>
-    <a href="mailto:thesicaorg@gmail.com">thesicaorg@gmail.com</a>
-    <a href="index.html">Back to the site</a>
+  <div class="done" id="done">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="m5 13 4 4L19 7"/></svg></div>
+    <h2 id="doneTitle">Application sent</h2>
+    <p id="doneBody"></p>
+    <p><a class="btn ghost" href="index.html" style="margin-top:18px">Back to the site</a></p>
   </div>
 </div>
 
+<script src="supabase-config.js?v=8"></script>
+<script src="db.js?v=8"></script>
+<script>
+(function () {
+  'use strict';
+  var DB = window.SICA_DB;
+
+  var ROLES = [
+    ['vp',        'Vice President',       'Runs the practice activity, pairs people up, teaches a full session by week four.', false],
+    ['secretary', 'Secretary',            'Attendance, minutes, and the club’s written record within 48 hours.', false],
+    ['treasurer', 'Treasurer',            'The budget, expenses and anything the club buys.', false],
+    ['pr',        'Public Relations',     'Announcements, recruitment, and everything SICA says publicly.', false],
+    ['media',     'Media Director',       'Photos and video during meetings — with consent, never during practice.', false],
+    ['president', 'President',            'Held by the founder until a successor is elected.', true]
+  ];
+
+  document.getElementById('roles').innerHTML = ROLES.map(function (r) {
+    return '<label class="role' + (r[3] ? ' taken' : '') + '">' +
+      '<input type="radio" name="role" value="' + r[0] + '"' + (r[3] ? ' disabled' : '') + '>' +
+      '<span class="tag">' + (r[3] ? 'Filled' : 'Open') + '</span>' +
+      '<h3>' + r[1] + '</h3><p>' + r[2] + '</p></label>';
+  }).join('');
+
+  var F = ['name', 'grade', 'email', 'q1', 'q2', 'q3', 'ref'];
+  var DRAFT = 'sica.apply.draft';
+
+  /* live character counts on the three written answers */
+  ['q1', 'q2', 'q3'].forEach(function (id) {
+    var el = document.getElementById(id);
+    var box = el.closest('.f'), min = +box.dataset.min;
+    var out = box.querySelector('.count');
+    function tick() {
+      var n = el.value.trim().length;
+      out.textContent = n < min ? (min - n) + ' more characters' : n + ' characters';
+      out.style.color = n < min ? '#5C574F' : 'var(--ok)';
+    }
+    el.addEventListener('input', tick); tick();
+  });
+
+  function val(id) { return (document.getElementById(id).value || '').trim(); }
+  function setErr(id, msg) {
+    var box = document.getElementById(id).closest('.f');
+    box.classList.toggle('bad', !!msg);
+    box.querySelector('.err').textContent = msg || '';
+  }
+
+  function collect() {
+    var role = document.querySelector('input[name=role]:checked');
+    return {
+      role: role ? role.value : '',
+      roleLabel: role ? role.closest('.role').querySelector('h3').textContent : '',
+      name: val('name'), grade: val('grade'), email: val('email'),
+      a_badly: val('q1'), a_quiet: val('q2'), a_busy_week: val('q3'), referral: val('ref')
+    };
+  }
+
+  function validate(a) {
+    var ok = true;
+    document.getElementById('roleErr').textContent = '';
+    if (!a.role) { document.getElementById('roleErr').textContent = 'Pick the role you are applying for.'; ok = false; }
+    setErr('name', a.name ? '' : 'We need your name.');
+    if (!a.name) ok = false;
+    setErr('grade', a.grade ? '' : 'Pick your grade.');
+    if (!a.grade) ok = false;
+    var emailOk = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(a.email);
+    setErr('email', emailOk ? '' : 'Enter a valid email so we can reply.');
+    if (!emailOk) ok = false;
+    [['q1', a.a_badly, 40], ['q2', a.a_quiet, 40], ['q3', a.a_busy_week, 30]].forEach(function (q) {
+      var bad = q[1].length < q[2];
+      setErr(q[0], bad ? 'A couple of sentences, please.' : '');
+      if (bad) ok = false;
+    });
+    if (!ok) {
+      var first = document.querySelector('.f.bad input, .f.bad textarea, .f.bad select');
+      if (first) { first.scrollIntoView({block:'center', behavior:'smooth'}); first.focus({preventScroll:true}); }
+    }
+    return ok;
+  }
+
+  /* Until Supabase is connected there is nowhere for a submission to
+     land that Reyansh can actually read, so the form hands off to email
+     with every answer already written out. Once the database is live
+     this same call writes a row and the email step disappears. */
+  function emailBody(a) {
+    return [
+      'SICA officer application', '',
+      'Role: ' + a.roleLabel, 'Name: ' + a.name, 'Grade: ' + a.grade,
+      'Email: ' + a.email, '',
+      '1. A conversation handled badly:', a.a_badly, '',
+      '2. Someone has not spoken in three weeks:', a.a_quiet, '',
+      '3. A week I could not do SICA work:', a.a_busy_week, '',
+      a.referral ? ('Anything else:\n' + a.referral) : ''
+    ].join('\n');
+  }
+
+  document.getElementById('modeNote').textContent = DB.live
+    ? 'Your application is saved to SICA directly.'
+    : 'Applications are being collected by email until the club account is set up — the button opens your mail app with everything filled in. Nothing is lost.';
+
+  document.getElementById('saveDraft').addEventListener('click', function () {
+    var d = {}; F.forEach(function (k) { d[k] = val(k); });
+    var r = document.querySelector('input[name=role]:checked');
+    d.role = r ? r.value : '';
+    try { localStorage.setItem(DRAFT, JSON.stringify(d)); } catch (e) {}
+    this.textContent = 'Draft saved';
+    setTimeout(function () { document.getElementById('saveDraft').textContent = 'Save draft'; }, 1800);
+  });
+
+  try {
+    var d = JSON.parse(localStorage.getItem(DRAFT) || 'null');
+    if (d) {
+      F.forEach(function (k) { if (d[k]) document.getElementById(k).value = d[k]; });
+      if (d.role) {
+        var r = document.querySelector('input[name=role][value="' + d.role + '"]');
+        if (r) r.checked = true;
+      }
+      ['q1','q2','q3'].forEach(function (id) {
+        document.getElementById(id).dispatchEvent(new Event('input'));
+      });
+    }
+  } catch (e) {}
+
+  document.getElementById('submit').addEventListener('click', async function () {
+    var a = collect();
+    if (!validate(a)) return;
+    this.disabled = true; this.textContent = 'Sending…';
+
+    var stored = false;
+    try { await DB.applications.create(a); stored = true; } catch (e) { stored = false; }
+
+    try { localStorage.removeItem(DRAFT); } catch (e) {}
+
+    if (!DB.live) {
+      var href = 'mailto:thesicaorg@gmail.com'
+        + '?subject=' + encodeURIComponent('SICA officer application — ' + a.name + ' (' + a.roleLabel + ')')
+        + '&body=' + encodeURIComponent(emailBody(a));
+      window.location.href = href;
+      document.getElementById('doneTitle').textContent = 'One last step';
+      document.getElementById('doneBody').innerHTML =
+        'Your mail app should have opened with the application filled in &mdash; press send and you are done. ' +
+        'If nothing opened, email <a style="color:var(--brass-lit)" href="mailto:thesicaorg@gmail.com">thesicaorg@gmail.com</a> and we will send you the questions.';
+    } else {
+      document.getElementById('doneTitle').textContent = 'Application received';
+      document.getElementById('doneBody').textContent =
+        'Two officers will read it. If it looks like a fit you will hear from us within a week about a short conversation.';
+    }
+    document.getElementById('form').classList.add('hide');
+    document.getElementById('done').classList.add('on');
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  });
+})();
+</script>
 </body>
 </html>

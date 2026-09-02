@@ -1,0 +1,211 @@
+/* ═══════════════════════════════════════════════════════════
+   The data layer.
+
+   Every read and write the portal needs is declared here once, behind a
+   single contract. Pages never touch storage directly — they call
+   SICA_DB.applications.create(), SICA_DB.members.list() and so on.
+
+   Two adapters sit behind that contract:
+
+     local     — works today, no account needed. Writes to this browser
+                 only, which is honest but useless for collecting real
+                 applications, so the application form pairs it with an
+                 email hand-off that actually reaches the club.
+
+     supabase  — the real one. Switches on automatically the moment
+                 supabase-config.js has a url and key. No page changes.
+
+   Because the contract is identical, wiring Supabase is a config edit
+   rather than a rewrite.
+   ═══════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  var CFG = window.SICA_SUPABASE || {};
+  var LIVE = !!(CFG.url && CFG.anonKey);
+
+  /* ─── table contract ─────────────────────────────────────
+     Mirrors schema.sql exactly. Anything the UI shows as an em dash is
+     a column here that has no rows yet. */
+  var TABLES = {
+    profiles:     ['id', 'email', 'full_name', 'grade', 'role', 'created_at', 'last_seen'],
+    applications: ['id', 'created_at', 'name', 'email', 'grade', 'role_applied',
+                   'a_badly', 'a_quiet', 'a_busy_week', 'referral', 'status',
+                   'reviewed_by', 'reviewed_at', 'review_note'],
+    members:      ['id', 'profile_id', 'joined_at', 'status', 'tags', 'notes'],
+    meetings:     ['id', 'number', 'topic', 'week_ref', 'date', 'room', 'status', 'notes'],
+    attendance:   ['id', 'meeting_id', 'profile_id', 'present', 'is_new'],
+    tasks:        ['id', 'title', 'owner_role', 'owner_id', 'due', 'priority', 'status', 'meeting_id'],
+    announcements:['id', 'title', 'body', 'audience', 'author_id', 'publish_at', 'pinned'],
+    documents:    ['id', 'title', 'category', 'url', 'owner_role', 'updated_at'],
+    expenses:     ['id', 'date', 'item', 'amount', 'paid_by', 'approved_by', 'receipt_url'],
+    settings:     ['key', 'value']
+  };
+
+  var APPLICATION_STATUS = ['submitted', 'interview', 'approved', 'rejected', 'archived'];
+
+  /* ─── local adapter ──────────────────────────────────────
+     Deliberately minimal. It exists so the UI can be built and tested
+     end to end, not so the club can run on it. */
+  function lsGet(t) {
+    try { return JSON.parse(localStorage.getItem('sica.' + t) || '[]'); }
+    catch (e) { return []; }
+  }
+  function lsSet(t, rows) {
+    try { localStorage.setItem('sica.' + t, JSON.stringify(rows)); } catch (e) {}
+    return rows;
+  }
+  function uid() { return 'l' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+  var local = {
+    mode: 'local',
+    async list(t, opts) {
+      var rows = lsGet(t);
+      if (opts && opts.where) {
+        Object.keys(opts.where).forEach(function (k) {
+          rows = rows.filter(function (r) { return r[k] === opts.where[k]; });
+        });
+      }
+      if (opts && opts.order) rows.sort(function (a, b) {
+        return (b[opts.order] || '') > (a[opts.order] || '') ? 1 : -1;
+      });
+      return rows;
+    },
+    async get(t, id) { return lsGet(t).filter(function (r) { return r.id === id; })[0] || null; },
+    async insert(t, row) {
+      row.id = row.id || uid();
+      row.created_at = row.created_at || new Date().toISOString();
+      var rows = lsGet(t); rows.push(row); lsSet(t, rows);
+      return row;
+    },
+    async update(t, id, patch) {
+      var rows = lsGet(t), hit = null;
+      rows = rows.map(function (r) {
+        if (r.id !== id) return r;
+        hit = Object.assign({}, r, patch); return hit;
+      });
+      lsSet(t, rows);
+      return hit;
+    },
+    async remove(t, id) {
+      lsSet(t, lsGet(t).filter(function (r) { return r.id !== id; }));
+      return true;
+    },
+    async count(t, where) { return (await this.list(t, { where: where })).length; }
+  };
+
+  /* ─── supabase adapter ───────────────────────────────────
+     Talks to PostgREST directly, so there is no SDK to load and no build
+     step. Row Level Security in schema.sql decides what each caller may
+     actually see; the anon key alone grants nothing. */
+  function sb(path, opts) {
+    opts = opts || {};
+    var token = null;
+    try { token = localStorage.getItem('sica.token'); } catch (e) {}
+    return fetch(CFG.url + '/rest/v1/' + path, {
+      method: opts.method || 'GET',
+      headers: {
+        apikey: CFG.anonKey,
+        Authorization: 'Bearer ' + (token || CFG.anonKey),
+        'Content-Type': 'application/json',
+        Prefer: opts.prefer || 'return=representation'
+      },
+      body: opts.body ? JSON.stringify(opts.body) : undefined
+    }).then(function (r) {
+      if (!r.ok) return r.text().then(function (t) { throw new Error(r.status + ' ' + t); });
+      return r.status === 204 ? null : r.json();
+    });
+  }
+
+  var supabase = {
+    mode: 'supabase',
+    async list(t, opts) {
+      var q = [];
+      if (opts && opts.where) Object.keys(opts.where).forEach(function (k) {
+        q.push(k + '=eq.' + encodeURIComponent(opts.where[k]));
+      });
+      if (opts && opts.order) q.push('order=' + opts.order + '.desc');
+      q.push('select=*');
+      return sb(t + '?' + q.join('&'));
+    },
+    async get(t, id) { return (await sb(t + '?id=eq.' + id + '&select=*'))[0] || null; },
+    async insert(t, row) { return (await sb(t, { method: 'POST', body: row }))[0]; },
+    async update(t, id, patch) {
+      return (await sb(t + '?id=eq.' + id, { method: 'PATCH', body: patch }))[0];
+    },
+    async remove(t, id) { return sb(t + '?id=eq.' + id, { method: 'DELETE', prefer: 'return=minimal' }); },
+    async count(t, where) { return (await this.list(t, { where: where })).length; }
+  };
+
+  var A = LIVE ? supabase : local;
+
+  /* ─── the API pages actually use ─────────────────────────
+     Named for what the club does, not for what the table is called. */
+  var DB = {
+    live: LIVE,
+    mode: A.mode,
+    tables: TABLES,
+    statuses: APPLICATION_STATUS,
+
+    applications: {
+      create: function (a) {
+        return A.insert('applications', {
+          name: a.name, email: a.email, grade: a.grade,
+          role_applied: a.role, a_badly: a.a_badly, a_quiet: a.a_quiet,
+          a_busy_week: a.a_busy_week, referral: a.referral || null,
+          status: 'submitted'
+        });
+      },
+      list: function (status) {
+        return A.list('applications', { where: status ? { status: status } : null, order: 'created_at' });
+      },
+      get: function (id) { return A.get('applications', id); },
+      setStatus: function (id, status, note) {
+        return A.update('applications', id, {
+          status: status, review_note: note || null,
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: (window.SICA_ROLES && window.SICA_ROLES.active()) || null
+        });
+      },
+      counts: async function () {
+        var all = await A.list('applications', {});
+        var c = { total: all.length };
+        APPLICATION_STATUS.forEach(function (s) {
+          c[s] = all.filter(function (r) { return r.status === s; }).length;
+        });
+        return c;
+      }
+    },
+
+    members:  { list: function () { return A.list('members', { order: 'joined_at' }); },
+                create: function (m) { return A.insert('members', m); },
+                count: function () { return A.count('members'); } },
+    officers: { list: function () { return A.list('profiles', { where: { role: null } }); },
+                byRole: function (r) { return A.list('profiles', { where: { role: r } }); },
+                upsert: function (p) { return A.insert('profiles', p); } },
+    meetings: { list: function () { return A.list('meetings', { order: 'date' }); },
+                create: function (m) { return A.insert('meetings', m); },
+                update: function (id, p) { return A.update('meetings', id, p); } },
+    tasks:    { list: function (st) { return A.list('tasks', { where: st ? { status: st } : null }); },
+                create: function (t) { return A.insert('tasks', t); },
+                update: function (id, p) { return A.update('tasks', id, p); } },
+    attendance: { forMeeting: function (id) { return A.list('attendance', { where: { meeting_id: id } }); },
+                mark: function (row) { return A.insert('attendance', row); } },
+    announcements: { list: function () { return A.list('announcements', { order: 'publish_at' }); },
+                create: function (a) { return A.insert('announcements', a); } },
+    documents: { list: function () { return A.list('documents', { order: 'updated_at' }); },
+                create: function (d) { return A.insert('documents', d); } },
+    expenses: { list: function () { return A.list('expenses', { order: 'date' }); },
+                create: function (e) { return A.insert('expenses', e); } },
+    settings: { all: function () { return A.list('settings', {}); },
+                set: function (k, v) { return A.update('settings', k, { value: v }); } },
+
+    /* Pages call this to decide between a real number and an em dash. */
+    async stat(fn) {
+      if (!LIVE) return null;
+      try { return await fn(); } catch (e) { return null; }
+    }
+  };
+
+  window.SICA_DB = DB;
+})();
