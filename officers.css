@@ -56,7 +56,8 @@ body:not(.unlocked) .shell{display:none}
 
 .navgroup{display:flex;flex-direction:column;gap:1px}
 .navlabel{font-size:9px;letter-spacing:.17em;text-transform:uppercase;color:var(--text-3);padding:0 10px 5px}
-.navitem{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:7px;color:var(--text-2);font-size:13px;font-weight:500;white-space:nowrap;transition:background .16s ease,color .16s ease}
+.navitem{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:7px;color:var(--text-2);font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;transition:background .16s ease,color .16s ease}
+.navitem-t{overflow:hidden;text-overflow:ellipsis}
 .navitem svg{width:17px;height:17px;stroke:currentColor;stroke-width:1.6;fill:none;flex:none}
 .navitem:hover{background:var(--raised);color:var(--text)}
 .navitem.on{background:var(--brass-wash);color:var(--brass)}
@@ -79,6 +80,7 @@ body.rail-collapsed .rail{padding-inline:9px;align-items:center}
 body.rail-collapsed .brand{justify-content:center;padding-inline:0}
 body.rail-collapsed .brand-txt,
 body.rail-collapsed .navlabel,
+body.rail-collapsed .navitem-t,
 body.rail-collapsed .navitem .cnt,
 body.rail-collapsed .kbd-hint span,
 body.rail-collapsed .whoami-txt{display:none}
@@ -293,11 +295,32 @@ a.card:hover,.card.link:hover{border-color:rgba(201,163,79,.34)}
   .hb-toc .tl{display:none}
 }
 @media (max-width:960px){
+  /* On a phone the rail is a single scrolling strip, never a collapsing
+     column. Items keep their intrinsic width (flex:none) — without it the
+     flex row squeezed every item to nothing while its label overflowed,
+     which is what stacked all the labels on top of each other. */
   .shell{grid-template-columns:1fr}
-  .rail{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px;padding:14px 18px}
-  .railfoot{margin-top:0;flex-direction:row;align-items:center;gap:12px}
-  .navgroup{flex-direction:row;flex-wrap:wrap}
+  .rail{
+    position:sticky;top:0;z-index:30;height:auto;flex-direction:row;flex-wrap:nowrap;
+    align-items:center;gap:6px;padding:10px 14px;overflow-x:auto;
+    border-right:0;border-bottom:1px solid var(--line);
+  }
+  .brand{width:auto;flex:none;margin-right:6px}
+  .brand-ic{display:none}
+  .navgroup{flex-direction:row;flex-wrap:nowrap;gap:6px;flex:none}
+  .navitem{flex:none;padding:7px 11px}
+  .navitem-t{display:inline}
+  .railfoot{margin-top:0;flex-direction:row;align-items:center;gap:10px;flex:none;margin-left:8px}
+  .whoami{flex:none}
   .navlabel,.kbd-hint,.navitem .cnt{display:none}
+  /* collapsing is a desktop affordance; on a strip it means nothing */
+  body.rail-collapsed{--rail:auto}
+  body.rail-collapsed .rail{padding:10px 14px;align-items:center}
+  body.rail-collapsed .navitem-t,
+  body.rail-collapsed .brand-txt,
+  body.rail-collapsed .whoami-txt{display:inline}
+  body.rail-collapsed .navitem{width:auto;justify-content:flex-start;padding:7px 11px}
+  body.rail-collapsed .navitem::after{content:none}
   .panes{grid-template-columns:1fr}
   .pane.idx{position:static;max-height:none}
   .g4,.g3,.parts,.files,.prof-grid{grid-template-columns:repeat(2,minmax(0,1fr))}

@@ -41,7 +41,8 @@
         h += '<a class="navitem' + (i.id === page ? ' on' : '') + '" href="' + i.href + '"' +
              ' data-label="' + i.label + '"' +
              (i.id === page ? ' aria-current="page"' : '') + '>' +
-             '<svg viewBox="0 0 24 24">' + i.icon + '</svg>' + i.label +
+             '<svg viewBox="0 0 24 24">' + i.icon + '</svg>' +
+             '<span class="navitem-t">' + i.label + '</span>' +
              (i.cnt ? '<span class="cnt">' + i.cnt + '</span>' : '') + '</a>';
       });
       h += '</div>';
