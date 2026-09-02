@@ -77,9 +77,10 @@
       h += '<button class="rm-row' + (id === cur ? ' on' : '') + '" data-role="' + id + '">' +
            '<span class="rm-av" style="background:linear-gradient(145deg,' + r.color + ',#6E5626)">' + r.short + '</span>' +
            '<span class="rm-t"><b>' + r.label + '</b><span>' + r.person + '</span></span>' +
-           (id === R.signedInRole() ? '<span class="rm-you">you</span>' : '') + '</button>';
+           (R.holds(id) ? '<span class="rm-you">you</span>' : '') + '</button>';
     });
-    h += '<div class="rm-foot">Founder only. Everyone else sees just their own role.</div>';
+    h += '<div class="rm-foot">You hold Founder and President. The other four are views for testing &mdash; ' +
+         'nobody else can switch roles.</div>';
     var m = document.createElement('div');
     m.className = 'rolemenu'; m.id = 'roleMenu'; m.innerHTML = h;
     document.body.appendChild(m);

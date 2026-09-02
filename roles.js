@@ -47,9 +47,14 @@
   var HB   = p('handbook',  'Handbook',  'handbook.html',  I.clip, '10');
 
   var ROLES = {
+    /* Reyansh holds Founder and President at once for now. They stay two
+       roles because in about two years a different student is elected
+       President while the Founder keeps oversight — merging them into one
+       role today would mean unpicking it exactly when it matters. */
     founder: {
       id: 'founder', label: 'Founder', short: 'FO', color: '#C9A34F',
-      person: 'Reyansh Nankani',
+      person: 'Reyansh Nankani', supreme: true, alsoHolds: 'president',
+      note: 'Supreme admin. Every permission, and currently holds President as well.',
       nav: [
         { group: 'Overview', items: [
           p('dashboard', 'Dashboard', 'founder.html', I.grid),
@@ -72,7 +77,8 @@
 
     president: {
       id: 'president', label: 'President', short: 'PR', color: '#C9A34F',
-      person: 'Reyansh Nankani',
+      person: 'Reyansh Nankani', heldByFounder: true,
+      note: 'Held by the Founder until a successor is elected.',
       nav: [
         { group: 'Overview', items: [ p('dashboard', 'Dashboard', 'officers.html', I.grid) ]},
         { group: 'Run the club', items: [
@@ -155,6 +161,14 @@
      role is the Founder, which is why the switcher is available at all. */
   function signedInRole() { return 'founder'; }
 
+  /* Does the signed-in person hold this role outright, rather than only
+     being able to look at it? Founder holds President today, so switching
+     between those two is not really impersonation. */
+  function holds(id) {
+    var me = ROLES[signedInRole()];
+    return id === me.id || me.alsoHolds === id;
+  }
+
   function activeRole() {
     var r = null;
     try { r = localStorage.getItem('sica-role'); } catch (e) {}
@@ -175,6 +189,7 @@
     active: activeRole,
     set: setRole,
     get: function (id) { return ROLES[id || activeRole()]; },
-    isImpersonating: function () { return activeRole() !== signedInRole(); }
+    holds: holds,
+    isImpersonating: function () { return !holds(activeRole()); }
   };
 })();
