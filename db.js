@@ -35,7 +35,8 @@
     members:      ['id', 'profile_id', 'joined_at', 'status', 'tags', 'notes'],
     meetings:     ['id', 'number', 'topic', 'week_ref', 'date', 'room', 'status', 'notes'],
     attendance:   ['id', 'meeting_id', 'profile_id', 'present', 'is_new'],
-    tasks:        ['id', 'title', 'owner_role', 'owner_id', 'due', 'priority', 'status', 'meeting_id'],
+    tasks:        ['id', 'title', 'description', 'owner_role', 'owner_id', 'due', 'priority',
+                   'status', 'position', 'meeting_id', 'created_at', 'completed_at', 'completed_by'],
     announcements:['id', 'title', 'body', 'audience', 'author_id', 'publish_at', 'pinned'],
     documents:    ['id', 'title', 'category', 'url', 'owner_role', 'updated_at'],
     expenses:     ['id', 'date', 'item', 'amount', 'paid_by', 'approved_by', 'receipt_url'],
@@ -186,9 +187,57 @@
     meetings: { list: function () { return A.list('meetings', { order: 'date' }); },
                 create: function (m) { return A.insert('meetings', m); },
                 update: function (id, p) { return A.update('meetings', id, p); } },
-    tasks:    { list: function (st) { return A.list('tasks', { where: st ? { status: st } : null }); },
-                create: function (t) { return A.insert('tasks', t); },
-                update: function (id, p) { return A.update('tasks', id, p); } },
+    /* Ordering uses a float `position` rather than an index, so moving one
+       task rewrites one row instead of renumbering the whole list. */
+    tasks: {
+      list: async function (status) {
+        var rows = await A.list('tasks', { where: status ? { status: status } : null });
+        return rows.sort(function (a, b) { return (a.position || 0) - (b.position || 0); });
+      },
+      create: async function (t) {
+        var open = await A.list('tasks', { where: { status: 'open' } });
+        var min = open.reduce(function (m, r) { return Math.min(m, r.position || 0); }, 0);
+        return A.insert('tasks', {
+          title: t.title,
+          description: t.description || '',
+          owner_role: t.owner_role || null,
+          due: t.due || null,
+          priority: t.priority || 'normal',
+          status: 'open',
+          position: min - 1000            /* newest sits at the top */
+        });
+      },
+      update: function (id, p) { return A.update('tasks', id, p); },
+      remove: function (id) { return A.remove('tasks', id); },
+      complete: function (id, done) {
+        return A.update('tasks', id, {
+          status: done ? 'done' : 'open',
+          completed_at: done ? new Date().toISOString() : null,
+          completed_by: done ? ((window.SICA_ROLES && window.SICA_ROLES.active()) || null) : null
+        });
+      },
+      /* Drop `id` between `before` and `after`, halfway between their
+         positions. No other row is touched. */
+      move: function (id, beforePos, afterPos) {
+        var p;
+        if (beforePos === null && afterPos === null) p = 0;
+        else if (beforePos === null) p = afterPos - 1000;
+        else if (afterPos === null) p = beforePos + 1000;
+        else p = (beforePos + afterPos) / 2;
+        return A.update('tasks', id, { position: p });
+      },
+      counts: async function () {
+        var all = await A.list('tasks', {});
+        var today = new Date().toISOString().slice(0, 10);
+        var open = all.filter(function (t) { return t.status === 'open'; });
+        return {
+          open: open.length,
+          done: all.filter(function (t) { return t.status === 'done'; }).length,
+          overdue: open.filter(function (t) { return t.due && t.due < today; }).length,
+          soon: open.filter(function (t) { return t.due && t.due >= today; }).length
+        };
+      }
+    },
     attendance: { forMeeting: function (id) { return A.list('attendance', { where: { meeting_id: id } }); },
                 mark: function (row) { return A.insert('attendance', row); } },
     announcements: { list: function () { return A.list('announcements', { order: 'publish_at' }); },

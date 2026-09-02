@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="officers.css?v=8">
+<link rel="stylesheet" href="officers.css?v=9">
 </head>
 <body data-page="dashboard">
 <div class="shell">
@@ -34,8 +34,8 @@
 
       <div style="display:flex;flex-direction:column;gap:14px">
         <div class="panel">
-          <div class="panel-h"><b>Quick actions</b></div>
-          <div class="qa" id="qa"></div>
+          <div class="panel-h"><b>To-do</b><span id="tkCount"></span></div>
+          <div id="taskList"></div>
         </div>
         <div class="panel">
           <div class="panel-h"><b>Needs you</b><span id="needsCount"></span></div>
@@ -49,13 +49,14 @@
   </main>
 </div>
 
-<script src="references-data.js?v=8"></script>
-<script src="supabase-config.js?v=8"></script>
-<script src="db.js?v=8"></script>
-<script src="roles.js?v=8"></script>
-<script src="pages.js?v=8"></script>
-<script src="render.js?v=8"></script>
-<script src="officers.js?v=8"></script>
+<script src="references-data.js?v=9"></script>
+<script src="supabase-config.js?v=9"></script>
+<script src="db.js?v=9"></script>
+<script src="roles.js?v=9"></script>
+<script src="pages.js?v=9"></script>
+<script src="render.js?v=9"></script>
+<script src="tasks.js?v=9"></script>
+<script src="officers.js?v=9"></script>
 <script>
 window.sicaPageInit = function(){
   var R = window.SICA_ROLES, I = R.icons;
@@ -106,16 +107,42 @@ window.sicaPageInit = function(){
   }).join('');
   document.getElementById('officerNote').textContent = '5 of 6 seats unfilled';
 
-  var QA = [
-    ['Open officer applications', 'applications.html'],
-    ['Schedule Meeting 1', 'meetings.html'],
-    ['Write Week 9', 'curriculum.html'],
-    ['Post an announcement', 'announcements.html'],
-    ['Add a library doc', 'library.html']
-  ];
-  document.getElementById('qa').innerHTML = QA.map(function(q){
-    return '<button onclick="location.href=\'' + q[1] + '\'">' + q[0] + '</button>';
-  }).join('');
+  /* The to-do list and the activity feed are the same data seen twice:
+     ticking a task here is what writes the entry below. */
+  function rel(iso){
+    if (!iso) return '';
+    var d = (Date.now() - new Date(iso)) / 1000;
+    if (d < 60) return 'just now';
+    if (d < 3600) return Math.floor(d/60) + 'm ago';
+    if (d < 86400) return Math.floor(d/3600) + 'h ago';
+    return new Date(iso).toLocaleDateString(undefined,{day:'numeric',month:'short'});
+  }
+
+  function renderFeed(doneTasks){
+    var feedEl = document.getElementById('feed');
+    var items = (doneTasks || []).slice(0, 8);
+    feedEl.innerHTML = items.length
+      ? items.map(function(t){
+          var who = (R.all[t.completed_by] || {}).label || 'Someone';
+          var own = (R.all[t.owner_role] || {}).label || 'Unassigned';
+          return '<div class="fitem"><span class="fic"><svg viewBox="0 0 24 24">' + I.check +
+            '</svg></span><span><p><b>' + who + '</b> completed &ldquo;' + t.title +
+            '&rdquo;</p><time>' + own + ' &middot; ' + rel(t.completed_at) + '</time></span></div>';
+        }).join('')
+      : '<div class="fitem"><span class="fic"><svg viewBox="0 0 24 24">' + I.check +
+        '</svg></span><span><p>Nothing completed yet.</p><time>Tick something off the ' +
+        'to-do list and it appears here</time></span></div>';
+  }
+
+  window.sicaTaskList(document.getElementById('taskList'), {
+    compact: true,
+    onChange: function(state){
+      document.getElementById('tkCount').textContent =
+        state.open.length ? state.open.length + ' open' : 'all clear';
+      renderFeed(state.done);
+    }
+  });
+
 
   var NEEDS = [
     {t:'Collect 15 student signatures', s:'Club application blocker', href:'members.html'},
@@ -128,17 +155,6 @@ window.sicaPageInit = function(){
       '<span><p><b>' + n.t + '</b></p><time>' + n.s + '</time></span></a>';
   }).join('');
   document.getElementById('needsCount').textContent = NEEDS.length + ' items';
-
-  var FEED = [
-    {i:I.book,  t:'<b>Founder</b> drafted the officer handbook', w:'10 chapters', when:'Aug'},
-    {i:I.grid,  t:'<b>Founder</b> shipped the public site',      w:'index.html',  when:'Aug'},
-    {i:I.book,  t:'<b>Founder</b> wrote Phase 1 curriculum',     w:'Weeks 1–5',   when:'Aug'},
-    {i:I.slider,t:'<b>Founder</b> defined the brand',            w:'Branding',    when:'Aug'}
-  ];
-  document.getElementById('feed').innerHTML = FEED.map(function(f){
-    return '<div class="fitem"><span class="fic"><svg viewBox="0 0 24 24">' + f.i + '</svg></span>' +
-      '<span><p>' + f.t + '</p><time>' + f.w + ' &middot; ' + f.when + '</time></span></div>';
-  }).join('');
 
   document.getElementById('newMeeting').addEventListener('click', function(){
     location.href = 'meetings.html';

@@ -608,3 +608,88 @@ a.stat:hover{border-color:rgba(201,163,79,.34)}
 .dbstate.off i{background:var(--brass)}
 .dbstate.on{border-color:rgba(127,168,138,.34);background:rgba(127,168,138,.08);color:var(--ok)}
 .dbstate.on i{background:var(--ok)}
+
+/* ─── task list ───────────────────────────────────────────
+   Shared by the dashboard and the Tasks page. Rows are dense on
+   purpose: a to-do list you scroll is a to-do list you ignore. */
+.tk-filters{display:flex;gap:4px;padding:0 0 12px}
+.tk-f{background:none;border:1px solid transparent;border-radius:100px;color:var(--text-3);font-size:11.5px;font-weight:500;padding:5px 11px;cursor:pointer;font-family:var(--ui);transition:color .16s ease,background .16s ease}
+.tk-f:hover{color:var(--text-2)}
+.tk-f.on{background:var(--brass-wash);color:var(--brass);border-color:rgba(201,163,79,.28)}
+
+.tk-list{list-style:none;display:flex;flex-direction:column}
+.tk{border-bottom:1px solid var(--line-soft);transition:background .16s ease,opacity .2s ease}
+.tk:last-child{border-bottom:0}
+.tk:hover{background:var(--raised-2)}
+.tk.dragging{opacity:.4}
+.tk.over{box-shadow:inset 0 2px 0 var(--brass)}
+.tk-main{display:flex;align-items:center;gap:11px;padding:10px 14px}
+
+.tk-box{
+  width:17px;height:17px;flex:none;border-radius:5px;border:1.5px solid var(--text-3);
+  background:none;cursor:pointer;position:relative;transition:border-color .18s ease,background .18s ease
+}
+.tk-box:hover{border-color:var(--brass)}
+.tk-box.on,.tk.striking .tk-box{background:var(--brass);border-color:var(--brass)}
+.tk-box.on::after,.tk.striking .tk-box::after{
+  content:'';position:absolute;left:5px;top:2px;width:5px;height:9px;
+  border-right:2px solid var(--ground);border-bottom:2px solid var(--ground);transform:rotate(42deg)
+}
+
+.tk-t{
+  flex:1;min-width:0;background:none;border:0;text-align:left;cursor:pointer;
+  font-family:var(--ui);font-size:13.5px;color:var(--text);padding:0;
+  display:flex;align-items:center;gap:8px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  transition:color .2s ease
+}
+.tk-hasdesc{width:4px;height:4px;border-radius:50%;background:var(--text-3);flex:none}
+.tk.striking .tk-t,.tk.done .tk-t{text-decoration:line-through;color:var(--text-3)}
+.tk.striking{opacity:.5}
+
+.tk-meta{display:flex;align-items:center;gap:8px;flex:none}
+.tk-pri{font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;border-radius:100px;padding:2px 8px;border:1px solid}
+.tk-pri.high{color:var(--warn);border-color:rgba(194,104,90,.36);background:rgba(194,104,90,.09)}
+.tk-pri.low{color:var(--text-3);border-color:var(--line)}
+.tk-own{font-size:11px;color:var(--text-3);white-space:nowrap}
+.tk-due{font-size:11px;color:var(--text-3);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tk-due.over{color:var(--warn)} .tk-due.soon{color:var(--brass)}
+.tk-when{font-size:11px;color:var(--text-3)}
+.tk-grip{width:12px;height:12px;flex:none;cursor:grab;opacity:0;transition:opacity .16s ease;
+  background:radial-gradient(currentColor 1px,transparent 1px) 0 0/4px 4px;color:var(--text-3)}
+.tk:hover .tk-grip{opacity:1}
+.tk-x{background:none;border:0;color:var(--text-3);font-size:17px;line-height:1;cursor:pointer;padding:0 4px;flex:none;opacity:0;transition:opacity .16s ease,color .16s ease}
+.tk:hover .tk-x{opacity:1}
+.tk-x:hover{color:var(--warn)}
+
+.tk-d{padding:0 14px 14px 42px;display:flex;flex-direction:column;gap:10px}
+.tk-desc{background:var(--surface);border:1px solid var(--line);border-radius:7px;color:var(--text-2);font-family:var(--ui);font-size:13px;padding:9px 11px;outline:none;resize:vertical;line-height:1.55}
+.tk-desc:focus{border-color:rgba(201,163,79,.42)}
+.tk-fields{display:flex;flex-wrap:wrap;gap:10px}
+.tk-fields label{display:flex;flex-direction:column;gap:4px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3)}
+.tk-fields select,.tk-fields input{background:var(--surface);border:1px solid var(--line);border-radius:6px;color:var(--text);font-family:var(--ui);font-size:12.5px;padding:6px 9px;outline:none;text-transform:none;letter-spacing:normal}
+.tk-fields select:focus,.tk-fields input:focus{border-color:rgba(201,163,79,.42)}
+.tk-acts{display:flex;gap:7px;flex-wrap:wrap}
+.tk-up,.tk-del,.tk-clear{background:var(--surface);border:1px solid var(--line);color:var(--text-3);border-radius:6px;padding:5px 11px;font-size:11.5px;font-family:var(--ui);cursor:pointer;transition:color .16s ease,border-color .16s ease}
+.tk-up:hover,.tk-clear:hover{color:var(--text);border-color:rgba(237,232,220,.24)}
+.tk-del:hover{color:var(--warn);border-color:rgba(194,104,90,.42)}
+
+.tk-add{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line-soft)}
+.tk-add input{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:7px;color:var(--text);font-family:var(--ui);font-size:13px;padding:9px 12px;outline:none}
+.tk-add input:focus{border-color:rgba(201,163,79,.42)}
+.tk-add input::placeholder{color:var(--text-3)}
+.tk-add button{background:var(--brass);border:0;color:var(--ground);border-radius:7px;padding:9px 15px;font-size:12.5px;font-weight:600;font-family:var(--ui);cursor:pointer;flex:none}
+.tk-empty{padding:26px 14px;text-align:center;font-size:13px;color:var(--text-3)}
+
+.tk-donehead{display:flex;align-items:center;gap:9px;padding:14px 14px 8px;border-top:1px solid var(--line);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3)}
+.tk-donehead span{font-family:var(--mono);font-size:11px}
+.tk-donehead .tk-clear{margin-left:auto;text-transform:none;letter-spacing:normal}
+.tk-donelist .tk{opacity:.62}
+.tk-donelist .tk:hover{opacity:1}
+
+@media (max-width:620px){
+  .tk-own{display:none}
+  .tk-d{padding-left:14px}
+  .tk-grip{display:none}
+  .tk-x{opacity:1}
+}

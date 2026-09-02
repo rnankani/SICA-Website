@@ -106,16 +106,23 @@ create table if not exists attendance (
 );
 
 create table if not exists tasks (
-  id         uuid primary key default gen_random_uuid(),
-  title      text not null,
-  owner_role sica_role,
-  owner_id   uuid references profiles on delete set null,
-  due        date,
-  priority   text default 'normal',
-  status     text not null default 'open',
-  meeting_id uuid references meetings on delete set null,
-  created_at timestamptz not null default now()
+  id           uuid primary key default gen_random_uuid(),
+  title        text not null,
+  description  text,
+  owner_role   sica_role,
+  owner_id     uuid references profiles on delete set null,
+  due          date,
+  priority     text not null default 'normal'
+               check (priority in ('low','normal','high')),
+  status       text not null default 'open'
+               check (status in ('open','done')),
+  position     double precision not null default 0,
+  meeting_id   uuid references meetings on delete set null,
+  created_at   timestamptz not null default now(),
+  completed_at timestamptz,
+  completed_by uuid references profiles on delete set null
 );
+create index if not exists tasks_order on tasks (status, position);
 
 create table if not exists announcements (
   id         uuid primary key default gen_random_uuid(),
