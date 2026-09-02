@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SICA — Officer Applications</title>
+<meta name="description" content="Applications are open for the founding SICA officer team at Cupertino High School.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#141210; --ink-deep:#0A0909; --bone:#EDE8DC; --bone-dim:#1E1B17;
+  --brass:#9B7B3A; --brass-lit:#C9A34F; --on-ink:#8C867C; --on-bone:#9C9585;
+  --display:'Bodoni Moda',Georgia,serif;
+  --head:'Inter',system-ui,sans-serif;
+  --ui:'Inter',system-ui,sans-serif;
+  --pad:clamp(20px,5vw,84px);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
+::-webkit-scrollbar,*::-webkit-scrollbar{width:0!important;height:0!important;display:none!important}
+body{background:var(--ink-deep);color:var(--bone);font-family:var(--ui);font-weight:300;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--brass-lit);outline-offset:3px;border-radius:5px}
+::selection{background:var(--brass-lit);color:var(--ink)}
+
+.bar{position:sticky;top:0;z-index:20;background:rgba(10,9,9,.86);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid rgba(237,232,220,.08)}
+.bar-in{max-width:1100px;margin-inline:auto;padding:13px var(--pad);display:flex;align-items:center;justify-content:space-between;gap:16px}
+.mk{font-family:var(--display);font-weight:700;font-size:16px;letter-spacing:.02em}
+.back{font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--on-ink)}
+.back:hover{color:var(--brass-lit)}
+
+.wrap{max-width:820px;margin-inline:auto;padding:clamp(48px,9vh,96px) var(--pad) 120px}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:10.5px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--brass-lit);border:1px solid rgba(201,163,79,.4);background:rgba(201,163,79,.09);border-radius:100px;padding:6px 14px}
+.eyebrow i{width:6px;height:6px;border-radius:50%;background:var(--brass-lit);display:block}
+h1{font-family:var(--head);font-weight:700;font-size:clamp(34px,6vw,60px);line-height:1.04;letter-spacing:-.035em;margin-top:24px;max-width:18ch;text-wrap:balance}
+.lede{font-size:clamp(16px,1.9vw,19px);color:var(--on-bone);max-width:60ch;margin-top:20px;line-height:1.7}
+
+h2{font-size:12px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--on-ink);margin:clamp(46px,7vh,76px) 0 18px}
+
+.roles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.role{border:1px solid rgba(237,232,220,.14);border-radius:12px;padding:20px;background:var(--ink);display:flex;flex-direction:column;gap:8px;transition:border-color .3s ease}
+.role:hover{border-color:rgba(201,163,79,.34)}
+.role h3{font-family:var(--head);font-weight:600;font-size:17px;letter-spacing:-.01em;color:var(--bone)}
+.role p{font-size:13.5px;color:var(--on-bone);line-height:1.6}
+.role .tag{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--brass-lit)}
+
+.steps{list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:16px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:28px minmax(0,1fr);gap:16px;align-items:start}
+.steps li::before{content:counter(s,decimal-leading-zero);font-size:11px;font-weight:600;color:var(--brass-lit);border:1px solid rgba(237,232,220,.16);border-radius:7px;height:28px;display:grid;place-items:center}
+.steps b{display:block;font-size:15px;font-weight:600;color:var(--bone);margin-bottom:3px}
+.steps p{font-size:14px;color:var(--on-bone);max-width:58ch}
+
+.panel{margin-top:clamp(40px,6vh,70px);border:1px solid rgba(201,163,79,.3);background:linear-gradient(160deg,rgba(201,163,79,.08),transparent 62%),var(--ink);border-radius:14px;padding:clamp(26px,4vw,40px)}
+.panel h3{font-family:var(--head);font-weight:700;font-size:clamp(21px,2.6vw,27px);letter-spacing:-.02em}
+.panel p{font-size:15px;color:var(--on-bone);margin-top:12px;max-width:56ch;line-height:1.68}
+.btn{display:inline-flex;align-items:center;gap:9px;font-size:12.5px;font-weight:600;letter-spacing:.06em;padding:13px 24px;border-radius:6px;border:0;cursor:pointer;background:var(--brass-lit);color:var(--ink);margin-top:22px;font-family:var(--ui);transition:filter .25s ease}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;border:1px solid rgba(237,232,220,.24);color:var(--bone)}
+
+.note{margin-top:18px;font-size:12.5px;color:#6B665E;max-width:56ch;line-height:1.6}
+.foot{border-top:1px solid rgba(237,232,220,.1);margin-top:clamp(52px,8vh,90px);padding-top:24px;font-size:12px;color:#65605A;display:flex;flex-wrap:wrap;gap:8px 20px}
+.foot a{color:var(--brass-lit)}
+
+@media (max-width:680px){.roles{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition-duration:.001ms!important}}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <div class="bar-in">
+    <a class="mk" href="index.html">SICA</a>
+    <a class="back" href="index.html">&larr; Back to site</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <span class="eyebrow"><i></i>Now accepting</span>
+  <h1>Officer applications for the founding team.</h1>
+  <p class="lede">SICA launches with five officers. This is the team that writes the first curriculum, runs the first meetings, and sets what the club becomes &mdash; before there is anything to inherit.</p>
+
+  <h2>The five roles</h2>
+  <div class="roles">
+    <div class="role">
+      <span class="tag">Filled</span>
+      <h3>President</h3>
+      <p>Sets the curriculum, teaches the idea each week, holds the clock. Currently Reyansh Nankani.</p>
+    </div>
+    <div class="role">
+      <span class="tag">Open</span>
+      <h3>Vice President</h3>
+      <p>Runs the practice activity, pairs people up, watches for anyone left out. Teaches a full session by week four.</p>
+    </div>
+    <div class="role">
+      <span class="tag">Open</span>
+      <h3>Treasurer + Secretary</h3>
+      <p>Attendance, minutes, and the club&rsquo;s money. Writes what happened into the record within 48 hours.</p>
+    </div>
+    <div class="role">
+      <span class="tag">Open</span>
+      <h3>Public Relations</h3>
+      <p>Announcements, recruitment, and everything SICA says publicly.</p>
+    </div>
+    <div class="role">
+      <span class="tag">Open</span>
+      <h3>Media Director</h3>
+      <p>Photos and video during meetings &mdash; with consent, and never during a practice activity.</p>
+    </div>
+  </div>
+
+  <h2>What we&rsquo;re selecting for</h2>
+  <ol class="steps">
+    <li><div><b>Follow-through over charisma</b><p>A quiet officer who delivers beats a compelling one who doesn&rsquo;t. There&rsquo;s a short trial task before any decision.</p></div></li>
+    <li><div><b>Warmth toward beginners</b><p>The test is simple: would the most nervous person in the room approach you?</p></div></li>
+    <li><div><b>About 45 minutes a week</b><p>Outside the meeting itself. Deliberately small enough to survive AP season.</p></div></li>
+  </ol>
+
+  <div class="panel">
+    <h3>The form isn&rsquo;t live yet</h3>
+    <p>Applications open here shortly. Until then, email the club and say which role you&rsquo;re interested in &mdash; that counts as an early application and we&rsquo;ll come back to you first.</p>
+    <a class="btn" href="mailto:thesicaorg@gmail.com?subject=SICA%20officer%20application">Email your interest</a>
+    <p class="note">Once the form is wired up this button becomes the application itself, and everything submitted is stored against your account.</p>
+  </div>
+
+  <div class="foot">
+    <span>SICA &middot; Cupertino High School</span>
+    <a href="mailto:thesicaorg@gmail.com">thesicaorg@gmail.com</a>
+    <a href="index.html">Back to the site</a>
+  </div>
+</div>
+
+</body>
+</html>

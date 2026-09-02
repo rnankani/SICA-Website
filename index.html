@@ -81,6 +81,20 @@ img,svg{display:block;max-width:100%}
   color:var(--bone);flex:none;
 }
 .topnav-links{display:flex;align-items:center;gap:clamp(12px,2.2vw,28px);margin-left:auto;overflow-x:auto}
+
+/* Officer sign-in. A bordered chip rather than another plain link, so it
+   reads as a door instead of a seventh section — and so it is actually
+   visible, which it was not when it sat unstyled beside the nav. */
+.topnav-off{
+  flex:none;display:inline-flex;align-items:center;gap:7px;
+  background:rgba(201,163,79,.1);border:1px solid rgba(201,163,79,.4);
+  color:var(--brass-lit);border-radius:6px;padding:7px 13px;cursor:pointer;
+  font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  transition:background .3s ease,border-color .3s ease;
+}
+.topnav-off i{font-style:normal;transition:transform .3s cubic-bezier(.16,1,.3,1)}
+.topnav-off:hover{background:rgba(201,163,79,.18);border-color:var(--brass-lit)}
+.topnav-off:hover i{transform:translateX(3px)}
 .topnav-links a{
   font-size:11.5px;font-weight:500;letter-spacing:.11em;text-transform:uppercase;
   color:var(--on-ink);white-space:nowrap;padding:6px 0;position:relative;
@@ -91,9 +105,23 @@ img,svg{display:block;max-width:100%}
 .topnav-links a.on::after{
   content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--brass-lit);
 }
-@media (max-width:640px){
-  .topnav-in{padding-block:10px}
-  .topnav-links{gap:16px;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}
+/* On a phone the bar becomes two rows: wordmark and the Officers door on
+   top, the section links on their own scrolling row underneath. Cramming
+   eight links plus a button onto one 375px row left the button off-screen. */
+@media (max-width:760px){
+  .topnav.solid{background:rgba(10,9,9,.92)}
+  .topnav-in{
+    flex-wrap:wrap;row-gap:8px;padding:9px var(--pad);
+    display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"mk . off" "links links links";
+  }
+  .topnav-mk{grid-area:mk}
+  .topnav-off{grid-area:off;padding:6px 11px;font-size:10px}
+  .topnav-links{
+    grid-area:links;margin-left:0;gap:15px;padding-bottom:2px;
+    -webkit-mask-image:linear-gradient(90deg,#000 90%,transparent);
+    mask-image:linear-gradient(90deg,#000 90%,transparent);
+  }
+  .topnav-links a{font-size:10.5px;letter-spacing:.09em;padding:3px 0}
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -221,19 +249,22 @@ html.js .spark.burst{opacity:1}
    as a fact about the club, not as another line of the tagline. */
 .hero-def--2{color:rgba(237,232,220,.5);margin-top:-.4em}
 
-.hero-def{
+.hero-def{margin-top:18px;
   font-family:var(--ui);font-weight:300;
   font-size:clamp(12.5px,1.35vw,15px);line-height:1.55;
   color:rgba(237,232,220,.7);max-width:54ch;
   margin-bottom:clamp(12px,2vh,20px);
 }
 
+/* Two weights, one size: the emphasis is carried by weight and a line
+   break rather than italics, which were making five wrapped lines of
+   slanted type read as a paragraph instead of a statement. */
 .claim{
-  font-family:var(--head);font-weight:400;font-style:italic;
-  font-size:clamp(19px,2.4vw,30px);line-height:1.24;letter-spacing:-.01em;
-  max-width:20ch;color:var(--bone);
+  font-family:var(--head);font-weight:300;font-style:normal;
+  font-size:clamp(23px,3.1vw,38px);line-height:1.16;letter-spacing:-.03em;
+  max-width:18ch;color:var(--on-bone);
 }
-.claim b{font-style:normal;font-weight:700}
+.claim b{display:block;font-weight:600;color:var(--bone)}
 .hero-note{font-size:13.5px;color:var(--on-ink);max-width:44ch;margin-top:14px;line-height:1.62}
 .hero-note b{color:var(--bone);font-weight:600}
 .lockup{
@@ -329,14 +360,38 @@ html.js .hero-arrow.in svg{animation:nudge 3s cubic-bezier(.4,0,.2,1) 2.4s infin
 .rail-pin{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
 .rail-head{padding-inline:var(--pad);max-width:1340px;margin-inline:auto;width:100%}
 .rail-track{display:flex;gap:clamp(14px,2vw,26px);padding-inline:var(--pad);margin-top:clamp(28px,5vh,52px);will-change:transform}
+/* --lit is 1 for the card nearest the middle of the screen, 0 for the
+   rest; it drives the lift, the border and the title shimmer together. */
 .card{
+  --lit:0;
   flex:0 0 clamp(250px,30vw,380px);
+  transform:translateY(calc(var(--lit) * -14px));
+  transition:transform .45s cubic-bezier(.16,1,.3,1),background .5s ease,border-color .45s ease;
+  border:1px solid rgba(237,232,220,.06);
   background:var(--bone-dim);border-radius:16px;padding:clamp(24px,2.6vw,38px);
   min-height:clamp(280px,38vh,400px);display:flex;flex-direction:column;
   position:relative;overflow:hidden;
   transition:background .5s ease;
 }
 .card:hover{background:#2A2620}
+.card.on{border-color:rgba(201,163,79,.34);background:#221E18}
+
+/* Gold moving through the title of the live card. Gated on
+   background-clip:text — without it the letters would be invisible. */
+@supports ((-webkit-background-clip:text) or (background-clip:text)){
+  .card.on h4{
+    color:transparent;
+    background-image:linear-gradient(100deg,
+      var(--brass) 38%, #F2DCA6 50%, var(--brass) 62%);
+    background-size:280% 100%;
+    -webkit-background-clip:text;background-clip:text;
+    animation:cardShine 2.8s linear infinite;
+  }
+}
+@keyframes cardShine{from{background-position:190% 0}to{background-position:-90% 0}}
+@media (prefers-reduced-motion:reduce){
+  .card.on h4{animation:none;color:var(--brass-lit);background-image:none}
+}
 .card .ph{font-family:var(--head);font-weight:700;font-size:clamp(54px,7vw,92px);line-height:.85;letter-spacing:-.04em;color:var(--bone);opacity:.13}
 .card h4{font-family:var(--head);font-weight:700;font-size:clamp(24px,2.6vw,34px);letter-spacing:-.02em;margin-top:auto}
 .card p{font-size:14.5px;color:var(--on-bone);margin-top:12px;line-height:1.6}
@@ -924,18 +979,18 @@ html.js .rv.in{opacity:1;transform:none}
   .founder-grid{grid-template-columns:1fr;gap:clamp(30px,5vh,50px)}
   .portrait{position:static;max-width:340px}
 }
+@media (max-width:760px){.hero{padding-top:104px}}
 @media (max-width:1080px){
   .evt,.evt:nth-child(n),.who-grid .evt,.who-grid .evt:nth-child(n){grid-column:span 12}
   .hero-foot{grid-template-columns:1fr;align-items:start}
 }
 @media (max-width:720px){
-  /* rail becomes a native swipe strip — no pinning on touch */
-  .rail{height:auto}
-  .rail-pin{position:static;height:auto;padding-block:var(--gap)}
-  .rail-track{overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:8px}
-  .rail-track::-webkit-scrollbar{display:none}
-  .card{scroll-snap-align:start;flex:0 0 78vw}
-  .rail-bar{display:none}
+  /* The rail is scroll-driven on touch too now. It used to fall back to a
+     native swipe strip, which meant the section simply did not move as you
+     scrolled the page — the effect was missing on exactly the devices most
+     people are reading this on. */
+  .card{flex:0 0 74vw}
+  .rail-head{padding-bottom:4px}
 }
 
 html:not(.js) .demo-stage{--lit:1}
@@ -963,6 +1018,9 @@ html:not(.js) .demo-stage{--lit:1}
       <a href="#faq">FAQ</a>
       <a href="#join">Join</a>
     </div>
+    <button class="topnav-off" type="button" id="officerBtn">
+      <span>Officers</span><i aria-hidden="true">&rarr;</i>
+    </button>
   </div>
 </nav>
 
@@ -978,18 +1036,18 @@ html:not(.js) .demo-stage{--lit:1}
       <i class="fill" id="ruleFill"></i>
       <i class="spark" id="ruleSpark"><i class="spark-core"></i></i>
     </div>
-    <p class="lockup hero-r">Student Influence &amp; Communication Association</p>
+    <p class="lockup hero-r">Student Influence &amp; Communication Association <i>&middot;</i> Cupertino High School</p>
   </div>
 
   <div class="hero-foot">
     <div>
-      <p class="claim hero-r">A student club at Cupertino High School where you practice <b>the conversations that shape everyday life.</b></p>
-      <p class="hero-def hero-r">Leading group projects. Making friends. Networking. Handling disagreements. Building trust.</p>
+      <p class="claim hero-r">Practice the conversations<b>that shape everyday life.</b></p>
+      <p class="hero-def hero-r">Leading group projects. Making friends. Handling disagreements.</p>
       <p class="hero-note hero-r">Not speeches. Not debate. <b>Just practice.</b></p>
     </div>
     <div class="hero-cta">
       <div class="acts hero-r">
-        <a href="#have-you-ever" class="btn btn--gold"><span>Explore SICA</span><i class="dot"></i></a>
+        <a href="apply.html" class="btn btn--gold"><span>Officer applications open</span><i class="dot"></i></a>
       </div>
       <div class="hero-arrow hero-r" aria-hidden="true">
         <svg viewBox="0 0 24 30" fill="none"><path d="M12 3v22M4.5 18.5 12 26l7.5-7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1061,6 +1119,7 @@ html:not(.js) .demo-stage{--lit:1}
             <li>Reading people</li>
             <li>Asking better questions</li>
             <li>Listening properly</li>
+            <li>Reading a room</li>
           </ul>
         </div>
         <div class="skillset">
@@ -1069,6 +1128,11 @@ html:not(.js) .demo-stage{--lit:1}
             <li>Interviews</li>
             <li>Networking</li>
             <li>Persuasion</li>
+            <li>Body language</li>
+            <li>Negotiation</li>
+            <li>Public presence</li>
+            <li>Giving feedback</li>
+            <li>Remembering names</li>
           </ul>
         </div>
       </div>
@@ -1587,23 +1651,25 @@ html:not(.js) .demo-stage{--lit:1}
       track = $('track'),
       bar = $('railBar');
 
-  function pinned(){
-    return matchMedia('(min-width:721px)').matches;
-  }
+  /* The rail is scroll-driven on every width now. It used to bail out
+     below 721px and fall back to a swipe strip, so the whole effect was
+     missing on phones — where most of these readers are. */
+  function pinned(){ return true; }
 
-  /* Height is derived from how far the track actually has to move, so the cards
-     travel ~1px sideways per 1px scrolled. A fixed vh height makes the rail feel
-     sluggish on wide screens and rushed on narrow ones. */
+  var cards = [].slice.call(document.querySelectorAll('#track .card'));
+
+  /* The track is padded so the FIRST card starts centred and the LAST one
+     ends centred, and it travels exactly the distance between them. Padding
+     it to the page gutter instead meant cards one and six never reached the
+     middle of the screen, so they never got their turn. */
   function sizeRail(){
-    if (!rail || !track) return 0;
-    if (!pinned()){ rail.style.height = ''; track.style.transform = ''; return 0; }
-    var pad  = parseFloat(getComputedStyle(track).paddingLeft) || 0;
-    var span = Math.max(0, track.scrollWidth - window.innerWidth + pad);
-    /* The cards travel `span` px sideways, but asking for `span` px of
-       vertical scroll made the rail two and a half screens tall on its
-       own. At 0.62 they move a little faster than the wheel and the
-       section costs about a screen and a half. */
-    rail.style.height = (window.innerHeight + span * 0.62) + 'px';
+    if (!rail || !track || !cards.length) return 0;
+    var w = cards[0].offsetWidth;
+    var side = Math.max(0, (window.innerWidth - w) / 2);
+    track.style.paddingLeft = side + 'px';
+    track.style.paddingRight = side + 'px';
+    var span = cards[cards.length - 1].offsetLeft - cards[0].offsetLeft;
+    rail.style.height = (window.innerHeight + span * 0.55) + 'px';
     return span;
   }
 
@@ -1616,6 +1682,22 @@ html:not(.js) .demo-stage{--lit:1}
     var p = Math.min(Math.max(-rail.getBoundingClientRect().top / travel, 0), 1);
     track.style.transform = 'translate3d(' + (-span * p).toFixed(2) + 'px,0,0)';
     if (bar) bar.style.width = (p * 100).toFixed(2) + '%';
+    litCards();
+  }
+
+  /* One card at a time is "live": whichever sits nearest the middle of the
+     screen lifts, brightens and takes the shimmer, and the others settle
+     back. Measured after the transform above, so it follows the cards. */
+  function litCards(){
+    if (!cards.length) return;
+    var mid = innerWidth / 2, best = -1, bestD = Infinity;
+    cards.forEach(function(c, i){
+      var r = c.getBoundingClientRect();
+      var d = Math.abs((r.left + r.width / 2) - mid);
+      c.style.setProperty('--lit', (1 - Math.min(d / (innerWidth * 0.42), 1)).toFixed(3));
+      if (d < bestD){ bestD = d; best = i; }
+    });
+    cards.forEach(function(c, i){ c.classList.toggle('on', i === best && bestD < innerWidth * 0.42); });
   }
   addEventListener('scroll', drive, {passive:true});
   addEventListener('resize', function(){ span = sizeRail(); drive(); });
