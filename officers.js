@@ -10,21 +10,9 @@
   var CODE = 'SICA2026';
   var page = document.body.dataset.page || 'dashboard';
 
-  var NAV = [
-    {group:'Run the club', items:[
-      {id:'dashboard', label:'Dashboard', href:'officers.html',   icon:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>'},
-      {id:'curriculum',label:'Curriculum',href:'curriculum.html', cnt:'30', icon:'<path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H19v18H5.5A1.5 1.5 0 0 1 4 19.5v-15Z"/><path d="M8 3v18"/>'},
-      {id:'meetings',  label:'Meetings',  href:'meetings.html',   cnt:'4',  icon:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/>'},
-      {id:'team',      label:'Team',      href:'team.html',       cnt:'5',  icon:'<circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0M16 5.2a3.2 3.2 0 0 1 0 5.6M17.5 20a5.5 5.5 0 0 0-2.2-4.4"/>'},
-      {id:'library',   label:'Library',   href:'library.html',    cnt:'10', icon:'<rect x="3" y="4" width="18" height="4.5" rx="1.2"/><path d="M5 8.5V19a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19V8.5M10 12.5h4"/>'},
-      {id:'references',label:'References',href:'references.html',  icon:'<path d="M14 4h6v6"/><path d="M20 4 11 13"/><path d="M18 13v6a1.8 1.8 0 0 1-1.8 1.8H5A1.8 1.8 0 0 1 3.2 19V7.8A1.8 1.8 0 0 1 5 6h6"/>'}
-    ]},
-    {group:'The manual', items:[
-      {id:'handbook',  label:'Handbook',  href:'handbook.html',   cnt:'10', icon:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>'},
-      {id:'branding',  label:'Branding',  href:'branding.html',   icon:'<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18"/>'},
-      {id:'president', label:'President', href:'president.html',  icon:'<path d="M4 8l4 3 4-6 4 6 4-3-1.5 10h-13z"/>'}
-    ]}
-  ];
+  var R  = window.SICA_ROLES;
+  var ROLE = R.get();
+  var NAV = ROLE.nav;
 
   /* ─── rail ───────────────────────────────────────────────
      Rendered rather than copy-pasted into eight files: one definition
@@ -49,12 +37,23 @@
     });
     h += '<div class="railfoot">' +
          '<button class="kbd-hint" id="palBtn"><span>Search</span><kbd>⌘K</kbd></button>' +
-         '<a class="whoami" href="president.html" data-label="President"><span class="av">RN</span>' +
-         '<span class="whoami-txt"><b>Reyansh Nankani</b><span>President</span></span></a></div>';
+         (R.isImpersonating()
+            ? '<div class="imp" id="impBar"><span>Viewing as ' + ROLE.label + '</span>' +
+              '<button type="button" id="impExit">Exit</button></div>'
+            : '') +
+         '<button class="whoami" type="button" id="roleBtn" data-label="' + ROLE.label + '">' +
+         '<span class="av" style="background:linear-gradient(145deg,' + ROLE.color + ',#6E5626)">' + ROLE.short + '</span>' +
+         '<span class="whoami-txt"><b>' + ROLE.person + '</b><span>' + ROLE.label + '</span></span>' +
+         '<i class="whoami-c" aria-hidden="true">&#9662;</i></button></div>';
     rail.innerHTML = h;
 
     /* Collapse preference is per-device and survives navigation, so the
        rail does not silently re-expand on every page load. */
+    var rb = document.getElementById('roleBtn');
+    if (rb) rb.addEventListener('click', openRoleMenu);
+    var ie = document.getElementById('impExit');
+    if (ie) ie.addEventListener('click', function(){ R.set(R.signedInRole()); location.reload(); });
+
     var t = document.getElementById('railToggle');
     if (t) t.addEventListener('click', function(){
       var now = !document.body.classList.contains('rail-collapsed');
@@ -63,6 +62,45 @@
       t.setAttribute('aria-label', now ? 'Expand sidebar' : 'Collapse sidebar');
       try { localStorage.setItem('sica-rail', now ? '1' : '0'); } catch(e){}
     });
+  }
+
+  /* ─── role switcher ──────────────────────────────────────
+     Founder-only. The spec calls for impersonating every role to test
+     what each officer actually sees; this is that, and it doubles as the
+     way the six dashboards are built before auth exists. */
+  function openRoleMenu(){
+    if (document.getElementById('roleMenu')) return closeRoleMenu();
+    var cur = R.active();
+    var h = '<div class="rm-head">Switch view</div>';
+    R.order.forEach(function(id){
+      var r = R.all[id];
+      h += '<button class="rm-row' + (id === cur ? ' on' : '') + '" data-role="' + id + '">' +
+           '<span class="rm-av" style="background:linear-gradient(145deg,' + r.color + ',#6E5626)">' + r.short + '</span>' +
+           '<span class="rm-t"><b>' + r.label + '</b><span>' + r.person + '</span></span>' +
+           (id === R.signedInRole() ? '<span class="rm-you">you</span>' : '') + '</button>';
+    });
+    h += '<div class="rm-foot">Founder only. Everyone else sees just their own role.</div>';
+    var m = document.createElement('div');
+    m.className = 'rolemenu'; m.id = 'roleMenu'; m.innerHTML = h;
+    document.body.appendChild(m);
+    var b = document.getElementById('roleBtn').getBoundingClientRect();
+    m.style.left = Math.max(10, b.left) + 'px';
+    m.style.bottom = (innerHeight - b.top + 10) + 'px';
+    requestAnimationFrame(function(){ m.classList.add('open'); });
+    m.addEventListener('click', function(e){
+      var row = e.target.closest('.rm-row');
+      if (!row) return;
+      if (R.set(row.dataset.role)) location.reload();
+    });
+    setTimeout(function(){ addEventListener('click', outsideRole); }, 0);
+  }
+  function closeRoleMenu(){
+    var m = document.getElementById('roleMenu');
+    if (m) m.remove();
+    removeEventListener('click', outsideRole);
+  }
+  function outsideRole(e){
+    if (!e.target.closest('#roleMenu') && !e.target.closest('#roleBtn')) closeRoleMenu();
   }
 
   /* ─── gate ───────────────────────────────────────────────

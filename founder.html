@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>SICA &mdash; Mission Control</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="officers.css?v=3">
+</head>
+<body data-page="dashboard">
+<div class="shell">
+  <nav class="rail" id="rail"></nav>
+  <main>
+    <div class="topbar">
+      <div>
+        <div class="crumb" id="today">Mission Control</div>
+        <h1 class="ptitle" id="greet">Good afternoon</h1>
+        <p class="lede">Everything that needs a decision, in the order it needs one.</p>
+      </div>
+      <button class="btn" id="newMeeting">New meeting</button>
+    </div>
+
+    <div class="mc-grid" id="stats"></div>
+
+    <div class="split">
+      <div class="panel">
+        <div class="panel-h"><b>Officer status</b><span id="officerNote"></span></div>
+        <div class="ohead"><span>Officer</span><span>Workload</span><span>Tasks</span><span>Last active</span><span>Health</span></div>
+        <div id="officers"></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="panel">
+          <div class="panel-h"><b>Quick actions</b></div>
+          <div class="qa" id="qa"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><b>Needs you</b><span id="needsCount"></span></div>
+          <div id="needs"></div>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="sec-h">Recent activity</h2>
+    <div class="panel"><div class="feed" id="feed"></div></div>
+  </main>
+</div>
+
+<script src="references-data.js?v=3"></script>
+<script src="roles.js?v=3"></script>
+<script src="officers.js?v=3"></script>
+<script>
+window.sicaPageInit = function(){
+  var R = window.SICA_ROLES, I = R.icons;
+  var d = new Date();
+  document.getElementById('today').textContent =
+    d.toLocaleDateString(undefined, {weekday:'long', day:'numeric', month:'long'});
+  var h = d.getHours();
+  document.getElementById('greet').textContent =
+    (h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening') + ', Reyansh';
+
+  /* Real state of the club as it stands today: one officer, nothing
+     logged yet. Placeholders describe the gap rather than inventing
+     numbers that would make the dashboard lie. */
+  var STATS = [
+    {k:'Members',        v:'0',    s:'Club not yet approved',  href:'members.html'},
+    {k:'Officer seats',  v:'1/6',  s:'5 unfilled',             href:'officer-management.html', tone:'warn'},
+    {k:'Next meeting',   v:'—',    s:'None scheduled',         href:'meetings.html'},
+    {k:'Applications',   v:'0',    s:'Form not live yet',      href:'applications.html'},
+    {k:'Curriculum',     v:'8/30', s:'Phases 1–2 started',     href:'curriculum.html', tone:'good'}
+  ];
+  document.getElementById('stats').innerHTML = STATS.map(function(s){
+    return '<a class="stat ' + (s.tone || '') + '" href="' + s.href + '">' +
+           '<span class="stat-k">' + s.k + '</span>' +
+           '<span class="stat-v">' + s.v + '</span>' +
+           '<span class="stat-s">' + s.s + '</span></a>';
+  }).join('');
+
+  var OFF = [
+    {role:'founder',   tasks:'2 open', done:14, work:100, active:'now',   health:'ok'},
+    {role:'president', tasks:'2 open', done:14, work:100, active:'now',   health:'ok'},
+    {role:'vp',        tasks:'—',      done:0,  work:0,   active:'never', health:'warn'},
+    {role:'secretary', tasks:'—',      done:0,  work:0,   active:'never', health:'warn'},
+    {role:'treasurer', tasks:'—',      done:0,  work:0,   active:'never', health:'warn'},
+    {role:'pr',        tasks:'—',      done:0,  work:0,   active:'never', health:'warn'}
+  ];
+  var HC = {ok:'var(--ok)', warn:'var(--warn)', busy:'var(--busy)'};
+  document.getElementById('officers').innerHTML = OFF.map(function(o){
+    var r = R.all[o.role];
+    return '<div class="orow">' +
+      '<span class="who"><span class="mini" style="background:linear-gradient(145deg,' + r.color + ',#6E5626)">' + r.short + '</span>' +
+      '<span><b>' + r.person + '</b><small>' + r.label + '</small></span></span>' +
+      '<span class="meter"><i style="width:' + o.work + '%"></i></span>' +
+      '<span class="num">' + o.done + '</span>' +
+      '<span class="num" style="font-size:11.5px">' + o.active + '</span>' +
+      '<span style="font-size:11.5px;color:' + HC[o.health] + '">' +
+      '<i class="dot-h" style="background:' + HC[o.health] + '"></i> ' +
+      (o.health === 'ok' ? 'Active' : 'Vacant') + '</span></div>';
+  }).join('');
+  document.getElementById('officerNote').textContent = '5 of 6 seats unfilled';
+
+  var QA = [
+    ['Open officer applications', 'applications.html'],
+    ['Schedule Meeting 1', 'meetings.html'],
+    ['Write Week 9', 'curriculum.html'],
+    ['Post an announcement', 'announcements.html'],
+    ['Add a library doc', 'library.html']
+  ];
+  document.getElementById('qa').innerHTML = QA.map(function(q){
+    return '<button onclick="location.href=\'' + q[1] + '\'">' + q[0] + '</button>';
+  }).join('');
+
+  var NEEDS = [
+    {t:'Collect 15 student signatures', s:'Club application blocker', href:'members.html'},
+    {t:'Confirm a faculty advisor',     s:'Required for approval',    href:'settings.html'},
+    {t:'Fill Vice President',           s:'Handbook §9 — someone else must teach by week 4', href:'officer-management.html'}
+  ];
+  document.getElementById('needs').innerHTML = NEEDS.map(function(n){
+    return '<a class="fitem" href="' + n.href + '">' +
+      '<span class="fic"><svg viewBox="0 0 24 24">' + I.spark + '</svg></span>' +
+      '<span><p><b>' + n.t + '</b></p><time>' + n.s + '</time></span></a>';
+  }).join('');
+  document.getElementById('needsCount').textContent = NEEDS.length + ' items';
+
+  var FEED = [
+    {i:I.book,  t:'<b>Founder</b> drafted the officer handbook', w:'10 chapters', when:'Aug'},
+    {i:I.grid,  t:'<b>Founder</b> shipped the public site',      w:'index.html',  when:'Aug'},
+    {i:I.book,  t:'<b>Founder</b> wrote Phase 1 curriculum',     w:'Weeks 1–5',   when:'Aug'},
+    {i:I.slider,t:'<b>Founder</b> defined the brand',            w:'Branding',    when:'Aug'}
+  ];
+  document.getElementById('feed').innerHTML = FEED.map(function(f){
+    return '<div class="fitem"><span class="fic"><svg viewBox="0 0 24 24">' + f.i + '</svg></span>' +
+      '<span><p>' + f.t + '</p><time>' + f.w + ' &middot; ' + f.when + '</time></span></div>';
+  }).join('');
+
+  document.getElementById('newMeeting').addEventListener('click', function(){
+    location.href = 'meetings.html';
+  });
+};
+</script>
+</body>
+</html>
