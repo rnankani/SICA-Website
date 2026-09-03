@@ -188,20 +188,60 @@ end; $$;
 create table if not exists applications (
   id            uuid primary key default gen_random_uuid(),
   created_at    timestamptz not null default now(),
+
+  -- section 1: basics
   name          text not null,
-  email         text not null,
   grade         int,
-  role_applied  sica_role not null,
-  a_badly       text,
-  a_quiet       text,
-  a_busy_week   text,
-  referral      text,
+  email         text not null,
+  role_applied  text not null,          -- vp | treasurer | secretary | pr | other
+  role_other    text,                   -- free text when role_applied = 'other'
+  links         text,                   -- LinkedIn, site, resume, Instagram
+
+  -- section 2: about you
+  q_built       text,                   -- something you built that nobody asked for
+  q_weakness    text,                   -- one specific weakness, and how it showed up
+
+  -- section 3: about SICA
+  q_sica        text,                   -- what SICA does that other clubs do not
+  q_first_month text,                   -- what you would contribute in month one
+
+  -- section 4: bandwidth
+  lunch_days    text[],                 -- which lunches they are free
+  after_school  boolean,
+  commitments   text,                   -- other clubs, and how they would prioritise
+
+  -- section 5
+  anything_else text,
+
   status        text not null default 'submitted'
                 check (status in ('submitted','interview','approved','rejected','archived')),
   reviewed_by   text,
   reviewed_at   timestamptz,
   review_note   text
 );
+
+-- If the table already exists from the earlier draft, bring it up to
+-- date without losing anything. Safe to run repeatedly.
+alter table applications add column if not exists role_other    text;
+alter table applications add column if not exists links         text;
+alter table applications add column if not exists q_built       text;
+alter table applications add column if not exists q_weakness    text;
+alter table applications add column if not exists q_sica        text;
+alter table applications add column if not exists q_first_month text;
+alter table applications add column if not exists lunch_days    text[];
+alter table applications add column if not exists after_school  boolean;
+alter table applications add column if not exists commitments   text;
+alter table applications add column if not exists anything_else text;
+alter table applications drop column if exists a_badly;
+alter table applications drop column if exists a_quiet;
+alter table applications drop column if exists a_busy_week;
+alter table applications drop column if exists referral;
+
+-- role_applied was an enum; the form now offers "other", so it is text
+do $$ begin
+  alter table applications alter column role_applied type text using role_applied::text;
+exception when others then null;
+end $$;
 
 -- ─── the rest ──────────────────────────────────────────────
 create table if not exists members (
@@ -326,9 +366,13 @@ create policy "founder manages roles" on profiles for all    using (is_founder()
 drop policy if exists "anyone may apply"     on applications;
 drop policy if exists "officers read apps"   on applications;
 drop policy if exists "officers review apps" on applications;
+drop policy if exists "leaders read apps"    on applications;
+drop policy if exists "leaders review apps"  on applications;
 create policy "anyone may apply"     on applications for insert to anon, authenticated with check (true);
-create policy "officers read apps"   on applications for select using (is_officer());
-create policy "officers review apps" on applications for update using (is_officer()) with check (is_officer());
+-- Only the founder and president read applications. A VP or treasurer
+-- has no business reading someone's stated weaknesses.
+create policy "leaders read apps"   on applications for select using (is_founder());
+create policy "leaders review apps" on applications for update using (is_founder()) with check (is_founder());
 
 -- members, meetings, tasks
 drop policy if exists "officers manage members"  on members;

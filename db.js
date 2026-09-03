@@ -31,9 +31,10 @@
     profiles:     ['id', 'email', 'full_name', 'grade', 'role', 'created_at', 'last_seen'],
     officer_invites: ['id', 'email', 'full_name', 'role', 'status', 'profile_id', 'invited_by',
                       'invited_at', 'registered_at', 'decided_by', 'decided_at', 'note'],
-    applications: ['id', 'created_at', 'name', 'email', 'grade', 'role_applied',
-                   'a_badly', 'a_quiet', 'a_busy_week', 'referral', 'status',
-                   'reviewed_by', 'reviewed_at', 'review_note'],
+    applications: ['id', 'created_at', 'name', 'grade', 'email', 'role_applied', 'role_other',
+                   'links', 'q_built', 'q_weakness', 'q_sica', 'q_first_month',
+                   'lunch_days', 'after_school', 'commitments', 'anything_else',
+                   'status', 'reviewed_by', 'reviewed_at', 'review_note'],
     members:      ['id', 'profile_id', 'joined_at', 'status', 'tags', 'notes'],
     meetings:     ['id', 'number', 'topic', 'week_ref', 'date', 'room', 'status', 'notes'],
     attendance:   ['id', 'meeting_id', 'profile_id', 'present', 'is_new'],
@@ -172,9 +173,20 @@
     applications: {
       create: function (a) {
         return A.insert('applications', {
-          name: a.name, email: a.email, grade: a.grade,
-          role_applied: a.role, a_badly: a.a_badly, a_quiet: a.a_quiet,
-          a_busy_week: a.a_busy_week, referral: a.referral || null,
+          name: a.name,
+          grade: a.grade ? parseInt(a.grade, 10) : null,
+          email: a.email,
+          role_applied: a.role,
+          role_other: a.role === 'other' ? (a.role_other || null) : null,
+          links: a.links || null,
+          q_built: a.q_built || null,
+          q_weakness: a.q_weakness || null,
+          q_sica: a.q_sica || null,
+          q_first_month: a.q_first_month || null,
+          lunch_days: a.lunch_days && a.lunch_days.length ? a.lunch_days : null,
+          after_school: typeof a.after_school === 'boolean' ? a.after_school : null,
+          commitments: a.commitments || null,
+          anything_else: a.anything_else || null,
           status: 'submitted'
         });
       },

@@ -8,22 +8,181 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="officers.css?v=11">
+<link rel="stylesheet" href="officers.css?v=12">
 </head>
 <body data-page="applications">
 <div class="shell">
   <nav class="rail" id="rail"></nav>
-  <main></main>
+  <main>
+    <div class="topbar">
+      <div>
+        <div class="crumb">Intake</div>
+        <h1 class="ptitle">Applications</h1>
+        <p class="lede">Officer applications, newest first. Only the founder and president can read these &mdash; people write about their own weaknesses here.</p>
+      </div>
+    </div>
+
+    <div class="mc-grid" id="appStats"></div>
+    <div class="ptabs" id="appTabs"></div>
+    <div id="appList"></div>
+    <p class="inv-err" id="appErr"></p>
+  </main>
 </div>
-<script src="references-data.js?v=11"></script>
-<script src="supabase-config.js?v=11"></script>
-<script src="auth.js?v=11"></script>
-<script src="db.js?v=11"></script>
-<script src="roles.js?v=11"></script>
-<script src="pages.js?v=11"></script>
-<script src="render.js?v=11"></script>
-<script src="tasks.js?v=11"></script>
-<script src="officers.js?v=11"></script>
-<script>window.sicaPageInit = function(){ window.sicaRenderPage("applications"); };</script>
+
+<script src="references-data.js?v=12"></script>
+<script src="supabase-config.js?v=12"></script>
+<script src="auth.js?v=12"></script>
+<script src="db.js?v=12"></script>
+<script src="roles.js?v=12"></script>
+<script src="tasks.js?v=12"></script>
+<script src="officers.js?v=12"></script>
+<script>
+window.sicaPageInit = function () {
+  var DB = window.SICA_DB;
+  var listEl = document.getElementById('appList');
+  var errEl  = document.getElementById('appErr');
+  var filter = 'submitted', open = null, rows = [];
+
+  var ROLE = {vp:'Vice President', treasurer:'Treasurer', secretary:'Secretary',
+              pr:'Public Relations', other:'Other'};
+
+  var TABS = [
+    ['submitted', 'New'],
+    ['interview', 'Interview'],
+    ['approved',  'Approved'],
+    ['rejected',  'Rejected'],
+    ['archived',  'Archived'],
+    ['all',       'All']
+  ];
+
+  var STATUS = {
+    submitted: ['p-busy', 'New'],
+    interview: ['p-idle', 'Interview requested'],
+    approved:  ['p-ok',   'Approved'],
+    rejected:  ['p-warn', 'Rejected'],
+    archived:  ['p-idle', 'Archived']
+  };
+
+  /* "3 days ago" is easier to act on than a date — it tells you how long
+     someone has been waiting on you. */
+  function ago(iso) {
+    if (!iso) return '—';
+    var d = (Date.now() - new Date(iso)) / 1000;
+    if (d < 90) return 'just now';
+    if (d < 3600) return Math.round(d / 60) + ' minutes ago';
+    if (d < 86400) return Math.round(d / 3600) + ' hours ago';
+    var days = Math.round(d / 86400);
+    if (days === 1) return 'yesterday';
+    if (days < 30) return days + ' days ago';
+    return new Date(iso).toLocaleDateString(undefined, {day:'numeric', month:'short'});
+  }
+
+  function esc(t) {
+    return String(t == null ? '' : t)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function roleName(a) {
+    return a.role_applied === 'other'
+      ? (a.role_other ? esc(a.role_other) + ' (other)' : 'Other')
+      : (ROLE[a.role_applied] || esc(a.role_applied));
+  }
+
+  function qa(label, body) {
+    if (!body) return '';
+    return '<div class="aq"><b>' + label + '</b><p>' + esc(body) + '</p></div>';
+  }
+
+  function card(a) {
+    var st = STATUS[a.status] || STATUS.submitted;
+    var isOpen = open === a.id;
+    var acts = a.status === 'submitted' || a.status === 'interview'
+      ? '<button class="ib ok"   data-act="approved"  data-id="' + a.id + '">Approve</button>' +
+        (a.status === 'submitted'
+          ? '<button class="ib"  data-act="interview" data-id="' + a.id + '">Request interview</button>' : '') +
+        '<button class="ib warn" data-act="rejected"  data-id="' + a.id + '">Reject</button>' +
+        '<button class="ib"      data-act="archived"  data-id="' + a.id + '">Archive</button>'
+      : '<button class="ib" data-act="submitted" data-id="' + a.id + '">Move back to new</button>';
+
+    return '<div class="appcard' + (isOpen ? ' open' : '') + '">' +
+      '<button class="apphead" data-open="' + a.id + '">' +
+        '<span class="appwho"><b>' + esc(a.name) + '</b>' +
+          '<small>Grade ' + (a.grade || '—') + ' &middot; ' + esc(a.email) + '</small></span>' +
+        '<span class="approle">' + roleName(a) + '</span>' +
+        '<span class="pill ' + st[0] + '">' + st[1] + '</span>' +
+        '<span class="appwhen">' + ago(a.created_at) + '</span>' +
+        '<span class="appchev" aria-hidden="true"></span>' +
+      '</button>' +
+      (isOpen ? '<div class="appbody">' +
+        (a.links ? '<div class="aq"><b>Links</b><p>' + esc(a.links) + '</p></div>' : '') +
+        qa('Something they built, organised or led that nobody asked for', a.q_built) +
+        qa('A specific weakness, and how it showed up recently', a.q_weakness) +
+        qa('What SICA does that other clubs don’t', a.q_sica) +
+        qa('What they’d contribute in the first month', a.q_first_month) +
+        '<div class="aq"><b>Bandwidth</b><p>' +
+          'Free at lunch: ' + (a.lunch_days && a.lunch_days.length ? esc(a.lunch_days.join(', ')) : '—') + '<br>' +
+          'After-school planning: ' + (a.after_school === true ? 'Yes' : a.after_school === false ? 'No' : '—') + '<br>' +
+          'Other commitments: ' + esc(a.commitments || '—') +
+        '</p></div>' +
+        (a.anything_else ? qa('Anything else', a.anything_else) : '') +
+        '<div class="appacts">' + acts + '</div>' +
+      '</div>' : '') +
+    '</div>';
+  }
+
+  async function draw() {
+    try { rows = await DB.applications.list(); }
+    catch (e) { rows = []; errEl.textContent = e.message; }
+
+    rows.sort(function (a, b) { return (b.created_at || '') > (a.created_at || '') ? 1 : -1; });
+    var shown = filter === 'all' ? rows : rows.filter(function (r) { return r.status === filter; });
+
+    document.getElementById('appTabs').innerHTML = TABS.map(function (t) {
+      var n = t[0] === 'all' ? rows.length : rows.filter(function (r) { return r.status === t[0]; }).length;
+      return '<button class="ptab' + (filter === t[0] ? ' on' : '') + '" data-f="' + t[0] + '">' +
+             t[1] + (n ? ' <span class="tabn">' + n + '</span>' : '') + '</button>';
+    }).join('');
+
+    listEl.innerHTML = shown.length
+      ? shown.map(card).join('')
+      : '<div class="panel"><div class="tbl-empty"><b>' +
+        (rows.length ? 'Nothing in this stage' : 'No applications yet') + '</b><p>' +
+        (rows.length
+          ? 'Try another tab.'
+          : 'The form is live at <a style="color:var(--brass)" href="apply.html">apply.html</a>. Everything submitted lands here, newest first.') +
+        '</p></div></div>';
+
+    var c = {submitted:0, interview:0, approved:0, rejected:0, archived:0};
+    rows.forEach(function (r) { if (c[r.status] !== undefined) c[r.status]++; });
+    document.getElementById('appStats').innerHTML = [
+      ['Waiting on you', c.submitted, c.submitted ? 'Unread' : 'Nothing pending'],
+      ['Interviewing', c.interview, 'Conversation requested'],
+      ['Approved', c.approved, 'Offered a seat'],
+      ['Total received', rows.length, 'All time']
+    ].map(function (s, i) {
+      return '<div class="stat' + (i === 0 && s[1] ? ' warn' : '') + '">' +
+        '<span class="stat-k">' + s[0] + '</span>' +
+        '<span class="stat-v">' + s[1] + '</span>' +
+        '<span class="stat-s">' + s[2] + '</span></div>';
+    }).join('');
+  }
+
+  document.getElementById('appTabs').addEventListener('click', function (e) {
+    var b = e.target.closest('.ptab'); if (!b) return;
+    filter = b.dataset.f; open = null; draw();
+  });
+
+  listEl.addEventListener('click', async function (e) {
+    var head = e.target.closest('.apphead');
+    if (head) { open = open === head.dataset.open ? null : head.dataset.open; return draw(); }
+    var b = e.target.closest('.ib'); if (!b) return;
+    errEl.textContent = ''; b.disabled = true;
+    try { await DB.applications.setStatus(b.dataset.id, b.dataset.act); open = null; await draw(); }
+    catch (ex) { errEl.textContent = ex.message; b.disabled = false; }
+  });
+
+  draw();
+};
+</script>
 </body>
 </html>

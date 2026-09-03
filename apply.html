@@ -65,6 +65,19 @@ h2{font-size:11.5px;font-weight:600;letter-spacing:.15em;text-transform:uppercas
 .f.bad input,.f.bad textarea,.f.bad select{border-color:var(--warn)}
 .f .err{font-size:12px;color:var(--warn);min-height:1em}
 .two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;border:1px solid rgba(201,163,79,.5);color:var(--brass-lit);font-size:10px;margin-right:9px;letter-spacing:0}
+.opt{color:#5C574F;font-weight:400;text-transform:none;letter-spacing:normal;font-size:12px}
+.hint2{font-size:13.5px;color:var(--on-bone);margin:-6px 0 18px}
+.days{display:flex;flex-wrap:wrap;gap:8px}
+.dayb{position:relative;border:1px solid var(--line);border-radius:100px;padding:9px 16px;cursor:pointer;font-size:13px;color:var(--on-bone);transition:border-color .2s ease,color .2s ease,background .2s ease}
+.dayb input{position:absolute;opacity:0;pointer-events:none}
+.dayb:hover{border-color:rgba(201,163,79,.4)}
+.dayb:has(input:checked){border-color:var(--brass-lit);background:rgba(201,163,79,.12);color:var(--brass-lit)}
+.yn{display:flex;gap:9px}
+.ynb{position:relative;border:1px solid var(--line);border-radius:9px;padding:10px 22px;cursor:pointer;font-size:13.5px;color:var(--on-bone);transition:border-color .2s ease,color .2s ease,background .2s ease}
+.ynb input{position:absolute;opacity:0;pointer-events:none}
+.ynb:has(input:checked){border-color:var(--brass-lit);background:rgba(201,163,79,.12);color:var(--brass-lit)}
+.count.over{color:var(--warn)!important}
 
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;font-size:13px;font-weight:600;letter-spacing:.04em;padding:14px 26px;border-radius:8px;border:0;cursor:pointer;background:var(--brass-lit);color:var(--ink);font-family:var(--ui);transition:filter .22s ease}
 .btn:hover{filter:brightness(1.08)}
@@ -105,41 +118,87 @@ h2{font-size:11.5px;font-weight:600;letter-spacing:.15em;text-transform:uppercas
     <h1>Apply for a founding officer role.</h1>
     <p class="lede">SICA launches with five officers. This is the team that writes the first curriculum, runs the first meetings, and decides what the club becomes &mdash; before there is anything to inherit. About 45 minutes a week outside the meeting.</p>
 
-    <h2>Which role</h2>
-    <div class="roles" id="roles"></div>
-    <div class="err" id="roleErr" style="font-size:12px;color:var(--warn);min-height:1em;margin-top:8px"></div>
-
-    <h2>About you</h2>
+    <!-- ── 1 ── -->
+    <h2><span class="sn">1</span>Basic info</h2>
     <div class="two">
       <div class="f"><label for="name">Full name</label><input id="name" autocomplete="name"><div class="err"></div></div>
       <div class="f"><label for="grade">Grade</label>
         <select id="grade">
-          <option value="">Select…</option>
+          <option value="">Select&hellip;</option>
           <option value="9">9th</option><option value="10">10th</option>
           <option value="11">11th</option><option value="12">12th</option>
         </select><div class="err"></div></div>
     </div>
-    <div class="f"><label for="email">School email</label>
-      <input id="email" type="email" placeholder="you@student.fuhsd.org" autocomplete="email"><div class="err"></div></div>
+    <div class="two">
+      <div class="f"><label for="email">School email</label>
+        <input id="email" type="email" placeholder="you@student.fuhsd.org" autocomplete="email"><div class="err"></div></div>
+      <div class="f"><label for="role">Role applying for</label>
+        <select id="role">
+          <option value="">Select&hellip;</option>
+          <option value="vp">Vice President</option>
+          <option value="treasurer">Treasurer</option>
+          <option value="secretary">Secretary</option>
+          <option value="pr">PR / Media</option>
+          <option value="other">Other</option>
+        </select><div class="err"></div></div>
+    </div>
+    <div class="f" id="otherWrap" hidden>
+      <label for="roleOther">Which role did you have in mind?</label>
+      <input id="roleOther" placeholder="Tell us what you would want to do"><div class="err"></div></div>
+    <div class="f">
+      <label for="links">Portfolio or links <span class="opt">optional</span></label>
+      <p class="q">LinkedIn, a personal site, a resume, Instagram &mdash; anything that shows what you have made.</p>
+      <textarea id="links" style="min-height:64px"></textarea></div>
 
-    <h2>Three questions</h2>
-    <p class="lede" style="margin-top:0;font-size:14px">Short answers are fine &mdash; two or three sentences each. We are reading for how you think, not how much you write.</p>
+    <!-- ── 2 ── -->
+    <h2><span class="sn">2</span>About you</h2>
+    <p class="hint2">Under 100 words each. We are reading for how you think, not how much you write.</p>
 
-    <div class="f" data-min="40">
-      <label for="q1">1. Describe a conversation you handled badly. What would you do differently?</label>
-      <textarea id="q1"></textarea><div class="count"></div><div class="err"></div></div>
+    <div class="f" data-min="40" data-max="100">
+      <label for="q_built">Tell us about something you built, organised, or led that nobody asked you to. What happened?</label>
+      <textarea id="q_built"></textarea><div class="count"></div><div class="err"></div></div>
 
-    <div class="f" data-min="40">
-      <label for="q2">2. Someone in the room has not spoken in three weeks. What do you actually do?</label>
-      <textarea id="q2"></textarea><div class="count"></div><div class="err"></div></div>
+    <div class="f" data-min="40" data-max="100">
+      <label for="q_weakness">Name one specific weakness you are aware of in yourself &mdash; not a generic one. How has it actually shown up recently?</label>
+      <p class="q">Specific and recent. &ldquo;I am a perfectionist&rdquo; is not an answer.</p>
+      <textarea id="q_weakness"></textarea><div class="count"></div><div class="err"></div></div>
 
-    <div class="f" data-min="30">
-      <label for="q3">3. What is a week where you would have to tell us you cannot do your SICA work?</label>
-      <p class="q">The most useful answer on this page. Everyone has one &mdash; saying so early is the point.</p>
-      <textarea id="q3"></textarea><div class="count"></div><div class="err"></div></div>
+    <!-- ── 3 ── -->
+    <h2><span class="sn">3</span>About SICA</h2>
 
-    <div class="f"><label for="ref">Anything else? <span style="color:#5C574F;font-weight:400">(optional)</span></label>
-      <textarea id="ref" style="min-height:64px"></textarea></div>
+    <div class="f" data-min="40" data-max="100">
+      <label for="q_sica">In your own words, what does SICA actually do that other clubs don&rsquo;t?</label>
+      <p class="q">Your own read on it, not the tagline.</p>
+      <textarea id="q_sica"></textarea><div class="count"></div><div class="err"></div></div>
+
+    <div class="f" data-min="40" data-max="100">
+      <label for="q_first_month">What would you specifically contribute in the first month, if selected?</label>
+      <textarea id="q_first_month"></textarea><div class="count"></div><div class="err"></div></div>
+
+    <!-- ── 4 ── -->
+    <h2><span class="sn">4</span>Availability &amp; bandwidth</h2>
+
+    <div class="f">
+      <label>Which days are you free during lunch?</label>
+      <div class="days" id="days"></div><div class="err"></div></div>
+
+    <div class="f">
+      <label>Available for occasional after-school planning meetings?</label>
+      <div class="yn">
+        <label class="ynb"><input type="radio" name="afterschool" value="yes"><span>Yes</span></label>
+        <label class="ynb"><input type="radio" name="afterschool" value="no"><span>No</span></label>
+      </div><div class="err"></div></div>
+
+    <div class="f">
+      <label for="commitments">What other clubs, sports or commitments do you have? How would you prioritise SICA?</label>
+      <p class="q">Context, not a disqualifier. It helps us plan around real bandwidth.</p>
+      <textarea id="commitments" style="min-height:76px"></textarea><div class="err"></div></div>
+
+    <!-- ── 5 ── -->
+    <h2><span class="sn">5</span>Anything else</h2>
+    <div class="f">
+      <label for="anything_else">Anything else you want us to know? <span class="opt">optional</span></label>
+      <textarea id="anything_else" style="min-height:64px"></textarea></div>
 
     <div class="actions">
       <button class="btn" id="submit">Submit application</button>
@@ -149,7 +208,7 @@ h2{font-size:11.5px;font-weight:600;letter-spacing:.15em;text-transform:uppercas
 
     <div class="banner">
       <b>What happens next</b>
-      <p>Two officers read every application. If it looks like a fit you get a fifteen-minute conversation, then one real piece of work with a week to do it &mdash; a run of show, a week&rsquo;s discussion questions, a flyer. We decide within three days of that and tell everyone either way, including the people we don&rsquo;t pick.</p>
+      <p>The founder reads every application. If it looks like a fit you get a short conversation, then one real piece of work with a week to do it &mdash; a run of show, a week&rsquo;s discussion questions, a flyer. We decide within three days of that and tell everyone either way, including the people we don&rsquo;t pick.</p>
     </div>
 
     <div class="foot">
@@ -167,78 +226,94 @@ h2{font-size:11.5px;font-weight:600;letter-spacing:.15em;text-transform:uppercas
   </div>
 </div>
 
-<script src="supabase-config.js?v=11"></script>
-<script src="auth.js?v=11"></script>
-<script src="db.js?v=11"></script>
+<script src="supabase-config.js?v=12"></script>
+<script src="db.js?v=12"></script>
 <script>
 (function () {
   'use strict';
   var DB = window.SICA_DB;
-
-  var ROLES = [
-    ['vp',        'Vice President',       'Runs the practice activity, pairs people up, teaches a full session by week four.', false],
-    ['secretary', 'Secretary',            'Attendance, minutes, and the club’s written record within 48 hours.', false],
-    ['treasurer', 'Treasurer',            'The budget, expenses and anything the club buys.', false],
-    ['pr',        'Public Relations',     'Announcements, recruitment, graphics, and photos during meetings — with consent, never during practice.', false],
-    ['president', 'President',            'Held by the founder until a successor is elected.', true]
-  ];
-
-  document.getElementById('roles').innerHTML = ROLES.map(function (r) {
-    return '<label class="role' + (r[3] ? ' taken' : '') + '">' +
-      '<input type="radio" name="role" value="' + r[0] + '"' + (r[3] ? ' disabled' : '') + '>' +
-      '<span class="tag">' + (r[3] ? 'Filled' : 'Open') + '</span>' +
-      '<h3>' + r[1] + '</h3><p>' + r[2] + '</p></label>';
-  }).join('');
-
-  var F = ['name', 'grade', 'email', 'q1', 'q2', 'q3', 'ref'];
+  var DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+  var ROLE_LABEL = {vp:'Vice President', treasurer:'Treasurer', secretary:'Secretary',
+                    pr:'PR / Media', other:'Other'};
+  var WRITTEN = ['q_built','q_weakness','q_sica','q_first_month'];
+  var TEXT = ['name','grade','email','role','roleOther','links','commitments','anything_else'].concat(WRITTEN);
   var DRAFT = 'sica.apply.draft';
 
-  /* live character counts on the three written answers */
-  ['q1', 'q2', 'q3'].forEach(function (id) {
-    var el = document.getElementById(id);
-    var box = el.closest('.f'), min = +box.dataset.min;
-    var out = box.querySelector('.count');
+  document.getElementById('days').innerHTML = DAYS.map(function (d) {
+    return '<label class="dayb"><input type="checkbox" value="' + d + '"><span>' + d.slice(0,3) + '</span></label>';
+  }).join('');
+
+  /* "Other" reveals a field asking what they actually have in mind */
+  var roleSel = document.getElementById('role'), otherWrap = document.getElementById('otherWrap');
+  roleSel.addEventListener('change', function () { otherWrap.hidden = roleSel.value !== 'other'; });
+
+  /* The limit is words, not characters, so count words. */
+  function words(t) { return t.trim() ? t.trim().split(/\s+/).length : 0; }
+  WRITTEN.forEach(function (id) {
+    var el = document.getElementById(id), box = el.closest('.f');
+    var max = +box.dataset.max, out = box.querySelector('.count');
     function tick() {
-      var n = el.value.trim().length;
-      out.textContent = n < min ? (min - n) + ' more characters' : n + ' characters';
-      out.style.color = n < min ? '#5C574F' : 'var(--ok)';
+      var n = words(el.value);
+      out.textContent = n + ' / ' + max + ' words';
+      out.classList.toggle('over', n > max);
     }
     el.addEventListener('input', tick); tick();
   });
 
-  function val(id) { return (document.getElementById(id).value || '').trim(); }
+  function val(id) { var e = document.getElementById(id); return e ? (e.value || '').trim() : ''; }
   function setErr(id, msg) {
-    var box = document.getElementById(id).closest('.f');
+    var e = document.getElementById(id); if (!e) return;
+    var box = e.closest('.f');
     box.classList.toggle('bad', !!msg);
-    box.querySelector('.err').textContent = msg || '';
+    var slot = box.querySelector('.err'); if (slot) slot.textContent = msg || '';
   }
 
   function collect() {
-    var role = document.querySelector('input[name=role]:checked');
+    var days = [].slice.call(document.querySelectorAll('#days input:checked')).map(function (c) { return c.value; });
+    var af = document.querySelector('input[name=afterschool]:checked');
     return {
-      role: role ? role.value : '',
-      roleLabel: role ? role.closest('.role').querySelector('h3').textContent : '',
       name: val('name'), grade: val('grade'), email: val('email'),
-      a_badly: val('q1'), a_quiet: val('q2'), a_busy_week: val('q3'), referral: val('ref')
+      role: val('role'), role_other: val('roleOther'), links: val('links'),
+      q_built: val('q_built'), q_weakness: val('q_weakness'),
+      q_sica: val('q_sica'), q_first_month: val('q_first_month'),
+      lunch_days: days, after_school: af ? af.value === 'yes' : null,
+      commitments: val('commitments'), anything_else: val('anything_else')
     };
   }
 
   function validate(a) {
     var ok = true;
-    document.getElementById('roleErr').textContent = '';
-    if (!a.role) { document.getElementById('roleErr').textContent = 'Pick the role you are applying for.'; ok = false; }
-    setErr('name', a.name ? '' : 'We need your name.');
-    if (!a.name) ok = false;
-    setErr('grade', a.grade ? '' : 'Pick your grade.');
-    if (!a.grade) ok = false;
-    var emailOk = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(a.email);
-    setErr('email', emailOk ? '' : 'Enter a valid email so we can reply.');
-    if (!emailOk) ok = false;
-    [['q1', a.a_badly, 40], ['q2', a.a_quiet, 40], ['q3', a.a_busy_week, 30]].forEach(function (q) {
-      var bad = q[1].length < q[2];
-      setErr(q[0], bad ? 'A couple of sentences, please.' : '');
-      if (bad) ok = false;
+    setErr('name', a.name ? '' : 'We need your name.');            if (!a.name) ok = false;
+    setErr('grade', a.grade ? '' : 'Pick your grade.');            if (!a.grade) ok = false;
+    var em = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(a.email);
+    setErr('email', em ? '' : 'Enter a valid email so we can reply.'); if (!em) ok = false;
+    setErr('role', a.role ? '' : 'Pick the role you are applying for.'); if (!a.role) ok = false;
+    if (a.role === 'other') {
+      setErr('roleOther', a.role_other ? '' : 'Tell us which role you mean.');
+      if (!a.role_other) ok = false;
+    }
+    WRITTEN.forEach(function (id) {
+      var box = document.getElementById(id).closest('.f');
+      var n = words(a[id]), max = +box.dataset.max;
+      var msg = n < 8 ? 'A couple of sentences, please.' : (n > max ? 'Keep it under ' + max + ' words.' : '');
+      setErr(id, msg); if (msg) ok = false;
     });
+
+    var daysBox = document.getElementById('days').closest('.f');
+    var noDays = !a.lunch_days.length;
+    daysBox.classList.toggle('bad', noDays);
+    daysBox.querySelector('.err').textContent = noDays ? 'Pick at least one lunch you are free.' : '';
+    if (noDays) ok = false;
+
+    var afBox = document.querySelector('.yn').closest('.f');
+    var noAf = a.after_school === null;
+    afBox.classList.toggle('bad', noAf);
+    afBox.querySelector('.err').textContent = noAf ? 'Let us know either way.' : '';
+    if (noAf) ok = false;
+
+    setErr('commitments', a.commitments ? '' : 'Even "nothing else" is useful to know.');
+    if (!a.commitments) ok = false;
+
     if (!ok) {
       var first = document.querySelector('.f.bad input, .f.bad textarea, .f.bad select');
       if (first) { first.scrollIntoView({block:'center', behavior:'smooth'}); first.focus({preventScroll:true}); }
@@ -246,72 +321,76 @@ h2{font-size:11.5px;font-weight:600;letter-spacing:.15em;text-transform:uppercas
     return ok;
   }
 
-  /* Until Supabase is connected there is nowhere for a submission to
-     land that Reyansh can actually read, so the form hands off to email
-     with every answer already written out. Once the database is live
-     this same call writes a row and the email step disappears. */
   function emailBody(a) {
     return [
       'SICA officer application', '',
-      'Role: ' + a.roleLabel, 'Name: ' + a.name, 'Grade: ' + a.grade,
-      'Email: ' + a.email, '',
-      '1. A conversation handled badly:', a.a_badly, '',
-      '2. Someone has not spoken in three weeks:', a.a_quiet, '',
-      '3. A week I could not do SICA work:', a.a_busy_week, '',
-      a.referral ? ('Anything else:\n' + a.referral) : ''
+      'Name: ' + a.name, 'Grade: ' + a.grade, 'Email: ' + a.email,
+      'Role: ' + (ROLE_LABEL[a.role] || a.role) + (a.role === 'other' ? (' - ' + a.role_other) : ''),
+      a.links ? ('Links: ' + a.links) : '', '',
+      '1. Something I built or led that nobody asked for:', a.q_built, '',
+      '2. A specific weakness, and how it showed up recently:', a.q_weakness, '',
+      '3. What SICA does that other clubs do not:', a.q_sica, '',
+      '4. What I would contribute in the first month:', a.q_first_month, '',
+      'Free at lunch: ' + a.lunch_days.join(', '),
+      'After-school planning: ' + (a.after_school ? 'Yes' : 'No'),
+      'Other commitments: ' + a.commitments,
+      a.anything_else ? ('\nAnything else:\n' + a.anything_else) : ''
     ].join('\n');
   }
 
   document.getElementById('modeNote').textContent = DB.live
     ? 'Your application is saved to SICA directly.'
-    : 'Applications are being collected by email until the club account is set up — the button opens your mail app with everything filled in. Nothing is lost.';
+    : 'Applications are collected by email until the club account is set up - the button opens your mail app with everything filled in. Nothing is lost.';
 
   document.getElementById('saveDraft').addEventListener('click', function () {
-    var d = {}; F.forEach(function (k) { d[k] = val(k); });
-    var r = document.querySelector('input[name=role]:checked');
-    d.role = r ? r.value : '';
+    var d = {}; TEXT.forEach(function (k) { d[k] = val(k); });
+    d.lunch_days = [].slice.call(document.querySelectorAll('#days input:checked')).map(function (c) { return c.value; });
+    var af = document.querySelector('input[name=afterschool]:checked');
+    d.after_school = af ? af.value : '';
     try { localStorage.setItem(DRAFT, JSON.stringify(d)); } catch (e) {}
-    this.textContent = 'Draft saved';
-    setTimeout(function () { document.getElementById('saveDraft').textContent = 'Save draft'; }, 1800);
+    var b = this; b.textContent = 'Draft saved';
+    setTimeout(function () { b.textContent = 'Save draft'; }, 1800);
   });
 
   try {
     var d = JSON.parse(localStorage.getItem(DRAFT) || 'null');
     if (d) {
-      F.forEach(function (k) { if (d[k]) document.getElementById(k).value = d[k]; });
-      if (d.role) {
-        var r = document.querySelector('input[name=role][value="' + d.role + '"]');
+      TEXT.forEach(function (k) { var e = document.getElementById(k); if (e && d[k]) e.value = d[k]; });
+      (d.lunch_days || []).forEach(function (v) {
+        var c = document.querySelector('#days input[value="' + v + '"]'); if (c) c.checked = true;
+      });
+      if (d.after_school) {
+        var r = document.querySelector('input[name=afterschool][value="' + d.after_school + '"]');
         if (r) r.checked = true;
       }
-      ['q1','q2','q3'].forEach(function (id) {
-        document.getElementById(id).dispatchEvent(new Event('input'));
-      });
+      otherWrap.hidden = roleSel.value !== 'other';
+      WRITTEN.forEach(function (id) { document.getElementById(id).dispatchEvent(new Event('input')); });
     }
   } catch (e) {}
 
   document.getElementById('submit').addEventListener('click', async function () {
     var a = collect();
     if (!validate(a)) return;
-    this.disabled = true; this.textContent = 'Sending…';
+    this.disabled = true; this.textContent = 'Sending...';
 
-    var stored = false;
-    try { await DB.applications.create(a); stored = true; } catch (e) { stored = false; }
-
+    var saved = false;
+    try { await DB.applications.create(a); saved = true; } catch (e) { saved = false; }
     try { localStorage.removeItem(DRAFT); } catch (e) {}
 
-    if (!DB.live) {
-      var href = 'mailto:thesicaorg@gmail.com'
-        + '?subject=' + encodeURIComponent('SICA officer application — ' + a.name + ' (' + a.roleLabel + ')')
+    if (!saved) {
+      /* Falls back to email so an application is never silently lost,
+         whether the database is absent or the insert was refused. */
+      window.location.href = 'mailto:thesicaorg@gmail.com'
+        + '?subject=' + encodeURIComponent('SICA officer application - ' + a.name)
         + '&body=' + encodeURIComponent(emailBody(a));
-      window.location.href = href;
       document.getElementById('doneTitle').textContent = 'One last step';
       document.getElementById('doneBody').innerHTML =
         'Your mail app should have opened with the application filled in &mdash; press send and you are done. ' +
-        'If nothing opened, email <a style="color:var(--brass-lit)" href="mailto:thesicaorg@gmail.com">thesicaorg@gmail.com</a> and we will send you the questions.';
+        'If nothing opened, email <a style="color:var(--brass-lit)" href="mailto:thesicaorg@gmail.com">thesicaorg@gmail.com</a>.';
     } else {
       document.getElementById('doneTitle').textContent = 'Application received';
       document.getElementById('doneBody').textContent =
-        'Two officers will read it. If it looks like a fit you will hear from us within a week about a short conversation.';
+        'The founder reads every one. If it looks like a fit you will hear from us within a week.';
     }
     document.getElementById('form').classList.add('hide');
     document.getElementById('done').classList.add('on');
