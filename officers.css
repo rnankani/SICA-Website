@@ -693,3 +693,7 @@ a.stat:hover{border-color:rgba(201,163,79,.34)}
   .tk-grip{display:none}
   .tk-x{opacity:1}
 }
+
+.gate-card .row span{display:flex;gap:8px}
+.gate-state{margin-top:12px;font-size:12px;color:var(--text-3);line-height:1.5}
+.gate-state.bad{color:var(--warn)}

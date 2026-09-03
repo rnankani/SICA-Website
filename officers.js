@@ -117,25 +117,66 @@
   }
 
   function showGate(){
+    var A = window.SICA_AUTH;
+    var live = A && A.live;
     var g = document.createElement('div');
     g.className = 'gate'; g.id = 'gate';
-    g.innerHTML =
-      '<div class="gate-card"><h1>Officer access</h1>' +
-      '<p>This workspace is for SICA officers. Enter the current access code.</p>' +
-      '<form id="gateForm"><input id="gateCode" type="password" autocomplete="off" placeholder="ACCESS CODE" aria-label="Access code">' +
-      '<div class="err" id="gateErr" role="alert"></div>' +
-      '<div class="row"><a href="index.html">&larr; Back to site</a>' +
-      '<button type="submit" class="btn">Enter</button></div></form></div>';
+
+    g.innerHTML = live
+      ? '<div class="gate-card"><h1>Officer sign-in</h1>' +
+        '<p>Use your SICA account. Applications you receive are only visible once you are signed in.</p>' +
+        '<form id="gateForm">' +
+        '<input id="gateEmail" type="email" autocomplete="username" placeholder="Email" aria-label="Email">' +
+        '<input id="gateCode" type="password" autocomplete="current-password" placeholder="Password" aria-label="Password">' +
+        '<div class="err" id="gateErr" role="alert"></div>' +
+        '<div class="row"><a href="index.html">&larr; Back to site</a>' +
+        '<span style="display:flex;gap:8px">' +
+        '<button type="button" class="btn ghost" id="gateNew">Create account</button>' +
+        '<button type="submit" class="btn">Sign in</button></span></div></form>' +
+        '<p class="gate-state" id="gateState"></p></div>'
+      : '<div class="gate-card"><h1>Officer access</h1>' +
+        '<p>This workspace is for SICA officers. Enter the current access code.</p>' +
+        '<form id="gateForm"><input id="gateCode" type="password" autocomplete="off" placeholder="ACCESS CODE" aria-label="Access code">' +
+        '<div class="err" id="gateErr" role="alert"></div>' +
+        '<div class="row"><a href="index.html">&larr; Back to site</a>' +
+        '<button type="submit" class="btn">Enter</button></div></form></div>';
+
     document.body.appendChild(g);
-    document.getElementById('gateCode').focus();
-    document.getElementById('gateForm').addEventListener('submit', function(e){
+    var err = document.getElementById('gateErr');
+    (document.getElementById('gateEmail') || document.getElementById('gateCode')).focus();
+
+    if (live) {
+      A.ping().then(function (p) {
+        var el = document.getElementById('gateState');
+        if (el) el.textContent = p.ok ? '' : p.reason;
+        if (el) el.className = 'gate-state' + (p.ok ? '' : ' bad');
+      });
+      document.getElementById('gateNew').addEventListener('click', function () {
+        var e = document.getElementById('gateEmail').value.trim();
+        var p = document.getElementById('gateCode').value;
+        if (!e || p.length < 8) { err.textContent = 'Enter an email and a password of at least 8 characters.'; return; }
+        err.textContent = 'Creating account…';
+        A.signUp(e, p).then(function (d) {
+          if (d && d.access_token) unlock();
+          else err.textContent = 'Account created. Check your email to confirm, then sign in.';
+        }).catch(function (ex) { err.textContent = ex.message; });
+      });
+    }
+
+    document.getElementById('gateForm').addEventListener('submit', function (e) {
       e.preventDefault();
-      var v = document.getElementById('gateCode');
-      if (v.value.trim().toUpperCase() === CODE) unlock();
-      else {
-        document.getElementById('gateErr').textContent = 'That code is not right.';
-        v.value = ''; v.focus();
+      if (!live) {
+        var v = document.getElementById('gateCode');
+        if (v.value.trim().toUpperCase() === CODE) unlock();
+        else { err.textContent = 'That code is not right.'; v.value = ''; v.focus(); }
+        return;
       }
+      var em = document.getElementById('gateEmail').value.trim();
+      var pw = document.getElementById('gateCode').value;
+      err.textContent = 'Signing in…';
+      A.signIn(em, pw)
+        .then(function () { unlock(); })
+        .catch(function (ex) { err.textContent = ex.message; });
     });
   }
 
@@ -266,6 +307,16 @@
      each page's inline sicaPageInit, so starting synchronously would call
      a hook that does not exist yet. */
   function boot(){
+    var A = window.SICA_AUTH;
+    if (A && A.live){
+      /* A real session beats the passcode. Refresh first so an officer
+         returning after an hour is not bounced for no reason. */
+      A.refresh().then(function(){
+        if (A.signedIn()){ document.body.classList.add('unlocked'); start(); }
+        else showGate();
+      });
+      return;
+    }
     var already = false;
     try { already = sessionStorage.getItem('sica-officer') === '1'; } catch(e){}
     if (already){ document.body.classList.add('unlocked'); start(); }

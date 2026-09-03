@@ -1,25 +1,25 @@
 /* ═══════════════════════════════════════════════════════════
-   THE ONLY FILE YOU EDIT TO GO LIVE.
+   Supabase connection.
 
-   Paste the two values from Supabase → Project Settings → API.
-   Nothing else in the codebase needs to change: every page already
-   calls through db.js, which switches from the local adapter to the
-   Supabase adapter the moment `url` is filled in.
+   These two values are public by design — they ship in the browser and
+   anyone can read them. Row Level Security in schema.sql is what
+   actually protects the data, not secrecy of this key.
 
-   Both of these are safe in front-end code — that is what the anon key
-   is designed for, and Row Level Security in schema.sql is what
-   actually protects the data.
-
-   NEVER put the service_role key here. It bypasses every policy.
+   The service_role key must NEVER appear here. It bypasses every
+   policy. It lives in .env (untracked) and nowhere else.
    ═══════════════════════════════════════════════════════════ */
 window.SICA_SUPABASE = {
-  url: '',      // e.g. 'https://abcdefgh.supabase.co'
-  anonKey: '',  // the long "anon public" key
+  /* derived from the project ref inside the anon JWT */
+  url: 'https://hmcbewvamelslwxpdzqb.supabase.co',
 
-  /* Only addresses ending in this may create an account. Set to '' to
-     allow any email. */
-  emailDomain: '@student.fuhsd.org',
+  /* the newer publishable key — same permissions as the legacy anon JWT */
+  anonKey: 'sb_publishable_bGd6xb2b0dADbwqLY5JNdw_a9-yyoK-',
 
-  /* Where Supabase sends people back to after Google sign-in. */
+  /* Only addresses ending in this may create an account. Empty string
+     allows any email — useful while testing, tighten before launch. */
+  emailDomain: '',
+
+  /* Where a sign-in link returns to. Only used once email confirmation
+     or OAuth is switched on; password sign-in does not need it. */
   redirectTo: 'https://rnankani.github.io/SICA-Website/officers.html'
 };

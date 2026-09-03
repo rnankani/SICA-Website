@@ -16,3 +16,7 @@ node_modules/
 
 # Local tool state (not project source)
 .freebuff/
+
+# Environment (never commit real secrets)
+.env
+.env.local
