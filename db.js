@@ -29,6 +29,8 @@
      a column here that has no rows yet. */
   var TABLES = {
     profiles:     ['id', 'email', 'full_name', 'grade', 'role', 'created_at', 'last_seen'],
+    officer_invites: ['id', 'email', 'full_name', 'role', 'status', 'profile_id', 'invited_by',
+                      'invited_at', 'registered_at', 'decided_by', 'decided_at', 'note'],
     applications: ['id', 'created_at', 'name', 'email', 'grade', 'role_applied',
                    'a_badly', 'a_quiet', 'a_busy_week', 'referral', 'status',
                    'reviewed_by', 'reviewed_at', 'review_note'],
@@ -118,6 +120,25 @@
     });
   }
 
+  function rpc(fn, args) {
+    var token = null;
+    try { token = localStorage.getItem('sica.token'); } catch (e) {}
+    return fetch(CFG.url + '/rest/v1/rpc/' + fn, {
+      method: 'POST',
+      headers: {
+        apikey: CFG.anonKey,
+        Authorization: 'Bearer ' + (token || CFG.anonKey),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(args || {})
+    }).then(async function (r) {
+      var d = null;
+      try { d = await r.json(); } catch (e) {}
+      if (!r.ok) throw new Error((d && (d.message || d.hint)) || ('Error ' + r.status));
+      return d;
+    });
+  }
+
   var supabase = {
     mode: 'supabase',
     async list(t, opts) {
@@ -173,6 +194,44 @@
         var c = { total: all.length };
         APPLICATION_STATUS.forEach(function (s) {
           c[s] = all.filter(function (r) { return r.status === s; }).length;
+        });
+        return c;
+      }
+    },
+
+    /* Invite-first access. The founder adds an email here; nobody who is
+       not on this list can create an account at all. Registering is not
+       the same as being let in — approve() is what grants the role. */
+    invites: {
+      list: function () { return A.list('officer_invites', { order: 'invited_at' }); },
+      add: function (i) {
+        return A.insert('officer_invites', {
+          email: (i.email || '').trim().toLowerCase(),
+          full_name: i.full_name || null,
+          role: i.role,
+          status: 'invited'
+        });
+      },
+      remove: function (id) { return A.remove('officer_invites', id); },
+      /* These go through database functions, not a direct role update, so
+         a role change is always checked and stamped. */
+      approve: function (id) {
+        return LIVE ? rpc('approve_officer', { invite: id })
+                    : A.update('officer_invites', id, { status: 'approved', decided_at: new Date().toISOString() });
+      },
+      deny: function (id, why) {
+        return LIVE ? rpc('deny_officer', { invite: id, why: why || null })
+                    : A.update('officer_invites', id, { status: 'denied', note: why || null, decided_at: new Date().toISOString() });
+      },
+      revoke: function (id, why) {
+        return LIVE ? rpc('revoke_officer', { invite: id, why: why || null })
+                    : A.update('officer_invites', id, { status: 'revoked', note: why || null, decided_at: new Date().toISOString() });
+      },
+      counts: async function () {
+        var all = await A.list('officer_invites', {});
+        var c = { total: all.length };
+        ['invited','registered','approved','denied','revoked'].forEach(function (k) {
+          c[k] = all.filter(function (r) { return r.status === k; }).length;
         });
         return c;
       }

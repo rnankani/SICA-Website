@@ -8,22 +8,164 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="officers.css?v=10">
+<link rel="stylesheet" href="officers.css?v=11">
 </head>
-<body data-page="officer-management">
+<body data-page="officers">
 <div class="shell">
   <nav class="rail" id="rail"></nav>
-  <main></main>
+  <main>
+    <div class="topbar">
+      <div>
+        <div class="crumb">People</div>
+        <h1 class="ptitle">Officer Management</h1>
+        <p class="lede">Access is invite-first. Add someone here and only then can that email create an account &mdash; and creating one still doesn&rsquo;t let them in. You approve.</p>
+      </div>
+    </div>
+
+    <div class="mc-grid" id="invStats"></div>
+
+    <h2 class="sec-h">Add an officer</h2>
+    <div class="panel">
+      <form class="inv-add" id="invAdd">
+        <input id="invName"  placeholder="Full name" aria-label="Full name">
+        <input id="invEmail" type="email" placeholder="school email" aria-label="Email">
+        <select id="invRole" aria-label="Role"></select>
+        <button class="btn" type="submit">Add to invite list</button>
+      </form>
+      <p class="inv-err" id="invErr"></p>
+    </div>
+
+    <h2 class="sec-h">Invite list</h2>
+    <div class="panel"><div id="invList"></div></div>
+
+    <div class="pnote">
+      <b>How access works</b>
+      <p>Nobody outside this list can create an account &mdash; the database refuses the sign-up, not just the page. When someone on the list registers, their row moves to <b>Registered</b> and they land as a member, which opens nothing. <b>Approve</b> is what grants the role and lets them into the workspace. <b>Deny</b> or <b>Remove</b> puts them straight back to member.</p>
+    </div>
+  </main>
 </div>
-<script src="references-data.js?v=10"></script>
-<script src="supabase-config.js?v=10"></script>
-<script src="auth.js?v=10"></script>
-<script src="db.js?v=10"></script>
-<script src="roles.js?v=10"></script>
-<script src="pages.js?v=10"></script>
-<script src="render.js?v=10"></script>
-<script src="tasks.js?v=10"></script>
-<script src="officers.js?v=10"></script>
-<script>window.sicaPageInit = function(){ window.sicaRenderPage("officer-management"); };</script>
+
+<script src="references-data.js?v=11"></script>
+<script src="supabase-config.js?v=11"></script>
+<script src="auth.js?v=11"></script>
+<script src="db.js?v=11"></script>
+<script src="roles.js?v=11"></script>
+<script src="tasks.js?v=11"></script>
+<script src="officers.js?v=11"></script>
+<script>
+window.sicaPageInit = function () {
+  var DB = window.SICA_DB, R = window.SICA_ROLES;
+  var listEl = document.getElementById('invList');
+  var errEl  = document.getElementById('invErr');
+
+  /* Founder and President are held, not invited — the assignable roles
+     are the four seats that are actually open. */
+  var ASSIGNABLE = ['vp', 'secretary', 'treasurer', 'pr'];
+  document.getElementById('invRole').innerHTML = ASSIGNABLE.map(function (id) {
+    return '<option value="' + id + '">' + R.all[id].label + '</option>';
+  }).join('');
+
+  var STATUS = {
+    invited:    ['p-idle', 'Invited',    'Has not created an account yet'],
+    registered: ['p-busy', 'Registered', 'Account made &mdash; waiting on you'],
+    approved:   ['p-ok',   'Approved',   'Has the role and can sign in'],
+    denied:     ['p-warn', 'Denied',     'Account exists but opens nothing'],
+    revoked:    ['p-warn', 'Removed',    'Access withdrawn']
+  };
+
+  function when(iso) {
+    if (!iso) return '&mdash;';
+    return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+  }
+
+  function row(i) {
+    var st = STATUS[i.status] || STATUS.invited;
+    var acts = '';
+    if (i.status === 'registered')
+      acts = '<button class="ib ok"   data-act="approve" data-id="' + i.id + '">Approve</button>' +
+             '<button class="ib warn" data-act="deny"    data-id="' + i.id + '">Deny</button>';
+    else if (i.status === 'approved')
+      acts = '<button class="ib warn" data-act="revoke"  data-id="' + i.id + '">Remove access</button>';
+    else if (i.status === 'invited')
+      acts = '<button class="ib"      data-act="remove"  data-id="' + i.id + '">Cancel invite</button>';
+    else
+      acts = '<button class="ib ok"   data-act="approve" data-id="' + i.id + '">Re-approve</button>' +
+             '<button class="ib"      data-act="remove"  data-id="' + i.id + '">Delete</button>';
+
+    return '<div class="invrow">' +
+      '<span class="invwho"><b>' + (i.full_name || '&mdash;') + '</b>' +
+        '<small>' + i.email + '</small></span>' +
+      '<span class="invrole">' + ((R.all[i.role] || {}).label || i.role) + '</span>' +
+      '<span class="pill ' + st[0] + '">' + st[1] + '</span>' +
+      '<span class="invwhen">' + when(i.registered_at || i.invited_at) + '</span>' +
+      '<span class="invacts">' + acts + '</span>' +
+      '<span class="invhint">' + st[2] + '</span>' +
+    '</div>';
+  }
+
+  async function draw() {
+    var rows = [];
+    try { rows = await DB.invites.list(); } catch (e) { rows = []; }
+
+    listEl.innerHTML = rows.length
+      ? rows.map(row).join('')
+      : '<div class="tbl-empty"><b>Nobody invited yet</b>' +
+        '<p>Add the four open seats above. Until someone is on this list, ' +
+        'the database will refuse to create an account for them at all.</p></div>';
+
+    /* Guarded like the list above: a failed query must leave the page
+       readable rather than blanking the stat row with no explanation. */
+    var c = { invited: 0, registered: 0, approved: 0, denied: 0, revoked: 0, total: 0 };
+    try { c = await DB.invites.counts(); } catch (e) {}
+    document.getElementById('invStats').innerHTML = [
+      ['Invited', c.invited, 'Not registered yet'],
+      ['Waiting on you', c.registered, c.registered ? 'Approve or deny' : 'Nothing pending'],
+      ['Active officers', c.approved, 'Can sign in'],
+      ['Seats open', Math.max(0, 4 - c.approved), 'Of four']
+    ].map(function (s, i) {
+      return '<div class="stat' + (i === 1 && s[1] ? ' warn' : '') + '">' +
+        '<span class="stat-k">' + s[0] + '</span>' +
+        '<span class="stat-v">' + s[1] + '</span>' +
+        '<span class="stat-s">' + s[2] + '</span></div>';
+    }).join('');
+  }
+
+  document.getElementById('invAdd').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    errEl.textContent = '';
+    var name  = document.getElementById('invName').value.trim();
+    var email = document.getElementById('invEmail').value.trim().toLowerCase();
+    var role  = document.getElementById('invRole').value;
+    if (!email) { errEl.textContent = 'An email is required — it is what the invite matches on.'; return; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { errEl.textContent = 'That does not look like an email address.'; return; }
+    try {
+      await DB.invites.add({ email: email, full_name: name, role: role });
+      document.getElementById('invName').value = '';
+      document.getElementById('invEmail').value = '';
+      await draw();
+    } catch (ex) {
+      errEl.textContent = /duplicate|unique/i.test(ex.message)
+        ? 'That email is already on the list.'
+        : ex.message;
+    }
+  });
+
+  listEl.addEventListener('click', async function (e) {
+    var b = e.target.closest('.ib'); if (!b) return;
+    var id = b.dataset.id, act = b.dataset.act;
+    errEl.textContent = '';
+    b.disabled = true;
+    try {
+      if (act === 'approve')      await DB.invites.approve(id);
+      else if (act === 'deny')    await DB.invites.deny(id);
+      else if (act === 'revoke')  await DB.invites.revoke(id);
+      else if (act === 'remove')  await DB.invites.remove(id);
+      await draw();
+    } catch (ex) { errEl.textContent = ex.message; b.disabled = false; }
+  });
+
+  draw();
+};
+</script>
 </body>
 </html>

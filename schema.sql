@@ -30,28 +30,66 @@ create table if not exists profiles (
   last_seen   timestamptz
 );
 
--- A new sign-up gets a member profile — and only if the address is
--- allowed. Enforcing this here rather than in JavaScript matters: the
--- check in supabase-config.js is cosmetic, because anyone can call the
--- auth API directly and skip the page entirely.
---
--- Set ALLOWED_DOMAIN to '' to let any address sign up.
+-- ─── officer invites ───────────────────────────────────────
+-- Access is invite-first. The founder adds a name and an email here;
+-- nobody else can create an account at all. Registering is still not
+-- the same as being let in — an invite goes to 'registered' when the
+-- account appears, and only an explicit approval grants the role.
+create table if not exists officer_invites (
+  id            uuid primary key default gen_random_uuid(),
+  email         text not null unique,
+  full_name     text,
+  role          sica_role not null,
+  status        text not null default 'invited'
+                check (status in ('invited','registered','approved','denied','revoked')),
+  profile_id    uuid references profiles on delete set null,
+  invited_by    uuid references profiles on delete set null,
+  invited_at    timestamptz not null default now(),
+  registered_at timestamptz,
+  decided_by    uuid references profiles on delete set null,
+  decided_at    timestamptz,
+  note          text
+);
+create index if not exists invites_email on officer_invites (lower(email));
+
+-- A sign-up is refused unless the address is on the invite list. The
+-- founder's own address is exempt so the very first account can exist.
+-- Enforced here rather than in JavaScript because anyone can call the
+-- auth API directly and never load the page.
 create or replace function handle_new_user() returns trigger
 language plpgsql security definer set search_path = public as $$
 declare
-  allowed_domain constant text := '@student.fuhsd.org';
-  founder_email  constant text := 'reyanshnankani@gmail.com';
+  founder_email constant text := 'reyanshnankani@gmail.com';
+  inv officer_invites%rowtype;
 begin
-  if allowed_domain <> ''
-     and lower(new.email) <> lower(founder_email)
-     and right(lower(new.email), length(allowed_domain)) <> allowed_domain then
-    raise exception 'Only % addresses may create an account.', allowed_domain
+  if lower(new.email) = lower(founder_email) then
+    insert into profiles (id, email, full_name, role)
+    values (new.id, new.email, coalesce(new.raw_user_meta_data->>'full_name','Reyansh Nankani'), 'founder')
+    on conflict (id) do update set role = 'founder';
+    return new;
+  end if;
+
+  select * into inv from officer_invites
+   where lower(email) = lower(new.email)
+     and status in ('invited','registered')
+   limit 1;
+
+  if inv.id is null then
+    raise exception 'That email has not been invited to SICA. Ask the founder to add you first.'
       using errcode = 'check_violation';
   end if;
 
-  insert into profiles (id, email, full_name)
-  values (new.id, new.email, new.raw_user_meta_data->>'full_name')
+  -- They land as a member. The role on the invite is granted only when
+  -- the founder approves, which is a separate, deliberate action.
+  insert into profiles (id, email, full_name, role)
+  values (new.id, new.email,
+          coalesce(new.raw_user_meta_data->>'full_name', inv.full_name), 'member')
   on conflict (id) do nothing;
+
+  update officer_invites
+     set status = 'registered', profile_id = new.id, registered_at = now()
+   where id = inv.id;
+
   return new;
 end; $$;
 
@@ -76,6 +114,75 @@ language sql security definer stable set search_path = public as $$
     where id = auth.uid() and role in ('founder','president')
   );
 $$;
+
+-- ─── granting and removing access ──────────────────────────
+-- Role changes go through these rather than a direct update, so every
+-- change is checked, stamped, and impossible to do by accident.
+
+create or replace function approve_officer(invite uuid)
+returns officer_invites language plpgsql security definer set search_path = public as $$
+declare inv officer_invites%rowtype;
+begin
+  if not is_founder() then
+    raise exception 'Only the founder may approve officers.' using errcode = 'insufficient_privilege';
+  end if;
+  select * into inv from officer_invites where id = invite;
+  if inv.id is null then raise exception 'No such invite.'; end if;
+  if inv.profile_id is null then
+    raise exception 'That person has not created an account yet, so there is nothing to approve.';
+  end if;
+
+  update profiles set role = inv.role where id = inv.profile_id;
+  update officer_invites
+     set status = 'approved', decided_by = auth.uid(), decided_at = now()
+   where id = invite
+  returning * into inv;
+  return inv;
+end; $$;
+
+create or replace function deny_officer(invite uuid, why text default null)
+returns officer_invites language plpgsql security definer set search_path = public as $$
+declare inv officer_invites%rowtype;
+begin
+  if not is_founder() then
+    raise exception 'Only the founder may deny officers.' using errcode = 'insufficient_privilege';
+  end if;
+  select * into inv from officer_invites where id = invite;
+  if inv.id is null then raise exception 'No such invite.'; end if;
+
+  -- The account may keep existing; it simply stays a member, which can
+  -- open nothing.
+  if inv.profile_id is not null then
+    update profiles set role = 'member' where id = inv.profile_id;
+  end if;
+  update officer_invites
+     set status = 'denied', note = coalesce(why, note),
+         decided_by = auth.uid(), decided_at = now()
+   where id = invite
+  returning * into inv;
+  return inv;
+end; $$;
+
+-- Removing someone who was previously approved. Handbook chapter 4.
+create or replace function revoke_officer(invite uuid, why text default null)
+returns officer_invites language plpgsql security definer set search_path = public as $$
+declare inv officer_invites%rowtype;
+begin
+  if not is_founder() then
+    raise exception 'Only the founder may remove officers.' using errcode = 'insufficient_privilege';
+  end if;
+  select * into inv from officer_invites where id = invite;
+  if inv.id is null then raise exception 'No such invite.'; end if;
+  if inv.profile_id is not null then
+    update profiles set role = 'member' where id = inv.profile_id;
+  end if;
+  update officer_invites
+     set status = 'revoked', note = coalesce(why, note),
+         decided_by = auth.uid(), decided_at = now()
+   where id = invite
+  returning * into inv;
+  return inv;
+end; $$;
 
 -- ─── applications ──────────────────────────────────────────
 create table if not exists applications (
@@ -184,6 +291,7 @@ create table if not exists settings (
 -- ═══════════════════════════════════════════════════════════
 alter table profiles      enable row level security;
 alter table applications  enable row level security;
+alter table officer_invites enable row level security;
 alter table members       enable row level security;
 alter table meetings      enable row level security;
 alter table attendance    enable row level security;
@@ -196,6 +304,13 @@ alter table settings      enable row level security;
 -- Every policy is dropped first so this file can be run again safely.
 -- Without this, a re-run fails on the first duplicate and silently
 -- leaves the rest of the policies uncreated.
+
+-- officer_invites: the founder manages them; an officer may see the
+-- list so the team page is not blank for everyone else.
+drop policy if exists "founder manages invites" on officer_invites;
+drop policy if exists "officers read invites"   on officer_invites;
+create policy "founder manages invites" on officer_invites for all    using (is_founder()) with check (is_founder());
+create policy "officers read invites"   on officer_invites for select using (is_officer());
 
 -- profiles: you see yourself; officers see everyone; only founder edits roles
 drop policy if exists "read own profile"      on profiles;
