@@ -116,9 +116,30 @@
     start();
   }
 
-  function showGate(){
+  function showGate(reason){
     var A = window.SICA_AUTH;
     var live = A && A.live;
+
+    /* Signed in, but not staff. Say so plainly rather than looping them
+       back to a sign-in box that will keep appearing to work. */
+    if (reason === 'notOfficer'){
+      var g2 = document.createElement('div');
+      g2.className = 'gate'; g2.id = 'gate';
+      g2.innerHTML = '<div class="gate-card"><h1>Not an officer account</h1>' +
+        '<p>You are signed in, but this workspace is for SICA officers. ' +
+        'Applying for a role is how you get access &mdash; an approved application ' +
+        'is what turns an account into an officer account.</p>' +
+        '<div class="row" style="margin-top:22px">' +
+        '<a href="index.html">&larr; Back to site</a>' +
+        '<span style="display:flex;gap:8px">' +
+        '<button type="button" class="btn ghost" id="gateOut">Sign out</button>' +
+        '<a class="btn" href="apply.html">Apply</a></span></div></div>';
+      document.body.appendChild(g2);
+      document.getElementById('gateOut').addEventListener('click', function(){
+        A.signOut().then(function(){ location.reload(); });
+      });
+      return;
+    }
     var g = document.createElement('div');
     g.className = 'gate'; g.id = 'gate';
 
@@ -177,7 +198,12 @@
       var pw = document.getElementById('gateCode').value;
       err.textContent = 'Signing in…';
       A.signIn(em, pw)
-        .then(function () { unlock(); })
+        .then(function () { return A.profile(true); })
+        .then(function (p) {
+          if (p && p.role && p.role !== 'member') return unlock();
+          document.getElementById('gate').remove();
+          showGate('notOfficer');
+        })
         .catch(function (ex) { err.textContent = ex.message; });
     });
   }
@@ -314,8 +340,17 @@
       /* A real session beats the passcode. Refresh first so an officer
          returning after an hour is not bounced for no reason. */
       A.refresh().then(function(){
-        if (A.signedIn()){ document.body.classList.add('unlocked'); start(); }
-        else showGate();
+        if (!A.signedIn()) return showGate();
+        /* Signed in is not the same as authorised. Anyone may create an
+           account; only an officer profile may open the workspace. */
+        return A.profile(true).then(function(p){
+          if (p && p.role && p.role !== 'member'){
+            document.body.classList.add('unlocked');
+            start();
+          } else {
+            showGate(p ? 'notOfficer' : null);
+          }
+        });
       });
       return;
     }

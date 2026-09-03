@@ -30,10 +30,25 @@ create table if not exists profiles (
   last_seen   timestamptz
 );
 
--- a new sign-in automatically gets a member profile
+-- A new sign-up gets a member profile — and only if the address is
+-- allowed. Enforcing this here rather than in JavaScript matters: the
+-- check in supabase-config.js is cosmetic, because anyone can call the
+-- auth API directly and skip the page entirely.
+--
+-- Set ALLOWED_DOMAIN to '' to let any address sign up.
 create or replace function handle_new_user() returns trigger
 language plpgsql security definer set search_path = public as $$
+declare
+  allowed_domain constant text := '@student.fuhsd.org';
+  founder_email  constant text := 'reyanshnankani@gmail.com';
 begin
+  if allowed_domain <> ''
+     and lower(new.email) <> lower(founder_email)
+     and right(lower(new.email), length(allowed_domain)) <> allowed_domain then
+    raise exception 'Only % addresses may create an account.', allowed_domain
+      using errcode = 'check_violation';
+  end if;
+
   insert into profiles (id, email, full_name)
   values (new.id, new.email, new.raw_user_meta_data->>'full_name')
   on conflict (id) do nothing;
@@ -207,7 +222,7 @@ drop policy if exists "officers manage meetings" on meetings;
 drop policy if exists "officers manage tasks"    on tasks;
 drop policy if exists "read own tasks"           on tasks;
 create policy "officers manage members"  on members  for all    using (is_officer()) with check (is_officer());
-create policy "read meetings"            on meetings for select using (auth.uid() is not null);
+create policy "read meetings"            on meetings for select using (is_officer());
 create policy "officers manage meetings" on meetings for all    using (is_officer()) with check (is_officer());
 create policy "officers manage tasks"    on tasks    for all    using (is_officer()) with check (is_officer());
 create policy "read own tasks"           on tasks    for select using (owner_id = auth.uid() or is_officer());
@@ -218,14 +233,16 @@ drop policy if exists "officers mark attendance" on attendance;
 create policy "read own attendance"      on attendance for select using (profile_id = auth.uid() or is_officer());
 create policy "officers mark attendance" on attendance for all    using (is_officer()) with check (is_officer());
 
--- announcements and documents: everyone signed in reads, officers write
+-- announcements, documents and meetings: officers only. A self-serve
+-- account lands as 'member', and a member is not staff — signing up must
+-- not reveal the handbook, the internal posts or the meeting plans.
 drop policy if exists "read announcements"   on announcements;
 drop policy if exists "officers post"        on announcements;
 drop policy if exists "read documents"       on documents;
 drop policy if exists "officers manage docs" on documents;
-create policy "read announcements"   on announcements for select using (auth.uid() is not null);
+create policy "read announcements"   on announcements for select using (is_officer());
 create policy "officers post"        on announcements for all    using (is_officer()) with check (is_officer());
-create policy "read documents"       on documents     for select using (auth.uid() is not null);
+create policy "read documents"       on documents     for select using (is_officer());
 create policy "officers manage docs" on documents     for all    using (is_officer()) with check (is_officer());
 
 -- money: treasurer, president and founder only
