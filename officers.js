@@ -124,7 +124,8 @@
 
     g.innerHTML = live
       ? '<div class="gate-card"><h1>Officer sign-in</h1>' +
-        '<p>Use your SICA account. Applications you receive are only visible once you are signed in.</p>' +
+        '<p>Use your SICA account. Applications are only visible once you are signed in. ' +
+        'New accounts need the emailed confirmation link before the first sign-in.</p>' +
         '<form id="gateForm">' +
         '<input id="gateEmail" type="email" autocomplete="username" placeholder="Email" aria-label="Email">' +
         '<input id="gateCode" type="password" autocomplete="current-password" placeholder="Password" aria-label="Password">' +
@@ -158,7 +159,8 @@
         err.textContent = 'Creating account…';
         A.signUp(e, p).then(function (d) {
           if (d && d.access_token) unlock();
-          else err.textContent = 'Account created. Check your email to confirm, then sign in.';
+          else err.textContent = 'Account created. Open the confirmation link we just emailed you, ' +
+                                 'then come back and sign in.';
         }).catch(function (ex) { err.textContent = ex.message; });
       });
     }

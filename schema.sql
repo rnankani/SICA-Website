@@ -10,8 +10,14 @@
 -- ═══════════════════════════════════════════════════════════
 
 -- ─── roles ─────────────────────────────────────────────────
-create type sica_role as enum
-  ('founder','president','vp','secretary','treasurer','pr','member');
+-- Wrapped so a second run does not abort here. In the Supabase SQL
+-- editor a failed statement stops everything after it, which is how a
+-- half-applied schema happens: tables created, policies never reached.
+do $$ begin
+  create type sica_role as enum
+    ('founder','president','vp','secretary','treasurer','pr','member');
+exception when duplicate_object then null;
+end $$;
 
 -- ─── profiles: one row per signed-in person ────────────────
 create table if not exists profiles (
@@ -172,41 +178,79 @@ alter table documents     enable row level security;
 alter table expenses      enable row level security;
 alter table settings      enable row level security;
 
+-- Every policy is dropped first so this file can be run again safely.
+-- Without this, a re-run fails on the first duplicate and silently
+-- leaves the rest of the policies uncreated.
+
 -- profiles: you see yourself; officers see everyone; only founder edits roles
+drop policy if exists "read own profile"      on profiles;
+drop policy if exists "update own profile"    on profiles;
+drop policy if exists "founder manages roles" on profiles;
 create policy "read own profile"      on profiles for select using (id = auth.uid() or is_officer());
 create policy "update own profile"    on profiles for update using (id = auth.uid());
-create policy "founder manages roles" on profiles for all    using (is_founder());
+create policy "founder manages roles" on profiles for all    using (is_founder()) with check (is_founder());
 
 -- applications: ANYONE may submit one. Only officers may read them.
--- This is the single anonymous write in the whole schema.
-create policy "anyone may apply"        on applications for insert with check (true);
-create policy "officers read apps"      on applications for select using (is_officer());
-create policy "officers review apps"    on applications for update using (is_officer());
+-- This is the single anonymous write in the whole schema, and the one
+-- the public form depends on.
+drop policy if exists "anyone may apply"     on applications;
+drop policy if exists "officers read apps"   on applications;
+drop policy if exists "officers review apps" on applications;
+create policy "anyone may apply"     on applications for insert to anon, authenticated with check (true);
+create policy "officers read apps"   on applications for select using (is_officer());
+create policy "officers review apps" on applications for update using (is_officer()) with check (is_officer());
 
--- members, meetings, tasks: officers manage, members read
-create policy "officers manage members"  on members  for all    using (is_officer());
+-- members, meetings, tasks
+drop policy if exists "officers manage members"  on members;
+drop policy if exists "read meetings"            on meetings;
+drop policy if exists "officers manage meetings" on meetings;
+drop policy if exists "officers manage tasks"    on tasks;
+drop policy if exists "read own tasks"           on tasks;
+create policy "officers manage members"  on members  for all    using (is_officer()) with check (is_officer());
 create policy "read meetings"            on meetings for select using (auth.uid() is not null);
-create policy "officers manage meetings" on meetings for all    using (is_officer());
-create policy "officers manage tasks"    on tasks    for all    using (is_officer());
+create policy "officers manage meetings" on meetings for all    using (is_officer()) with check (is_officer());
+create policy "officers manage tasks"    on tasks    for all    using (is_officer()) with check (is_officer());
 create policy "read own tasks"           on tasks    for select using (owner_id = auth.uid() or is_officer());
 
 -- attendance: a member may read only their own row
+drop policy if exists "read own attendance"      on attendance;
+drop policy if exists "officers mark attendance" on attendance;
 create policy "read own attendance"      on attendance for select using (profile_id = auth.uid() or is_officer());
-create policy "officers mark attendance" on attendance for all    using (is_officer());
+create policy "officers mark attendance" on attendance for all    using (is_officer()) with check (is_officer());
 
 -- announcements and documents: everyone signed in reads, officers write
-create policy "read announcements"      on announcements for select using (auth.uid() is not null);
-create policy "officers post"           on announcements for all    using (is_officer());
-create policy "read documents"          on documents     for select using (auth.uid() is not null);
-create policy "officers manage docs"    on documents     for all    using (is_officer());
+drop policy if exists "read announcements"   on announcements;
+drop policy if exists "officers post"        on announcements;
+drop policy if exists "read documents"       on documents;
+drop policy if exists "officers manage docs" on documents;
+create policy "read announcements"   on announcements for select using (auth.uid() is not null);
+create policy "officers post"        on announcements for all    using (is_officer()) with check (is_officer());
+create policy "read documents"       on documents     for select using (auth.uid() is not null);
+create policy "officers manage docs" on documents     for all    using (is_officer()) with check (is_officer());
 
--- money: treasurer and founder only
+-- money: treasurer, president and founder only
+drop policy if exists "treasury only" on expenses;
 create policy "treasury only" on expenses for all using (
+  exists (select 1 from profiles where id = auth.uid() and role in ('treasurer','founder','president'))
+) with check (
   exists (select 1 from profiles where id = auth.uid() and role in ('treasurer','founder','president'))
 );
 
 -- settings: founder only
-create policy "founder settings" on settings for all using (is_founder());
+drop policy if exists "founder settings" on settings;
+create policy "founder settings" on settings for all using (is_founder()) with check (is_founder());
+
+-- ═══════════════════════════════════════════════════════════
+-- Verify. Every table below must show rls = true and at least one
+-- policy. If "applications" shows 0 policies the public form is dead.
+-- ═══════════════════════════════════════════════════════════
+select c.relname as table_name,
+       c.relrowsecurity as rls,
+       count(p.polname) as policies
+from pg_class c
+left join pg_policy p on p.polrelid = c.oid
+where c.relnamespace = 'public'::regnamespace and c.relkind = 'r'
+group by 1,2 order by 1;
 
 -- ─── make yourself the founder ─────────────────────────────
 -- Run this ONCE after your first sign-in, with your own email:
