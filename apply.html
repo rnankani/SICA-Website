@@ -87,9 +87,12 @@ h2{font-size:11.5px;font-weight:600;letter-spacing:.15em;text-transform:uppercas
 /* The expectations panel. Quiet by default — it is reference, not a
    sales pitch, and it sits between the role picker and the rest of
    the form so it is read before the questions are answered. */
+/* .f sets display:flex, which outranks the browser's own rule for the
+   hidden attribute — so "Which role did you have in mind?" was on show
+   for everyone, not just applicants who picked Other. */
+[hidden]{display:none!important}
 .rx{border:1px solid rgba(201,163,79,.28);border-left:2px solid var(--brass-lit);
     border-radius:8px;padding:15px 17px;margin:-4px 0 18px;background:rgba(201,163,79,.045)}
-.rx[hidden]{display:none}
 .rx h4{margin:0 0 3px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--brass-lit)}
 .rx .aside{font-size:12px;color:#5C574F;margin:0 0 10px}
 .rx dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:7px 14px;font-size:13.5px;line-height:1.6}
@@ -98,6 +101,7 @@ h2{font-size:11.5px;font-weight:600;letter-spacing:.15em;text-transform:uppercas
 .rx .real{margin:11px 0 0;padding-top:10px;border-top:1px solid rgba(201,163,79,.2);
           font-size:13px;line-height:1.6;color:var(--on-bone)}
 .rx.warn .real{color:var(--warn)}
+.rx.warn .real.univ{color:var(--on-bone)}
 @media (max-width:560px){.rx dl{grid-template-columns:1fr;gap:2px 0}.rx dt{padding-top:8px}}
 h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;border:1px solid rgba(201,163,79,.5);color:var(--brass-lit);font-size:10px;margin-right:9px;letter-spacing:0}
 .opt{color:#5C574F;font-weight:400;text-transform:none;letter-spacing:normal;font-size:12px}
@@ -320,7 +324,7 @@ h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radi
       expBox.appendChild(p);
     }
     if (RX.universal) {
-      var u = document.createElement('p'); u.className = 'real';
+      var u = document.createElement('p'); u.className = 'real univ';
       u.textContent = 'Every officer: ' + RX.universal;
       expBox.appendChild(u);
     }
