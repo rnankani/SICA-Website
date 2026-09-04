@@ -85,6 +85,8 @@ h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radi
 .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px;align-items:center}
 
 .note{margin-top:16px;font-size:12.5px;color:#6B665E;line-height:1.6;max-width:60ch}
+.submit-fail{margin-top:14px;font-size:13.5px;color:var(--warn);line-height:1.6;max-width:60ch}
+.submit-fail:empty{display:none}
 .banner{margin-top:24px;border:1px solid rgba(201,163,79,.32);background:linear-gradient(160deg,rgba(201,163,79,.09),transparent 62%),var(--ink);border-radius:12px;padding:18px 20px}
 .banner b{display:block;font-size:14px;font-weight:600;color:var(--brass-lit);margin-bottom:6px}
 .banner p{font-size:13.5px;color:var(--on-bone);line-height:1.65}
@@ -204,6 +206,7 @@ h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radi
       <button class="btn" id="submit">Submit application</button>
       <button class="btn ghost" id="saveDraft">Save draft</button>
     </div>
+    <p class="submit-fail" id="submitFail"></p>
     <p class="note" id="modeNote"></p>
 
     <div class="banner">
@@ -226,8 +229,8 @@ h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radi
   </div>
 </div>
 
-<script src="supabase-config.js?v=12"></script>
-<script src="db.js?v=12"></script>
+<script src="supabase-config.js?v=14"></script>
+<script src="db.js?v=14"></script>
 <script>
 (function () {
   'use strict';
@@ -321,33 +324,22 @@ h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radi
     return ok;
   }
 
-  function emailBody(a) {
-    return [
-      'SICA officer application', '',
-      'Name: ' + a.name, 'Grade: ' + a.grade, 'Email: ' + a.email,
-      'Role: ' + (ROLE_LABEL[a.role] || a.role) + (a.role === 'other' ? (' - ' + a.role_other) : ''),
-      a.links ? ('Links: ' + a.links) : '', '',
-      '1. Something I built or led that nobody asked for:', a.q_built, '',
-      '2. A specific weakness, and how it showed up recently:', a.q_weakness, '',
-      '3. What SICA does that other clubs do not:', a.q_sica, '',
-      '4. What I would contribute in the first month:', a.q_first_month, '',
-      'Free at lunch: ' + a.lunch_days.join(', '),
-      'After-school planning: ' + (a.after_school ? 'Yes' : 'No'),
-      'Other commitments: ' + a.commitments,
-      a.anything_else ? ('\nAnything else:\n' + a.anything_else) : ''
-    ].join('\n');
-  }
-
   document.getElementById('modeNote').textContent = DB.live
-    ? 'Your application is saved to SICA directly.'
-    : 'Applications are collected by email until the club account is set up - the button opens your mail app with everything filled in. Nothing is lost.';
+    ? 'Submitted straight to SICA. Nothing goes through email.'
+    : 'The club database is not reachable from this page right now, so submitting will not work yet.';
 
-  document.getElementById('saveDraft').addEventListener('click', function () {
+  /* Named, because a failed submit saves a draft too — losing four
+     written answers to a dropped request would be unforgivable. */
+  function saveDraft() {
     var d = {}; TEXT.forEach(function (k) { d[k] = val(k); });
     d.lunch_days = [].slice.call(document.querySelectorAll('#days input:checked')).map(function (c) { return c.value; });
     var af = document.querySelector('input[name=afterschool]:checked');
     d.after_school = af ? af.value : '';
     try { localStorage.setItem(DRAFT, JSON.stringify(d)); } catch (e) {}
+  }
+
+  document.getElementById('saveDraft').addEventListener('click', function () {
+    saveDraft();
     var b = this; b.textContent = 'Draft saved';
     setTimeout(function () { b.textContent = 'Save draft'; }, 1800);
   });
@@ -368,30 +360,34 @@ h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radi
     }
   } catch (e) {}
 
-  document.getElementById('submit').addEventListener('click', async function () {
+  /* Straight into the database. Nothing is handed off anywhere else: if
+     the write fails the answers stay on the page and in the draft, and
+     the applicant is told to try again rather than being pushed into a
+     mail client they may not even have configured. */
+  var submitBtn = document.getElementById('submit');
+  submitBtn.addEventListener('click', async function () {
     var a = collect();
     if (!validate(a)) return;
-    this.disabled = true; this.textContent = 'Sending...';
 
-    var saved = false;
-    try { await DB.applications.create(a); saved = true; } catch (e) { saved = false; }
-    try { localStorage.removeItem(DRAFT); } catch (e) {}
+    var failEl = document.getElementById('submitFail');
+    failEl.textContent = '';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
 
-    if (!saved) {
-      /* Falls back to email so an application is never silently lost,
-         whether the database is absent or the insert was refused. */
-      window.location.href = 'mailto:thesicaorg@gmail.com'
-        + '?subject=' + encodeURIComponent('SICA officer application - ' + a.name)
-        + '&body=' + encodeURIComponent(emailBody(a));
-      document.getElementById('doneTitle').textContent = 'One last step';
-      document.getElementById('doneBody').innerHTML =
-        'Your mail app should have opened with the application filled in &mdash; press send and you are done. ' +
-        'If nothing opened, email <a style="color:var(--brass-lit)" href="mailto:thesicaorg@gmail.com">thesicaorg@gmail.com</a>.';
-    } else {
-      document.getElementById('doneTitle').textContent = 'Application received';
-      document.getElementById('doneBody').textContent =
-        'The founder reads every one. If it looks like a fit you will hear from us within a week.';
+    try {
+      await DB.applications.create(a);
+    } catch (e) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit application';
+      failEl.textContent = 'That did not go through. Your answers are still here and saved as a draft — press submit again in a moment.';
+      saveDraft();
+      return;
     }
+
+    try { localStorage.removeItem(DRAFT); } catch (e) {}
+    document.getElementById('doneTitle').textContent = 'Application received';
+    document.getElementById('doneBody').textContent =
+      'It is in. The founder reads every one — if it looks like a fit you will hear back within a week.';
     document.getElementById('form').classList.add('hide');
     document.getElementById('done').classList.add('on');
     window.scrollTo({top: 0, behavior: 'smooth'});

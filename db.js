@@ -76,11 +76,11 @@
       return rows;
     },
     async get(t, id) { return lsGet(t).filter(function (r) { return r.id === id; })[0] || null; },
-    async insert(t, row) {
+    async insert(t, row, opts) {
       row.id = row.id || uid();
       row.created_at = row.created_at || new Date().toISOString();
       var rows = lsGet(t); rows.push(row); lsSet(t, rows);
-      return row;
+      return (opts && opts.minimal) ? true : row;
     },
     async update(t, id, patch) {
       var rows = lsGet(t), hit = null;
@@ -115,9 +115,18 @@
         Prefer: opts.prefer || 'return=representation'
       },
       body: opts.body ? JSON.stringify(opts.body) : undefined
-    }).then(function (r) {
-      if (!r.ok) return r.text().then(function (t) { throw new Error(r.status + ' ' + t); });
-      return r.status === 204 ? null : r.json();
+    }).then(async function (r) {
+      var text = await r.text();
+      if (!r.ok) {
+        var msg = text;
+        try { var j = JSON.parse(text); msg = j.message || j.hint || text; } catch (e) {}
+        throw new Error(msg || ('Error ' + r.status));
+      }
+      /* A write sent with Prefer: return=minimal answers 201 with an
+         empty body. Calling .json() on that throws, which made a
+         successful insert look like a failure to the caller. */
+      if (!text) return null;
+      try { return JSON.parse(text); } catch (e) { return null; }
     });
   }
 
@@ -152,7 +161,18 @@
       return sb(t + '?' + q.join('&'));
     },
     async get(t, id) { return (await sb(t + '?id=eq.' + id + '&select=*'))[0] || null; },
-    async insert(t, row) { return (await sb(t, { method: 'POST', body: row }))[0]; },
+    /* `minimal` asks PostgREST not to return the created row. That
+       matters for a public write: returning the row requires SELECT
+       permission, and someone submitting an application deliberately
+       cannot read the applications table. Asking for the row back turns
+       a successful insert into a row-level-security error. */
+    async insert(t, row, opts) {
+      if (opts && opts.minimal) {
+        await sb(t, { method: 'POST', body: row, prefer: 'return=minimal' });
+        return true;
+      }
+      return (await sb(t, { method: 'POST', body: row }))[0];
+    },
     async update(t, id, patch) {
       return (await sb(t + '?id=eq.' + id, { method: 'PATCH', body: patch }))[0];
     },
@@ -188,7 +208,7 @@
           commitments: a.commitments || null,
           anything_else: a.anything_else || null,
           status: 'submitted'
-        });
+        }, { minimal: true });
       },
       list: function (status) {
         return A.list('applications', { where: status ? { status: status } : null, order: 'created_at' });
