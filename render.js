@@ -209,14 +209,270 @@
      One place that knows how each page's live values are fetched. Until
      SICA_DB.live is true every one of these resolves to null and the
      dashes stay put. */
+  /* ─── small shared formatters ────────────────────────────
+     A feed returns `stats` in the order the page declares them and
+     `cells` as one array per row, in the order the page declares its
+     columns. Anything a feed leaves as null stays an em dash, so a
+     figure the club has not measured yet is never invented. */
+  function d(v) {
+    if (!v) return null;
+    var t = new Date(v);
+    return isNaN(t) ? v : t.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  function money(v) {
+    return v === null || v === undefined || v === '' ? null
+      : '$' + Number(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function pct(n, of) { return of ? Math.round((n / of) * 100) + '%' : null; }
+  function titleCase(v) {
+    return !v ? null : String(v).replace(/_/g, ' ').replace(/^./, function (c) { return c.toUpperCase(); });
+  }
+  function thisMonth(v) {
+    if (!v) return false;
+    var t = new Date(v), n = new Date();
+    return t.getMonth() === n.getMonth() && t.getFullYear() === n.getFullYear();
+  }
+  function nameOf(people, id) {
+    var hit = people.filter(function (x) { return x.id === id; })[0];
+    return hit ? (hit.full_name || hit.email) : null;
+  }
+
   var FEEDS = {
     applications: async function (DB) {
       var c = await DB.applications.counts();
       return { stats: [c.submitted, c.interview, c.approved, c.rejected, c.archived],
                rows: await DB.applications.list() };
     },
+
     members: async function (DB) {
-      return { rows: await DB.members.list() };
+      var rows = await DB.members.list();
+      return {
+        stats: [rows.length,
+                rows.filter(function (r) { return r.status === 'active'; }).length,
+                rows.filter(function (r) { return thisMonth(r.joined_at); }).length,
+                null],
+        cells: rows.map(function (r) {
+          return [r.name || r.profile_id, r.grade, d(r.joined_at), null, null,
+                  titleCase(r.status), (r.tags || []).join(', ')];
+        })
+      };
+    },
+
+    tasks: async function (DB) {
+      var c = await DB.tasks.counts();
+      return { stats: [c.open, c.soon, c.overdue, c.done] };
+    },
+
+    calendar: async function (DB) {
+      var rows = await DB.calendar.list();
+      var today = new Date().toISOString().slice(0, 10);
+      var ahead = rows.filter(function (r) { return r.date >= today; });
+      var week = new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 10);
+      var meetings = await DB.meetings.list();
+      return { stats: [ahead.filter(function (r) { return r.date <= week; }).length,
+                       ahead.filter(function (r) { return thisMonth(r.date); }).length,
+                       ahead.length ? d(ahead[0].date) : null,
+                       meetings.filter(function (m) { return m.status === 'held'; }).length] };
+    },
+
+    announcements: async function (DB) {
+      var rows = await DB.announcements.list();
+      var people = await DB.officers.list().catch(function () { return []; });
+      var now = new Date().toISOString();
+      return {
+        stats: [rows.filter(function (r) { return (r.publish_at || '') <= now; }).length,
+                rows.filter(function (r) { return (r.publish_at || '') > now; }).length,
+                rows.filter(function (r) { return r.pinned; }).length,
+                null],
+        cells: rows.map(function (r) {
+          return [r.title, titleCase(r.audience), nameOf(people, r.author_id), d(r.publish_at), null];
+        })
+      };
+    },
+
+    practice: async function (DB) {
+      var rows = await DB.practice.list();
+      var pairs = rows.filter(function (r) { return r.pairs; });
+      return {
+        stats: [rows.length,
+                pairs.length ? Math.round(pairs.reduce(function (t, r) { return t + r.pairs; }, 0) / pairs.length) : null,
+                pairs.reduce(function (t, r) { return t + r.pairs * 2; }, 0) || null,
+                null],
+        cells: rows.map(function (r) {
+          return [r.week, r.skill, r.activity, r.pairs, d(r.ran_on), r.notes];
+        })
+      };
+    },
+
+    minutes: async function (DB) {
+      var rows = await DB.minutes.list();
+      var people = await DB.officers.list().catch(function () { return []; });
+      var filed = rows.filter(function (r) { return r.filed_at; });
+      return {
+        stats: [filed.length,
+                rows.length - filed.length,
+                rows.reduce(function (t, r) { return t + (r.decisions || []).length; }, 0),
+                rows.reduce(function (t, r) { return t + (r.action_items || []).length; }, 0)],
+        cells: rows.map(function (r) {
+          return [r.meeting_id ? 'Meeting' : '\u2014', d(r.date), nameOf(people, r.author_id),
+                  (r.decisions || []).length, (r.action_items || []).length, d(r.filed_at)];
+        })
+      };
+    },
+
+    attendance: async function (DB) {
+      var meetings = await DB.meetings.list();
+      var held = meetings.filter(function (m) { return m.status === 'held'; });
+      var seen = {}, cells = [], totals = [];
+      for (var i = 0; i < held.length; i++) {
+        var rows = await DB.attendance.forMeeting(held[i].id);
+        var present = rows.filter(function (r) { return r.present; });
+        var fresh = present.filter(function (r) { return !seen[r.profile_id]; });
+        present.forEach(function (r) { seen[r.profile_id] = true; });
+        totals.push(present.length);
+        cells.push([held[i].topic || ('Meeting ' + held[i].number), d(held[i].date),
+                    present.length, fresh.length, present.length - fresh.length,
+                    pct(present.length - fresh.length, present.length)]);
+      }
+      var avg = totals.length ? Math.round(totals.reduce(function (a, b) { return a + b; }, 0) / totals.length) : null;
+      var last = cells.length ? cells[cells.length - 1] : null;
+      return { stats: [last ? last[2] : null, avg, last ? last[5] : null,
+                       Object.keys(seen).length || null],
+               cells: cells };
+    },
+
+    forms: async function (DB) {
+      var rows = await DB.forms.list(), cells = [], responses = 0;
+      for (var i = 0; i < rows.length; i++) {
+        var rs = await DB.forms.responses(rows[i].id);
+        responses += rs.length;
+        cells.push([rows[i].title, rows[i].purpose, rs.length, d(rows[i].opened_at), titleCase(rows[i].status)]);
+      }
+      return {
+        stats: [rows.filter(function (r) { return r.status === 'open'; }).length,
+                responses, null,
+                rows.filter(function (r) { return r.status === 'closed'; }).length],
+        cells: cells
+      };
+    },
+
+    budget: async function (DB) {
+      var lines = await DB.budget.withSpend();
+      var alloc = lines.reduce(function (t, l) { return t + Number(l.allocated || 0); }, 0);
+      var spent = lines.reduce(function (t, l) { return t + l.spent; }, 0);
+      return {
+        stats: [lines.length ? money(alloc - spent) : null, money(alloc), money(spent),
+                lines.length ? money(alloc - spent) : null],
+        cells: lines.map(function (l) {
+          return [l.category, money(l.allocated), money(l.spent), money(l.remaining), l.notes];
+        })
+      };
+    },
+
+    expenses: async function (DB) {
+      var rows = await DB.expenses.list();
+      var people = await DB.officers.list().catch(function () { return []; });
+      return {
+        stats: [money(rows.filter(function (r) { return thisMonth(r.date); })
+                          .reduce(function (t, r) { return t + Number(r.amount || 0); }, 0)),
+                rows.filter(function (r) { return r.status === 'awaiting'; }).length,
+                rows.filter(function (r) { return r.status === 'reimbursed'; }).length,
+                rows.filter(function (r) { return !r.receipt_url; }).length],
+        cells: rows.map(function (r) {
+          return [d(r.date), r.item, money(r.amount), nameOf(people, r.paid_by),
+                  nameOf(people, r.approved_by), r.receipt_url ? 'Attached' : null];
+        })
+      };
+    },
+
+    fundraising: async function (DB) {
+      var rows = await DB.campaigns.list();
+      return {
+        stats: [money(rows.reduce(function (t, r) { return t + Number(r.raised || 0); }, 0)),
+                money(rows.reduce(function (t, r) { return t + Number(r.target || 0); }, 0)),
+                rows.filter(function (r) { return r.status === 'active'; }).length,
+                null],
+        cells: rows.map(function (r) {
+          return [r.name, money(r.target), money(r.raised), r.runs,
+                  titleCase(r.owner_role), titleCase(r.status)];
+        })
+      };
+    },
+
+    inventory: async function (DB) {
+      var rows = await DB.inventory.list();
+      var people = await DB.officers.list().catch(function () { return []; });
+      return {
+        stats: [rows.reduce(function (t, r) { return t + (r.quantity || 0); }, 0) || null,
+                rows.filter(function (r) { return r.held_by; }).length,
+                rows.filter(function (r) { return r.condition === 'missing'; }).length,
+                money(rows.reduce(function (t, r) { return t + Number(r.value || 0); }, 0))],
+        cells: rows.map(function (r) {
+          return [r.item, r.quantity, r.location, nameOf(people, r.held_by), titleCase(r.condition)];
+        })
+      };
+    },
+
+    social: async function (DB) {
+      var posts = await DB.social.posts();
+      var accounts = await DB.social.accounts();
+      var best = posts.slice().sort(function (a, b) { return (b.reach || 0) - (a.reach || 0); })[0];
+      return {
+        stats: [accounts.reduce(function (t, a) { return t + (a.followers || 0); }, 0) || null,
+                posts.filter(function (r) { return thisMonth(r.scheduled_at) && r.status === 'published'; }).length,
+                posts.filter(function (r) { return r.status === 'scheduled'; }).length,
+                best && best.reach ? best.title : null],
+        cells: posts.map(function (r) {
+          return [r.title, titleCase(r.platform), d(r.scheduled_at), titleCase(r.status), r.reach];
+        })
+      };
+    },
+
+    content: async function (DB) {
+      var posts = await DB.social.posts();
+      var today = new Date().toISOString();
+      return { stats: [posts.filter(function (r) { return r.status === 'planned'; }).length,
+                       posts.filter(function (r) { return r.status === 'in_progress'; }).length,
+                       posts.filter(function (r) { return r.status === 'published'; }).length,
+                       posts.filter(function (r) {
+                         return r.status !== 'published' && r.scheduled_at && r.scheduled_at < today;
+                       }).length] };
+    },
+
+    events: async function (DB) {
+      var rows = await DB.events.list(), cells = [], signups = 0;
+      var people = await DB.officers.list().catch(function () { return []; });
+      var today = new Date().toISOString().slice(0, 10);
+      for (var i = 0; i < rows.length; i++) {
+        var su = await DB.events.signups(rows[i].id);
+        signups += su.length;
+        cells.push([rows[i].name, d(rows[i].date), rows[i].location,
+                    nameOf(people, rows[i].owner_id), su.length, titleCase(rows[i].status)]);
+      }
+      return {
+        stats: [rows.filter(function (r) { return r.date && r.date >= today; }).length,
+                rows.length, null, signups || null],
+        cells: cells
+      };
+    },
+
+    graphics: async function (DB) {
+      var rows = await DB.graphics.list();
+      return { stats: [rows.filter(function (r) { return !r.is_template; }).length,
+                       rows.filter(function (r) { return r.status === 'awaiting'; }).length,
+                       rows.filter(function (r) { return r.status === 'published'; }).length,
+                       rows.filter(function (r) { return r.is_template; }).length] };
+    },
+
+    analytics: async function (DB) {
+      var t = await DB.tasks.counts();
+      var meetings = await DB.meetings.list();
+      var members = await DB.members.list();
+      var held = meetings.filter(function (m) { return m.status === 'held'; }).length;
+      return { stats: [null,
+                       members.filter(function (r) { return thisMonth(r.joined_at); }).length || null,
+                       pct(t.done, t.done + t.open),
+                       pct(held, meetings.length)] };
     }
   };
 
@@ -236,8 +492,30 @@
       (data.stats || []).forEach(function (v, i) {
         if (cells[i] && v !== null && v !== undefined) cells[i].textContent = v;
       });
-      if (data.rows && data.rows.length) renderRows(main, data.rows);
+      if (data.cells && data.cells.length) renderCells(main, data.cells);
+      else if (data.rows && data.rows.length) renderRows(main, data.rows);
     } catch (e) { /* leave the dashes; a failed fetch must not invent data */ }
+  }
+
+  /* A feed that already knows its own column order hands over cells and
+     skips the guessing that renderRows has to do from table headers. */
+  function renderCells(main, cells) {
+    var panel = main.querySelector('.panel .tblwrap table tbody') ||
+                main.querySelector('.panel .tblwrap table');
+    if (!panel) return;
+    var empty = main.querySelector('.tbl-empty');
+    var body = document.createElement('tbody');
+    cells.forEach(function (row) {
+      var tr = document.createElement('tr');
+      row.forEach(function (v) {
+        var td = document.createElement('td');
+        td.textContent = (v === null || v === undefined || v === '') ? '\u2014' : v;
+        tr.appendChild(td);
+      });
+      body.appendChild(tr);
+    });
+    panel.appendChild(body);
+    if (empty) empty.remove();
   }
 
   function renderRows(main, rows) {

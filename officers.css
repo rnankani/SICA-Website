@@ -731,6 +731,11 @@ a.stat:hover{border-color:rgba(201,163,79,.34)}
 .ib.warn{color:var(--warn);border-color:rgba(194,104,90,.4)}
 .ib.warn:hover{background:rgba(194,104,90,.1)}
 .ib:disabled{opacity:.5;cursor:wait}
+/* Delete sits apart from Reject: rejecting is a decision, deleting is
+   the end of the record. Muted until it is armed, then unmistakable. */
+.ib.danger{color:#8C6A62;border-color:rgba(140,106,98,.32);margin-left:auto}
+.ib.danger:hover{color:var(--warn);border-color:rgba(194,104,90,.5);background:rgba(194,104,90,.08)}
+.ib.danger.armed{color:var(--warn);border-color:var(--warn);background:rgba(194,104,90,.14);margin-left:auto}
 @media (max-width:760px){
   .invrow{grid-template-columns:1fr auto;grid-template-areas:"who status" "role when" "acts acts" "hint hint"}
 }

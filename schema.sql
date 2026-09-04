@@ -326,6 +326,221 @@ create table if not exists settings (
   value jsonb
 );
 
+
+-- ═══════════════════════════════════════════════════════════
+-- Everything the rest of the portal reads.
+--
+-- One table per page that shows a table, named for what the club calls
+-- the thing rather than for its shape. Nothing here invents data: each
+-- one starts empty and the page keeps printing em dashes until there
+-- are rows, which is the honest state.
+-- ═══════════════════════════════════════════════════════════
+
+-- ─── the room: practice sessions ───────────────────────────
+create table if not exists practice_sessions (
+  id         uuid primary key default gen_random_uuid(),
+  week       int,
+  skill      text not null,
+  activity   text,
+  pairs      int,
+  ran_on     date,
+  notes      text,
+  meeting_id uuid references meetings on delete set null,
+  created_at timestamptz not null default now()
+);
+
+-- ─── the record: minutes ───────────────────────────────────
+-- Decisions and action items are jsonb arrays of sentences. A decision
+-- is a sentence, not a row worth its own table, and they are only ever
+-- read back with the minute they belong to.
+create table if not exists minutes (
+  id           uuid primary key default gen_random_uuid(),
+  meeting_id   uuid references meetings on delete set null,
+  date         date not null default current_date,
+  author_id    uuid references profiles on delete set null,
+  body         text,
+  decisions    jsonb not null default '[]'::jsonb,
+  action_items jsonb not null default '[]'::jsonb,
+  filed_at     timestamptz,
+  created_at   timestamptz not null default now()
+);
+
+-- ─── the record: forms and their responses ─────────────────
+create table if not exists forms (
+  id         uuid primary key default gen_random_uuid(),
+  title      text not null,
+  purpose    text,
+  fields     jsonb not null default '[]'::jsonb,
+  status     text not null default 'open' check (status in ('draft','open','closed')),
+  opened_at  timestamptz default now(),
+  closed_at  timestamptz,
+  created_by uuid references profiles on delete set null
+);
+
+create table if not exists form_responses (
+  id           uuid primary key default gen_random_uuid(),
+  form_id      uuid not null references forms on delete cascade,
+  profile_id   uuid references profiles on delete set null,
+  answers      jsonb not null default '{}'::jsonb,
+  submitted_at timestamptz not null default now()
+);
+
+-- ─── the money ─────────────────────────────────────────────
+-- Spend is deliberately not a column here. It is the sum of the
+-- expenses in the category, so it cannot drift out of step with them.
+create table if not exists budget_lines (
+  id         uuid primary key default gen_random_uuid(),
+  category   text not null unique,
+  allocated  numeric(10,2) not null default 0,
+  notes      text,
+  year       int not null default extract(year from current_date)
+);
+
+alter table expenses add column if not exists category text;
+alter table expenses add column if not exists status   text not null default 'logged';
+do $ck$ begin
+  alter table expenses add constraint expenses_status_ck
+    check (status in ('logged','awaiting','approved','reimbursed'));
+exception when duplicate_object then null;
+end $ck$;
+
+create table if not exists campaigns (
+  id         uuid primary key default gen_random_uuid(),
+  name       text not null,
+  target     numeric(10,2),
+  raised     numeric(10,2) not null default 0,
+  runs       text,
+  owner_role sica_role,
+  status     text not null default 'planned' check (status in ('planned','active','done','cancelled')),
+  created_at timestamptz not null default now()
+);
+
+create table if not exists inventory_items (
+  id         uuid primary key default gen_random_uuid(),
+  item       text not null,
+  quantity   int not null default 1,
+  location   text,
+  held_by    uuid references profiles on delete set null,
+  condition  text,
+  value      numeric(10,2),
+  updated_at timestamptz not null default now()
+);
+
+-- ─── outward: social, content, events, graphics ────────────
+create table if not exists social_accounts (
+  platform   text primary key,
+  handle     text,
+  url        text,
+  followers  int,
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists social_posts (
+  id           uuid primary key default gen_random_uuid(),
+  title        text not null,
+  platform     text,
+  body         text,
+  scheduled_at timestamptz,
+  status       text not null default 'planned' check (status in ('planned','in_progress','scheduled','published')),
+  reach        int,
+  owner_id     uuid references profiles on delete set null,
+  created_at   timestamptz not null default now()
+);
+
+create table if not exists events (
+  id         uuid primary key default gen_random_uuid(),
+  name       text not null,
+  date       date,
+  location   text,
+  owner_id   uuid references profiles on delete set null,
+  status     text not null default 'planned' check (status in ('planned','confirmed','done','cancelled')),
+  notes      text,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists event_signups (
+  id         uuid primary key default gen_random_uuid(),
+  event_id   uuid not null references events on delete cascade,
+  profile_id uuid references profiles on delete set null,
+  name       text,
+  email      text,
+  signed_at  timestamptz not null default now()
+);
+
+create table if not exists graphics_assets (
+  id          uuid primary key default gen_random_uuid(),
+  title       text not null,
+  kind        text,
+  url         text,
+  status      text not null default 'draft' check (status in ('draft','awaiting','published')),
+  is_template boolean not null default false,
+  owner_id    uuid references profiles on delete set null,
+  updated_at  timestamptz not null default now()
+);
+
+-- ─── time: anything dated that is not a meeting or a task ──
+create table if not exists calendar_events (
+  id         uuid primary key default gen_random_uuid(),
+  title      text not null,
+  date       date not null,
+  ends       date,
+  kind       text not null default 'school' check (kind in ('school','club','deadline','event','other')),
+  notes      text,
+  created_at timestamptz not null default now()
+);
+
+-- ─── hours ─────────────────────────────────────────────────
+create table if not exists member_hours (
+  id         uuid primary key default gen_random_uuid(),
+  profile_id uuid references profiles on delete cascade,
+  date       date not null default current_date,
+  hours      numeric(5,2) not null,
+  reason     text
+);
+
+-- ─── curriculum ────────────────────────────────────────────
+-- curriculum-data.js is the shipped default. A row here overrides one
+-- week of it, so the founder toggle for officer-edited curriculum has
+-- somewhere to write without anyone touching the file.
+create table if not exists curriculum_weeks (
+  week       int primary key,
+  skill      text,
+  activity   text,
+  notes      text,
+  updated_by uuid references profiles on delete set null,
+  updated_at timestamptz not null default now()
+);
+
+-- ─── audit log ─────────────────────────────────────────────
+-- Every privileged action, with who and when. Append only: there is no
+-- update or delete policy, deliberately.
+create table if not exists audit_log (
+  id          uuid primary key default gen_random_uuid(),
+  at          timestamptz not null default now(),
+  actor_id    uuid references profiles on delete set null,
+  actor_email text,
+  action      text not null,
+  subject     text,
+  detail      jsonb
+);
+
+-- ─── outgoing email ────────────────────────────────────────
+-- A queue, not a mailer. The database records that a message should go
+-- out; something outside the database actually sends it and stamps
+-- sent_at. Queuing inside the approving transaction means an approval
+-- can never succeed while its notification is silently lost.
+create table if not exists email_outbox (
+  id         uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  to_email   text not null,
+  to_name    text,
+  subject    text not null,
+  body       text not null,
+  kind       text not null default 'other',
+  sent_at    timestamptz,
+  error      text
+);
+
 -- ═══════════════════════════════════════════════════════════
 -- Row Level Security
 -- ═══════════════════════════════════════════════════════════
@@ -419,6 +634,164 @@ create policy "treasury only" on expenses for all using (
 -- settings: founder only
 drop policy if exists "founder settings" on settings;
 create policy "founder settings" on settings for all using (is_founder()) with check (is_founder());
+
+
+-- ═══════════════════════════════════════════════════════════
+-- Row Level Security for everything added above.
+--
+-- Same shape as the block before it: enable, drop, create. The default
+-- is officers-only, because a self-serve account lands as 'member' and
+-- a member is not staff. Money and the founder's own surfaces are
+-- narrower still.
+-- ═══════════════════════════════════════════════════════════
+alter table practice_sessions enable row level security;
+alter table minutes           enable row level security;
+alter table forms             enable row level security;
+alter table form_responses    enable row level security;
+alter table budget_lines      enable row level security;
+alter table campaigns         enable row level security;
+alter table inventory_items   enable row level security;
+alter table social_accounts   enable row level security;
+alter table social_posts      enable row level security;
+alter table events            enable row level security;
+alter table event_signups     enable row level security;
+alter table graphics_assets   enable row level security;
+alter table calendar_events   enable row level security;
+alter table member_hours      enable row level security;
+alter table curriculum_weeks  enable row level security;
+alter table audit_log         enable row level security;
+alter table email_outbox      enable row level security;
+
+-- The officer surfaces. One loop would be tidier, but writing them out
+-- means a policy can be read where it is used.
+drop policy if exists "officers manage practice"   on practice_sessions;
+drop policy if exists "officers manage minutes"    on minutes;
+drop policy if exists "officers manage forms"      on forms;
+drop policy if exists "officers manage campaigns"  on campaigns;
+drop policy if exists "officers manage inventory"  on inventory_items;
+drop policy if exists "officers manage social"     on social_accounts;
+drop policy if exists "officers manage posts"      on social_posts;
+drop policy if exists "officers manage events"     on events;
+drop policy if exists "officers manage graphics"   on graphics_assets;
+drop policy if exists "officers manage calendar"   on calendar_events;
+drop policy if exists "officers manage curriculum" on curriculum_weeks;
+create policy "officers manage practice"   on practice_sessions for all using (is_officer()) with check (is_officer());
+create policy "officers manage minutes"    on minutes           for all using (is_officer()) with check (is_officer());
+create policy "officers manage forms"      on forms             for all using (is_officer()) with check (is_officer());
+create policy "officers manage campaigns"  on campaigns         for all using (is_officer()) with check (is_officer());
+create policy "officers manage inventory"  on inventory_items   for all using (is_officer()) with check (is_officer());
+create policy "officers manage social"     on social_accounts   for all using (is_officer()) with check (is_officer());
+create policy "officers manage posts"      on social_posts      for all using (is_officer()) with check (is_officer());
+create policy "officers manage events"     on events            for all using (is_officer()) with check (is_officer());
+create policy "officers manage graphics"   on graphics_assets   for all using (is_officer()) with check (is_officer());
+create policy "officers manage calendar"   on calendar_events   for all using (is_officer()) with check (is_officer());
+create policy "officers manage curriculum" on curriculum_weeks  for all using (is_officer()) with check (is_officer());
+
+-- A form is filled in by the person it is for, so the write is theirs;
+-- reading the pile of answers is not.
+drop policy if exists "anyone may respond"     on form_responses;
+drop policy if exists "officers read responses" on form_responses;
+create policy "anyone may respond"      on form_responses for insert to anon, authenticated with check (true);
+create policy "officers read responses" on form_responses for select using (is_officer());
+grant insert on form_responses to anon, authenticated;
+
+-- Signing up for an event is the same shape: a public write, a private read.
+drop policy if exists "anyone may sign up"    on event_signups;
+drop policy if exists "officers read signups" on event_signups;
+create policy "anyone may sign up"    on event_signups for insert to anon, authenticated with check (true);
+create policy "officers read signups" on event_signups for select using (is_officer());
+grant insert on event_signups to anon, authenticated;
+
+-- Money: treasurer, president, founder. Same rule as expenses.
+drop policy if exists "treasury budget" on budget_lines;
+create policy "treasury budget" on budget_lines for all using (
+  exists (select 1 from profiles where id = auth.uid() and role in ('treasurer','founder','president'))
+) with check (
+  exists (select 1 from profiles where id = auth.uid() and role in ('treasurer','founder','president'))
+);
+
+-- Your own hours are yours to see; officers see everyone's.
+drop policy if exists "read own hours"    on member_hours;
+drop policy if exists "officers log hours" on member_hours;
+create policy "read own hours"     on member_hours for select using (profile_id = auth.uid() or is_officer());
+create policy "officers log hours" on member_hours for all    using (is_officer()) with check (is_officer());
+
+-- The audit log is readable by the founder and appended to by nobody
+-- directly: only the security-definer functions below write to it, so a
+-- row cannot be forged by whoever is holding the anon key.
+drop policy if exists "founder reads audit" on audit_log;
+create policy "founder reads audit" on audit_log for select using (is_founder());
+
+-- The outbox holds people's names and email addresses. Founder only.
+drop policy if exists "founder reads outbox" on email_outbox;
+create policy "founder reads outbox" on email_outbox for all using (is_founder()) with check (is_founder());
+
+-- ─── deleting an application ───────────────────────────────
+-- Asked for deliberately: a rejected application is somebody's honest
+-- answers about their own weaknesses, and keeping it forever is worse
+-- than losing it. This is a hard delete with no recycle bin, so the UI
+-- asks before calling it.
+drop policy if exists "leaders delete apps" on applications;
+create policy "leaders delete apps" on applications for delete using (is_founder());
+grant delete on applications to authenticated;
+
+-- ═══════════════════════════════════════════════════════════
+-- The approval email
+--
+-- approve_officer() already grants the role. It now also writes the
+-- message into email_outbox in the same transaction, so the two cannot
+-- disagree: if the approval commits, the email is queued, and if it
+-- rolls back, nothing was promised to anyone.
+--
+-- Sending is somebody else's job — see supabase/functions/send-emails.
+-- ═══════════════════════════════════════════════════════════
+-- Parameters are prefixed so they cannot be mistaken for the columns of
+-- the same name in the insert below.
+create or replace function log_action(p_action text, p_subject text, p_detail jsonb default null)
+returns void language sql security definer set search_path = public as $$
+  insert into audit_log (actor_id, actor_email, action, subject, detail)
+  values (auth.uid(), (select email from profiles where id = auth.uid()), p_action, p_subject, p_detail);
+$$;
+
+create or replace function approve_officer(invite uuid)
+returns officer_invites language plpgsql security definer set search_path = public as $$
+declare
+  inv officer_invites%rowtype;
+  who text;
+begin
+  if not is_founder() then
+    raise exception 'Only the founder may approve officers.' using errcode = 'insufficient_privilege';
+  end if;
+  select * into inv from officer_invites where id = invite;
+  if inv.id is null then raise exception 'No such invite.'; end if;
+  if inv.profile_id is null then
+    raise exception 'That person has not created an account yet, so there is nothing to approve.';
+  end if;
+
+  update profiles set role = inv.role where id = inv.profile_id;
+  update officer_invites
+     set status = 'approved', decided_by = auth.uid(), decided_at = now()
+   where id = invite
+  returning * into inv;
+
+  who := coalesce(nullif(trim(inv.full_name), ''), split_part(inv.email, '@', 1));
+
+  insert into email_outbox (to_email, to_name, subject, body, kind)
+  values (
+    inv.email, inv.full_name,
+    'You are on the SICA officer team',
+    who || E',\n\n' ||
+    'Your officer application has been approved. You are now ' ||
+    initcap(replace(inv.role::text, '_', ' ')) || E'.\n\n' ||
+    E'Sign in at https://www.joinsica.page/officers.html with the account you registered. The portal opens to your own page: your tasks, the meeting plan, and whatever your seat owns.\n\n' ||
+    E'Read the handbook before the first meeting. It is short, and it is the answer to most questions.\n\n' ||
+    E'— Reyansh\nSICA',
+    'officer_approved'
+  );
+
+  perform log_action('officer.approve', inv.email, jsonb_build_object('role', inv.role));
+  return inv;
+end; $$;
 
 -- ═══════════════════════════════════════════════════════════
 -- Verify. Every table below must show rls = true and at least one

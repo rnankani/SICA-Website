@@ -42,8 +42,27 @@
                    'status', 'position', 'meeting_id', 'created_at', 'completed_at', 'completed_by'],
     announcements:['id', 'title', 'body', 'audience', 'author_id', 'publish_at', 'pinned'],
     documents:    ['id', 'title', 'category', 'url', 'owner_role', 'updated_at'],
-    expenses:     ['id', 'date', 'item', 'amount', 'paid_by', 'approved_by', 'receipt_url'],
-    settings:     ['key', 'value']
+    expenses:     ['id', 'date', 'item', 'amount', 'paid_by', 'approved_by', 'receipt_url',
+                   'category', 'status'],
+    settings:     ['key', 'value'],
+
+    practice_sessions: ['id', 'week', 'skill', 'activity', 'pairs', 'ran_on', 'notes', 'meeting_id'],
+    minutes:      ['id', 'meeting_id', 'date', 'author_id', 'body', 'decisions', 'action_items', 'filed_at'],
+    forms:        ['id', 'title', 'purpose', 'fields', 'status', 'opened_at', 'closed_at'],
+    form_responses: ['id', 'form_id', 'profile_id', 'answers', 'submitted_at'],
+    budget_lines: ['id', 'category', 'allocated', 'notes', 'year'],
+    campaigns:    ['id', 'name', 'target', 'raised', 'runs', 'owner_role', 'status'],
+    inventory_items: ['id', 'item', 'quantity', 'location', 'held_by', 'condition', 'value'],
+    social_accounts: ['platform', 'handle', 'url', 'followers'],
+    social_posts: ['id', 'title', 'platform', 'body', 'scheduled_at', 'status', 'reach', 'owner_id'],
+    events:       ['id', 'name', 'date', 'location', 'owner_id', 'status', 'notes'],
+    event_signups:['id', 'event_id', 'profile_id', 'name', 'email', 'signed_at'],
+    graphics_assets: ['id', 'title', 'kind', 'url', 'status', 'is_template', 'owner_id'],
+    calendar_events: ['id', 'title', 'date', 'ends', 'kind', 'notes'],
+    member_hours: ['id', 'profile_id', 'date', 'hours', 'reason'],
+    curriculum_weeks: ['week', 'skill', 'activity', 'notes', 'updated_at'],
+    audit_log:    ['id', 'at', 'actor_id', 'actor_email', 'action', 'subject', 'detail'],
+    email_outbox: ['id', 'created_at', 'to_email', 'to_name', 'subject', 'body', 'kind', 'sent_at']
   };
 
   var APPLICATION_STATUS = ['submitted', 'interview', 'approved', 'rejected', 'archived'];
@@ -63,6 +82,12 @@
 
   var local = {
     mode: 'local',
+    async upsert(t, row) {
+      var k = KEYS(t), rows = lsGet(t), hit = false;
+      rows = rows.map(function (r) { if (r[k] !== row[k]) return r; hit = true; return Object.assign({}, r, row); });
+      if (!hit) rows.push(row);
+      lsSet(t, rows); return row;
+    },
     async list(t, opts) {
       var rows = lsGet(t);
       if (opts && opts.where) {
@@ -75,7 +100,9 @@
       });
       return rows;
     },
-    async get(t, id) { return lsGet(t).filter(function (r) { return r.id === id; })[0] || null; },
+    async get(t, id) {
+      return lsGet(t).filter(function (r) { return r[KEYS(t)] === id; })[0] || null;
+    },
     async insert(t, row, opts) {
       row.id = row.id || uid();
       row.created_at = row.created_at || new Date().toISOString();
@@ -85,14 +112,14 @@
     async update(t, id, patch) {
       var rows = lsGet(t), hit = null;
       rows = rows.map(function (r) {
-        if (r.id !== id) return r;
+        if (r[KEYS(t)] !== id) return r;
         hit = Object.assign({}, r, patch); return hit;
       });
       lsSet(t, rows);
       return hit;
     },
     async remove(t, id) {
-      lsSet(t, lsGet(t).filter(function (r) { return r.id !== id; }));
+      lsSet(t, lsGet(t).filter(function (r) { return r[KEYS(t)] !== id; }));
       return true;
     },
     async count(t, where) { return (await this.list(t, { where: where })).length; }
@@ -156,6 +183,10 @@
     });
   }
 
+  /* Primary key per table, for the handful that are not `id`. */
+  var PK = { settings: 'key', social_accounts: 'platform', curriculum_weeks: 'week' };
+  function KEYS(t) { return PK[t] || 'id'; }
+
   var supabase = {
     mode: 'supabase',
     async list(t, opts) {
@@ -167,7 +198,9 @@
       q.push('select=*');
       return sb(t + '?' + q.join('&'));
     },
-    async get(t, id) { return (await sb(t + '?id=eq.' + id + '&select=*'))[0] || null; },
+    async get(t, id) {
+      return (await sb(t + '?' + KEYS(t) + '=eq.' + encodeURIComponent(id) + '&select=*'))[0] || null;
+    },
     /* `minimal` asks PostgREST not to return the created row. That
        matters for a public write: returning the row requires SELECT
        permission, and someone submitting an application deliberately
@@ -181,10 +214,20 @@
       }
       return (await sb(t, { method: 'POST', body: row, anon: anon }))[0];
     },
+    /* Not every table is keyed on `id`: settings is keyed on `key`,
+       social_accounts on `platform`, curriculum_weeks on `week`. KEYS
+       says so once, here, rather than each caller remembering. */
     async update(t, id, patch) {
-      return (await sb(t + '?id=eq.' + id, { method: 'PATCH', body: patch }))[0];
+      return (await sb(t + '?' + KEYS(t) + '=eq.' + encodeURIComponent(id),
+                       { method: 'PATCH', body: patch }))[0];
     },
-    async remove(t, id) { return sb(t + '?id=eq.' + id, { method: 'DELETE', prefer: 'return=minimal' }); },
+    async upsert(t, row) {
+      return (await sb(t, { method: 'POST', body: row, prefer: 'resolution=merge-duplicates,return=representation' }))[0];
+    },
+    async remove(t, id) {
+      return sb(t + '?' + KEYS(t) + '=eq.' + encodeURIComponent(id),
+                { method: 'DELETE', prefer: 'return=minimal' });
+    },
     async count(t, where) { return (await this.list(t, { where: where })).length; }
   };
 
@@ -222,6 +265,11 @@
         return A.list('applications', { where: status ? { status: status } : null, order: 'created_at' });
       },
       get: function (id) { return A.get('applications', id); },
+      /* A hard delete, on purpose. An application is somebody's honest
+         account of their own weaknesses; keeping a rejected one on file
+         forever is worse than losing it. There is no recycle bin, so
+         every caller asks before reaching this. */
+      remove: function (id) { return A.remove('applications', id); },
       setStatus: function (id, status, note) {
         return A.update('applications', id, {
           status: status, review_note: note || null,
@@ -280,7 +328,10 @@
     members:  { list: function () { return A.list('members', { order: 'joined_at' }); },
                 create: function (m) { return A.insert('members', m); },
                 count: function () { return A.count('members'); } },
-    officers: { list: function () { return A.list('profiles', { where: { role: null } }); },
+    /* Everyone with an account. The name lookups in render.js need the
+       whole table, not a filtered slice — a filter of role=null matched
+       nobody, so every 'Paid by' and 'Author' column came back blank. */
+    officers: { list: function () { return A.list('profiles', {}); },
                 byRole: function (r) { return A.list('profiles', { where: { role: r } }); },
                 upsert: function (p) { return A.insert('profiles', p); } },
     meetings: { list: function () { return A.list('meetings', { order: 'date' }); },
@@ -345,8 +396,126 @@
                 create: function (d) { return A.insert('documents', d); } },
     expenses: { list: function () { return A.list('expenses', { order: 'date' }); },
                 create: function (e) { return A.insert('expenses', e); } },
-    settings: { all: function () { return A.list('settings', {}); },
-                set: function (k, v) { return A.update('settings', k, { value: v }); } },
+    /* Keyed on the setting name, not on an id — and a setting nobody has
+       written yet has no row at all, so this upserts rather than
+       updating something that is not there. */
+    settings: {
+      all: function () { return A.list('settings', {}); },
+      async map() {
+        var rows = await A.list('settings', {}), out = {};
+        rows.forEach(function (r) { out[r.key] = r.value; });
+        return out;
+      },
+      get: async function (k, fallback) {
+        var r = await A.get('settings', k);
+        return r && r.value !== null && r.value !== undefined
+          ? r.value : (fallback === undefined ? null : fallback);
+      },
+      set: function (k, v) { return A.upsert('settings', { key: k, value: v }); }
+    },
+
+    /* ─── the rest of the portal ───────────────────────────
+       Each of these is the same few verbs over one table. They are
+       written out rather than generated from a list, so a page calling
+       DB.events.list() leads to a table by reading rather than by
+       working out what a factory produced. */
+    practice:  { list: function () { return A.list('practice_sessions', { order: 'ran_on' }); },
+                 create: function (r) { return A.insert('practice_sessions', r); },
+                 update: function (id, p) { return A.update('practice_sessions', id, p); },
+                 remove: function (id) { return A.remove('practice_sessions', id); } },
+
+    minutes:   { list: function () { return A.list('minutes', { order: 'date' }); },
+                 create: function (r) { return A.insert('minutes', r); },
+                 update: function (id, p) { return A.update('minutes', id, p); },
+                 remove: function (id) { return A.remove('minutes', id); },
+                 file: function (id) { return A.update('minutes', id, { filed_at: new Date().toISOString() }); } },
+
+    forms:     { list: function () { return A.list('forms', { order: 'opened_at' }); },
+                 create: function (r) { return A.insert('forms', r); },
+                 update: function (id, p) { return A.update('forms', id, p); },
+                 remove: function (id) { return A.remove('forms', id); },
+                 responses: function (id) { return A.list('form_responses', { where: { form_id: id } }); },
+                 /* A public write, the same shape as an application: the
+                    person filling it in is not signed in. */
+                 respond: function (id, answers) {
+                   return A.insert('form_responses', { form_id: id, answers: answers },
+                                   { minimal: true, anon: true });
+                 } },
+
+    budget:    { list: function () { return A.list('budget_lines', { order: 'category' }); },
+                 create: function (r) { return A.insert('budget_lines', r); },
+                 update: function (id, p) { return A.update('budget_lines', id, p); },
+                 remove: function (id) { return A.remove('budget_lines', id); },
+                 /* Spend is never stored. It is summed from the expenses
+                    in the category, so a budget line and its receipts
+                    cannot drift apart. */
+                 async withSpend() {
+                   var lines = await A.list('budget_lines', { order: 'category' });
+                   var ex = await A.list('expenses', {});
+                   return lines.map(function (l) {
+                     var spent = ex.filter(function (e) { return e.category === l.category; })
+                                   .reduce(function (t, e) { return t + Number(e.amount || 0); }, 0);
+                     return Object.assign({}, l, { spent: spent, remaining: Number(l.allocated || 0) - spent });
+                   });
+                 } },
+
+    campaigns: { list: function () { return A.list('campaigns', { order: 'created_at' }); },
+                 create: function (r) { return A.insert('campaigns', r); },
+                 update: function (id, p) { return A.update('campaigns', id, p); },
+                 remove: function (id) { return A.remove('campaigns', id); } },
+
+    inventory: { list: function () { return A.list('inventory_items', { order: 'updated_at' }); },
+                 create: function (r) { return A.insert('inventory_items', r); },
+                 update: function (id, p) { return A.update('inventory_items', id, p); },
+                 remove: function (id) { return A.remove('inventory_items', id); } },
+
+    social:    { accounts: function () { return A.list('social_accounts', {}); },
+                 setAccount: function (r) { return A.upsert('social_accounts', r); },
+                 posts: function () { return A.list('social_posts', { order: 'scheduled_at' }); },
+                 create: function (r) { return A.insert('social_posts', r); },
+                 update: function (id, p) { return A.update('social_posts', id, p); },
+                 remove: function (id) { return A.remove('social_posts', id); } },
+
+    events:    { list: function () { return A.list('events', { order: 'date' }); },
+                 create: function (r) { return A.insert('events', r); },
+                 update: function (id, p) { return A.update('events', id, p); },
+                 remove: function (id) { return A.remove('events', id); },
+                 signups: function (id) { return A.list('event_signups', { where: { event_id: id } }); },
+                 signUp: function (id, who) {
+                   return A.insert('event_signups', {
+                     event_id: id, name: who.name || null, email: who.email || null
+                   }, { minimal: true, anon: true });
+                 } },
+
+    graphics:  { list: function () { return A.list('graphics_assets', { order: 'updated_at' }); },
+                 create: function (r) { return A.insert('graphics_assets', r); },
+                 update: function (id, p) { return A.update('graphics_assets', id, p); },
+                 remove: function (id) { return A.remove('graphics_assets', id); } },
+
+    calendar:  { list: function () { return A.list('calendar_events', { order: 'date' }); },
+                 create: function (r) { return A.insert('calendar_events', r); },
+                 update: function (id, p) { return A.update('calendar_events', id, p); },
+                 remove: function (id) { return A.remove('calendar_events', id); } },
+
+    hours:     { list: function () { return A.list('member_hours', { order: 'date' }); },
+                 log: function (r) { return A.insert('member_hours', r); },
+                 remove: function (id) { return A.remove('member_hours', id); } },
+
+    curriculum:{ overrides: function () { return A.list('curriculum_weeks', { order: 'week' }); },
+                 set: function (r) { return A.upsert('curriculum_weeks', r); } },
+
+    audit:     { list: function () { return A.list('audit_log', { order: 'at' }); } },
+
+    /* The queue an approval email lands in. Reading it is how the
+       founder checks that a message actually went out. */
+    outbox:    { list: function () { return A.list('email_outbox', { order: 'created_at' }); },
+                 pending: async function () {
+                   return (await A.list('email_outbox', { order: 'created_at' }))
+                     .filter(function (r) { return !r.sent_at; });
+                 },
+                 markSent: function (id) {
+                   return A.update('email_outbox', id, { sent_at: new Date().toISOString() });
+                 } },
 
     /* Pages call this to decide between a real number and an em dash. */
     async stat(fn) {

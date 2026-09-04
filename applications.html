@@ -69,7 +69,7 @@ window.sicaPageInit = async function () {
     rejected:  ['p-warn', 'Rejected'],
     archived:  ['p-idle', 'Archived']
   };
-  var filter = 'submitted', rows = [], open = null;
+  var filter = 'submitted', rows = [], open = null, armed = null;
 
   function ago(iso) {
     if (!iso) return '&mdash;';
@@ -129,7 +129,15 @@ window.sicaPageInit = async function () {
       (a.status !== 'interview' ? '<button class="ib"      data-act="interview" data-id="' + a.id + '">Request interview</button>' : '') +
       (a.status !== 'rejected'  ? '<button class="ib warn" data-act="rejected"  data-id="' + a.id + '">Reject</button>' : '') +
       (a.status !== 'archived'  ? '<button class="ib"      data-act="archived"  data-id="' + a.id + '">Archive</button>' : '') +
-      '<a class="ib" href="mailto:' + encodeURIComponent(a.email) + '">Email them</a></div>';
+      '<a class="ib" href="mailto:' + encodeURIComponent(a.email) + '">Email them</a>' +
+      /* Two steps, because this one does not come back. The first click
+         only arms the second, and anything else on the page disarms it
+         again — a misfire here destroys somebody's written answers. */
+      (armed === a.id
+        ? '<button class="ib danger armed" data-act="delete-yes" data-id="' + a.id + '">Delete for good &mdash; click to confirm</button>' +
+          '<button class="ib" data-act="delete-no" data-id="' + a.id + '">Keep it</button>'
+        : '<button class="ib danger" data-act="delete" data-id="' + a.id + '">Delete</button>') +
+      '</div>';
 
     return '<div class="apcard open" data-id="' + a.id + '">' + head +
       '<div class="ap-body">' + qa +
@@ -178,14 +186,31 @@ window.sicaPageInit = async function () {
 
   document.getElementById('appTabs').addEventListener('click', function (e) {
     var t = e.target.closest('.ptab'); if (!t) return;
-    filter = t.dataset.f; open = null; draw();
+    filter = t.dataset.f; open = null; armed = null; draw();
   });
 
   document.getElementById('appList').addEventListener('click', async function (e) {
     var b = e.target.closest('button'); if (!b) return;
     var id = b.dataset.id, act = b.dataset.act;
-    if (act === 'open') { open = open === id ? null : id; return draw(); }
+
+    if (act === 'delete')     { armed = id;   return draw(); }
+    if (act === 'delete-no')  { armed = null; return draw(); }
+    if (act === 'delete-yes') {
+      b.disabled = true; b.textContent = 'Deleting...';
+      try {
+        await DB.applications.remove(id);
+      } catch (ex) {
+        b.disabled = false;
+        b.textContent = 'Could not delete: ' + (ex && ex.message ? ex.message : 'unknown error');
+        return;
+      }
+      armed = null; open = null;
+      return draw();
+    }
+
+    if (act === 'open') { open = open === id ? null : id; armed = null; return draw(); }
     if (['approved', 'interview', 'rejected', 'archived'].indexOf(act) < 0) return;
+    armed = null;
     b.disabled = true;
     try { await DB.applications.setStatus(id, act); } catch (ex) {}
     await draw();
