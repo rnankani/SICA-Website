@@ -92,6 +92,18 @@ img,svg{display:block;max-width:100%}
   font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
   transition:background .3s ease,border-color .3s ease;
 }
+/* Recruiting is the one thing this site is currently for, so the apply
+   route is solid rather than outlined — it has to out-rank the Officers
+   door beside it at a glance, not merely sit next to it. */
+.topnav-apply{
+  flex:none;display:inline-flex;align-items:center;gap:7px;
+  background:var(--brass-lit);color:var(--ink);border-radius:6px;padding:7px 14px;
+  font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  transition:filter .3s ease,transform .3s cubic-bezier(.16,1,.3,1);
+}
+.topnav-apply i{font-style:normal;transition:transform .3s cubic-bezier(.16,1,.3,1)}
+.topnav-apply:hover{filter:brightness(1.08)}
+.topnav-apply:hover i{transform:translateX(3px)}
 .topnav-off i{font-style:normal;transition:transform .3s cubic-bezier(.16,1,.3,1)}
 .topnav-off:hover{background:rgba(201,163,79,.18);border-color:var(--brass-lit)}
 .topnav-off:hover i{transform:translateX(3px)}
@@ -112,9 +124,11 @@ img,svg{display:block;max-width:100%}
   .topnav.solid{background:rgba(10,9,9,.92)}
   .topnav-in{
     flex-wrap:wrap;row-gap:8px;padding:9px var(--pad);
-    display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"mk . off" "links links links";
+    display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;
+    grid-template-areas:"mk . apply off" "links links links links";
   }
   .topnav-mk{grid-area:mk}
+  .topnav-apply{grid-area:apply;padding:6px 11px;font-size:10px}
   .topnav-off{grid-area:off;padding:6px 11px;font-size:10px}
   .topnav-links{
     grid-area:links;margin-left:0;gap:15px;padding-bottom:2px;
@@ -480,6 +494,17 @@ html.js .hero-arrow.in svg{animation:nudge 3s cubic-bezier(.4,0,.2,1) 2.4s infin
 .join{background:var(--ink-deep);color:var(--bone);border-radius:clamp(20px,3vw,40px);padding:clamp(56px,9vw,140px) clamp(26px,5vw,90px);position:relative;overflow:hidden;text-align:center}
 .join .kicker{justify-content:center}
 .join .h2,.join .sub,.join .join-note{margin-inline:auto}
+/* Officer applications. Bordered rather than plain so it reads as its
+   own offer, not a continuation of the section above it. */
+.oa{border:1px solid rgba(201,163,79,.26);border-radius:16px;
+    padding:clamp(28px,4.5vw,52px);background:rgba(201,163,79,.04)}
+.oa .sub{margin-top:20px}
+.oa-roles{list-style:none;margin:26px 0 30px;padding:0;display:flex;flex-wrap:wrap;gap:9px}
+.oa-roles li{border:1px solid rgba(201,163,79,.32);border-radius:999px;
+             padding:8px 15px;font-size:12.5px;color:var(--bone);line-height:1.2}
+.oa-roles li b{color:var(--brass-lit);font-weight:600}
+.oa-roles li span{color:var(--on-bone);font-size:11.5px;margin-left:7px}
+.oa-note{margin-top:18px;font-size:13px;color:var(--on-bone)}
 .join .acts{justify-content:center}
 .join::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 55% at 50% 0%,rgba(201,163,79,.14),transparent 70%);pointer-events:none}
 .join > *{position:relative;z-index:1}
@@ -1016,8 +1041,12 @@ html:not(.js) .demo-stage{--lit:1}
       <a href="#meeting">Meetings</a>
       <a href="#curriculum">Curriculum</a>
       <a href="#faq">FAQ</a>
+      <a href="#officers">Officer roles</a>
       <a href="#join">Join</a>
     </div>
+    <a class="topnav-apply" href="apply.html">
+      <span>Apply</span><i aria-hidden="true">&rarr;</i>
+    </a>
     <button class="topnav-off" type="button" id="officerBtn">
       <span>Officers</span><i aria-hidden="true">&rarr;</i>
     </button>
@@ -1349,6 +1378,26 @@ html:not(.js) .demo-stage{--lit:1}
   </section>
 
   <!-- COME VISIT (unnumbered — the ask, not a numbered argument) -->
+  <!-- ─────────── OFFICER APPLICATIONS ───────────
+       The hero button scrolls away and never comes back, so the one
+       thing the club is actively recruiting for was invisible for the
+       whole page. This says which roles are open, in the same words the
+       application form and the handbook use. -->
+  <section class="sec" id="officers">
+    <div class="wrap">
+      <div class="oa rv">
+        <div class="kicker" style="color:var(--brass-lit)"><i></i><span class="eyebrow">Now accepting</span></div>
+        <h2 class="h2">Help build it. <em>Apply to be a founding officer.</em></h2>
+        <p class="sub">SICA launches with five officers. This is the team that writes the first curriculum, runs the first meetings, and decides what the club becomes &mdash; before there is anything to inherit. About 45 minutes a week outside the meeting.</p>
+        <ul class="oa-roles" id="oaRoles"></ul>
+        <div class="acts">
+          <a class="btn btn--gold" href="apply.html"><span>Start an application</span><i class="dot"></i></a>
+        </div>
+        <p class="oa-note">No experience required. Applications are read by the founder; you will hear back within a week.</p>
+      </div>
+    </div>
+  </section>
+
   <section class="sec" id="join">
     <div class="wrap">
       <div class="join rv">
@@ -1372,6 +1421,7 @@ html:not(.js) .demo-stage{--lit:1}
         <a href="#meeting">Meetings</a>
         <a href="#curriculum">Curriculum</a>
         <a href="#why-this-matters">Why it matters</a>
+        <a href="#officers">Officer applications</a>
         <a href="#join">Visit</a>
         <button type="button" class="foot-officers" id="officerBtnFoot">Officers</button>
       </nav>
@@ -1410,6 +1460,26 @@ html:not(.js) .demo-stage{--lit:1}
   </div>
 </div>
 
+<script src="role-expectations.js?v=15"></script>
+<script>
+/* The open roles, from the same definitions the application form and
+   the handbook read. A role marked applicable:false — President — is
+   not something anyone can apply for, so it is not listed here. */
+(function () {
+  'use strict';
+  var RX = window.SICA_ROLE_EXPECTATIONS, host = document.getElementById('oaRoles');
+  if (!RX || !host) return;
+  RX.order.forEach(function (id) {
+    var r = RX.roles[id];
+    if (!r || !r.applicable) return;
+    var li = document.createElement('li');
+    var b = document.createElement('b'); b.textContent = r.label;
+    var t = document.createElement('span'); t.textContent = r.hours || r.commitment;
+    li.appendChild(b); li.appendChild(t);
+    host.appendChild(li);
+  });
+})();
+</script>
 <script>
 (function(){
   'use strict';

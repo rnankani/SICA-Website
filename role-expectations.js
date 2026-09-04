@@ -29,6 +29,9 @@ window.SICA_ROLE_EXPECTATIONS = {
       applicable: false,
       owns: 'Overall direction of the club. You run meetings, represent SICA to the advisor ' +
             'and CHS administration, and make final calls when officers disagree.',
+      /* `hours` is the same figure at chip length, for the homepage
+         list where the full sentence would not fit. */
+      hours: '2–3 hrs/week',
       commitment: '~2–3 hours weekly — meeting facilitation, weekly officer sync, planning.',
       success: 'Meetings run on time and on structure. The officer team stays aligned. ' +
                'SICA\u2019s application and probationary requirements stay on track with no missed deadlines.',
@@ -42,6 +45,7 @@ window.SICA_ROLE_EXPECTATIONS = {
       applicable: true,
       owns: 'Backup to the President, plus a real domain of your own — typically curriculum ' +
             'oversight (making sure each week\u2019s lesson is actually ready) or officer coordination.',
+      hours: '2 hrs/week',
       commitment: '~2 hours weekly.',
       success: 'If the President is unavailable, meetings still happen without a scramble. ' +
                'Your assigned domain never becomes the reason a meeting is not ready.',
@@ -61,6 +65,7 @@ window.SICA_ROLE_EXPECTATIONS = {
             'post-probation; before that this half is mostly dormant. Secretary half — meeting ' +
             'minutes for every single meeting, no exceptions, which is a hard CHS requirement, ' +
             'plus attendance tracking and club records.',
+      hours: '1–2 hrs/week',
       commitment: '~1–2 hours weekly, growing once fundraising starts.',
       success: 'Minutes exist for every meeting, filed the same day. If a Clubs Commissioner ever ' +
                'asks where your records are, the answer is immediate, not \u201clet me find them.\u201d',
@@ -74,6 +79,7 @@ window.SICA_ROLE_EXPECTATIONS = {
       applicable: true,
       owns: 'Recruitment materials, photography and video at meetings, and — once SICA passes ' +
             'the interview round — the official Instagram.',
+      hours: '1–2 hrs/week',
       commitment: '~1–2 hours weekly, spikier around recruitment pushes such as Clubs Faire and signature drives.',
       success: 'SICA has a visual record of what actually happens at meetings. Recruitment materials ' +
                'look consistent with the brand. Social media, once live, posts real content rather than filler.',
