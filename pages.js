@@ -173,7 +173,7 @@
         { type: 'fields', title: 'Branding', rows: [
           ['Accent', '#C9A34F'], ['Display face', 'Bodoni Moda — wordmarks only'],
           ['Interface face', 'Inter'], ['Logo', 'Wordmark, no symbol'],
-          ['Founder image', 'founder.jpg'], ['Homepage image', null] ]},
+          ['Homepage image', null] ]},
         { type: 'status' },
         { type: 'danger', items: [
           ['View active sessions', 'See every signed-in device'],

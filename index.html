@@ -434,54 +434,11 @@ html.js .hero-arrow.in svg{animation:nudge 3s cubic-bezier(.4,0,.2,1) 2.4s infin
 .evt h4{font-family:var(--head);font-weight:700;font-size:clamp(22px,2.4vw,32px);letter-spacing:-.02em;line-height:1.05;margin-top:auto}
 .evt p{font-size:14.5px;margin-top:12px;line-height:1.6;opacity:.72}
 
-/* ─── founder: the story, with room for a real portrait ───
-   The portrait is sticky, so his face holds the right-hand column for the
-   whole read rather than scrolling away after the first paragraph. */
-.founder-grid{
-  display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);
-  gap:clamp(34px,5vw,78px);align-items:start;margin-top:clamp(40px,6vh,72px);
-}
-.founder-grid .editorial{margin-top:0;max-width:56ch}
-.portrait{position:sticky;top:clamp(78px,14vh,140px)}
-.portrait-frame{
-  position:relative;aspect-ratio:4/5;border-radius:16px;overflow:hidden;
-  border:1px solid rgba(201,163,79,.28);
-  background:linear-gradient(150deg,#231F19,#131110);
-  display:flex;flex-direction:column;justify-content:space-between;
-  padding:clamp(18px,2vw,26px);
-}
-.portrait-frame::after{
-  content:'';position:absolute;right:-72px;bottom:-72px;width:184px;height:184px;
-  border:1px solid rgba(201,163,79,.2);border-radius:50%;
-}
-/* The photo carries the site's own treatment rather than sitting in it as
-   a raw snapshot: desaturated to the page's neutral, contrast lifted so it
-   holds against near-black, and warmed very slightly back toward brass so
-   it reads as part of the palette instead of a grey cut-out. */
-.portrait-frame img{
-  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
-  object-position:70% 28%;      /* crop: keeps the face off-centre-right */
-  z-index:2;
-  filter:grayscale(1) contrast(1.12) brightness(.94);
-}
-.portrait-frame::before{
-  content:'';position:absolute;inset:0;z-index:3;pointer-events:none;
-  background:linear-gradient(160deg,rgba(201,163,79,.16),transparent 55%),
-             linear-gradient(0deg,rgba(10,9,9,.55),transparent 45%);
-  mix-blend-mode:normal;
-}
-/* nothing to tint if the photo has not been added yet */
-.portrait-frame.no-photo::before{display:none}
-.portrait-tag{
-  position:relative;z-index:1;font-size:10px;font-weight:600;
-  letter-spacing:.16em;text-transform:uppercase;color:var(--brass-lit);
-}
-.portrait-frame p{
-  position:relative;z-index:1;color:var(--bone);
-  font-family:var(--head);font-weight:600;font-size:clamp(19px,2.1vw,27px);
-  line-height:1.08;max-width:10ch;
-}
-.portrait figcaption{margin-top:14px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--on-bone)}
+/* ─── founder: the story, on its own ───
+   Single column since the portrait was removed; the measure is what
+   keeps it readable now, not the column split. */
+.founder-story{margin-top:clamp(40px,6vh,72px)}
+.founder-story .editorial{margin-top:0;max-width:56ch}
 
 /* inline link inside running copy */
 .lnk{
@@ -1001,8 +958,6 @@ html.js .rv.in{opacity:1;transform:none}
    RESPONSIVE
    ═══════════════════════════════════════════════════════════ */
 @media (max-width:900px){
-  .founder-grid{grid-template-columns:1fr;gap:clamp(30px,5vh,50px)}
-  .portrait{position:static;max-width:340px}
 }
 @media (max-width:760px){.hero{padding-top:104px}}
 @media (max-width:1080px){
@@ -1353,7 +1308,7 @@ html:not(.js) .demo-stage{--lit:1}
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">Who built this?</span></div>
       <h2 class="h2 bloom">Not just heard. <em>Listened to.</em></h2>
-      <div class="founder-grid">
+      <div class="founder-story">
         <div class="editorial">
           <p class="drop rv">As Vice President of <a class="lnk" href="https://CodeStarters.org/#team" target="_blank" rel="noopener noreferrer">Codestarters</a>, I watched something strange happen over and over: the students who got picked for leadership roles &mdash; and who actually performed once they had them &mdash; weren&rsquo;t always the ones with the best grades. It came down to communication. The ability to give your ideas real weight, to influence a room instead of getting talked over.</p>
           <p class="turn rv">That&rsquo;s why I built SICA: a club that teaches you to be <b>listened to.</b> Not just heard &mdash; listened to.</p>
@@ -1366,13 +1321,6 @@ html:not(.js) .demo-stage{--lit:1}
           </div>
         </div>
 
-        <!-- Portrait slot. Save the photo as founder.jpg beside this file and
-             it appears, cropped and toned by .portrait-frame img. The image is
-             attached by JS only once it loads, so a missing file costs nothing
-             and never leaves a broken-image box. -->
-        <figure class="portrait rv">
-          <div class="portrait-frame" id="portraitFrame" data-photo="founder.jpg"></div>
-        </figure>
       </div>
     </div>
   </section>
@@ -1655,18 +1603,6 @@ html:not(.js) .demo-stage{--lit:1}
       });
     }, {threshold:0.4});
     eio.observe(evidence);
-  }
-
-  /* ─── founder portrait: attach only if the file is really there ── */
-  var pf = $('portraitFrame');
-  if (pf && pf.dataset.photo){
-    var probe = new Image();
-    probe.onload = function(){
-      probe.alt = 'Reyansh Nankani';
-      pf.appendChild(probe);
-      pf.classList.add('has-photo');
-    };
-    probe.src = pf.dataset.photo;
   }
 
   /* ─── officer passcode gate ──────────────────────────────
