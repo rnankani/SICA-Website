@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="officers.css?v=14">
+<link rel="stylesheet" href="officers.css?v=15">
 </head>
 <body data-page="handbook">
 <div class="shell">
@@ -29,6 +29,7 @@
         <a href="#ch1">01 &nbsp;Culture</a>
         <a href="#ch2">02 &nbsp;Expectations</a>
         <a href="#ch3">03 &nbsp;Hiring</a>
+        <a href="#ch-roles">&bull;&nbsp;&nbsp;Role expectations</a>
         <a href="#ch4">04 &nbsp;Removal</a>
         <a href="#ch5">05 &nbsp;Meetings</a>
         <a href="#ch6">06 &nbsp;Conflict</a>
@@ -157,6 +158,17 @@
         </section>
 
         <!-- ══════ 04 REMOVAL ══════ -->
+        <!-- ══════ ROLE EXPECTATIONS ══════ -->
+        <!-- Rendered from role-expectations.js rather than written out
+             here, so the handbook and the application form cannot end
+             up describing the same job differently. -->
+        <section class="ch" id="ch-roles">
+          <div class="ch-n">Reference</div>
+          <h2>Role expectations</h2>
+          <p>What each officer actually owns, what it costs in hours, and how anyone can tell whether it is being done. Applicants see the same text on the application form, so nobody takes a role without having read what it is.</p>
+          <div id="roleExpList"></div>
+        </section>
+
         <section class="ch" id="ch4">
           <div class="ch-n">Chapter 04</div>
           <h2>Removal</h2>
@@ -427,6 +439,7 @@
   </main>
 </div>
 
+<script src="role-expectations.js?v=15"></script>
 <script src="references-data.js?v=14"></script>
 <script src="supabase-config.js?v=14"></script>
 <script src="auth.js?v=14"></script>
@@ -453,6 +466,57 @@ window.sicaPageInit = function(){
   }, {rootMargin:'-12% 0px -80% 0px', threshold:0});
   chapters.forEach(function(c){ io.observe(c); });
 };
+</script>
+<script>
+/* One pass over the shared definitions. Same source as the application
+   form; this page only decides how they look. */
+(function () {
+  'use strict';
+  var RX = window.SICA_ROLE_EXPECTATIONS, host = document.getElementById('roleExpList');
+  if (!RX || !host) return;
+  RX.order.forEach(function (id) {
+    var r = RX.roles[id]; if (!r) return;
+    var wrap = document.createElement('div');
+    wrap.className = 'role-x' + (r.warn ? ' warn' : '');
+
+    var h = document.createElement('h3');
+    h.textContent = r.label;
+    if (!r.applicable) {
+      var tag = document.createElement('span');
+      tag.className = 'rx-tag';
+      tag.textContent = 'not open to applicants';
+      h.appendChild(tag);
+    }
+    wrap.appendChild(h);
+    if (r.aside) { var a = document.createElement('p'); a.className = 'rx-aside'; a.textContent = r.aside; wrap.appendChild(a); }
+
+    var dl = document.createElement('dl');
+    [['What you own', r.owns], ['Weekly commitment', r.commitment],
+     ['What success looks like', r.success], ['You report to', r.reportsTo]].forEach(function (pair) {
+      if (!pair[1]) return;
+      var dt = document.createElement('dt'); dt.textContent = pair[0];
+      var dd = document.createElement('dd'); dd.textContent = pair[1];
+      dl.appendChild(dt); dl.appendChild(dd);
+    });
+    wrap.appendChild(dl);
+
+    if (r.reality) {
+      var p = document.createElement('p'); p.className = 'rx-real';
+      var b = document.createElement('b'); b.textContent = 'Reality check. ';
+      p.appendChild(b); p.appendChild(document.createTextNode(r.reality));
+      wrap.appendChild(p);
+    }
+    host.appendChild(wrap);
+  });
+  if (RX.universal) {
+    var box = document.createElement('div');
+    box.className = 'rule-box';
+    var t = document.createElement('b'); t.textContent = 'Every officer, regardless of role';
+    var p = document.createElement('p'); p.textContent = RX.universal;
+    box.appendChild(t); box.appendChild(p);
+    host.appendChild(box);
+  }
+})();
 </script>
 </body>
 </html>

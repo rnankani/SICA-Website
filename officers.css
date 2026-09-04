@@ -261,6 +261,22 @@ a.card:hover,.card.link:hover{border-color:rgba(201,163,79,.34)}
 .ch ol{counter-reset:hb}
 .ch ol > li{counter-increment:hb;padding-left:26px}
 .ch ol > li::before{content:counter(hb);position:absolute;left:0;top:0;font-family:var(--mono);font-size:11px;color:var(--brass)}
+/* Handbook role expectations, rendered from role-expectations.js.
+   Each role reads as its own card so the four are scannable side by
+   side rather than as one wall of prose. */
+.role-x{border:1px solid var(--line);border-radius:10px;padding:17px 19px;margin:16px 0}
+.role-x.warn{border-color:rgba(198,93,79,.42)}
+.role-x h3{margin:0 0 10px}
+.rx-tag{margin-left:9px;font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+        color:var(--text-3);border:1px solid var(--line);border-radius:999px;padding:2px 8px;vertical-align:2px}
+.rx-aside{margin:-6px 0 10px;font-size:12.5px;color:var(--text-3)}
+.role-x dl{margin:0;display:grid;grid-template-columns:minmax(140px,auto) 1fr;gap:9px 18px;
+           font-size:14.5px;line-height:1.62}
+.role-x dt{color:var(--text-3);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding-top:4px}
+.role-x dd{margin:0;color:var(--text)}
+.rx-real{margin:13px 0 0;padding-top:11px;border-top:1px solid var(--line);font-size:14px;line-height:1.62}
+.role-x.warn .rx-real{color:var(--warn)}
+@media (max-width:620px){.role-x dl{grid-template-columns:1fr;gap:2px 0}.role-x dt{padding-top:10px}}
 .rule-box{margin-top:18px;border-left:2px solid var(--brass);background:var(--brass-wash);border-radius:0 9px 9px 0;padding:15px 18px}
 .rule-box b{color:var(--brass);display:block;font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;margin-bottom:6px}
 .rule-box p{margin-top:0;font-size:14.5px;color:var(--text)}

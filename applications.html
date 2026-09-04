@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="officers.css?v=14">
+<link rel="stylesheet" href="officers.css?v=15">
 </head>
 <body data-page="applications">
 <div class="shell">
@@ -32,6 +32,7 @@
 </div>
 
 <script src="references-data.js?v=14"></script>
+<script src="role-expectations.js?v=15"></script>
 <script src="supabase-config.js?v=14"></script>
 <script src="auth.js?v=14"></script>
 <script src="db.js?v=14"></script>
@@ -58,10 +59,12 @@ window.sicaPageInit = async function () {
   }
   body.hidden = false;
 
-  var ROLE_LABEL = {
-    vp: 'Vice President', treasurer: 'Treasurer', secretary: 'Secretary',
-    pr: 'PR / Media', other: 'Other', president: 'President', founder: 'Founder'
-  };
+  /* Built from the shared definitions, plus the pre-merge values so a
+     row submitted as a bare "secretary" still reads as one. */
+  var RX = window.SICA_ROLE_EXPECTATIONS || {roles:{}, legacy:{}};
+  var ROLE_LABEL = { other: 'Other', founder: 'Founder' };
+  Object.keys(RX.roles || {}).forEach(function (k) { ROLE_LABEL[k] = RX.roles[k].label; });
+  Object.keys(RX.legacy || {}).forEach(function (k) { ROLE_LABEL[k] = RX.legacy[k]; });
   var STATUS = {
     submitted: ['p-busy', 'New'],
     interview: ['p-idle', 'Interview'],

@@ -84,6 +84,21 @@ h2{font-size:11.5px;font-weight:600;letter-spacing:.15em;text-transform:uppercas
 }
 .f .err{font-size:12px;color:var(--warn);min-height:1em}
 .two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+/* The expectations panel. Quiet by default — it is reference, not a
+   sales pitch, and it sits between the role picker and the rest of
+   the form so it is read before the questions are answered. */
+.rx{border:1px solid rgba(201,163,79,.28);border-left:2px solid var(--brass-lit);
+    border-radius:8px;padding:15px 17px;margin:-4px 0 18px;background:rgba(201,163,79,.045)}
+.rx[hidden]{display:none}
+.rx h4{margin:0 0 3px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--brass-lit)}
+.rx .aside{font-size:12px;color:#5C574F;margin:0 0 10px}
+.rx dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:7px 14px;font-size:13.5px;line-height:1.6}
+.rx dt{color:#5C574F;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;padding-top:3px;white-space:nowrap}
+.rx dd{margin:0}
+.rx .real{margin:11px 0 0;padding-top:10px;border-top:1px solid rgba(201,163,79,.2);
+          font-size:13px;line-height:1.6;color:var(--on-bone)}
+.rx.warn .real{color:var(--warn)}
+@media (max-width:560px){.rx dl{grid-template-columns:1fr;gap:2px 0}.rx dt{padding-top:8px}}
 h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;border:1px solid rgba(201,163,79,.5);color:var(--brass-lit);font-size:10px;margin-right:9px;letter-spacing:0}
 .opt{color:#5C574F;font-weight:400;text-transform:none;letter-spacing:normal;font-size:12px}
 .hint2{font-size:13.5px;color:var(--on-bone);margin:-6px 0 18px}
@@ -157,12 +172,15 @@ h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radi
         <select id="role">
           <option value="">Select&hellip;</option>
           <option value="vp">Vice President</option>
-          <option value="treasurer">Treasurer</option>
-          <option value="secretary">Secretary</option>
+          <option value="treasurer_secretary">Treasurer / Secretary</option>
           <option value="pr">PR / Media</option>
           <option value="other">Other</option>
         </select><div class="err"></div></div>
     </div>
+    <!-- Filled from role-expectations.js the moment a role is picked.
+         Choosing a role blind is how you get officers who quit in
+         November over a workload nobody told them about. -->
+    <div class="rx" id="roleExp" hidden></div>
     <div class="f" id="otherWrap" hidden>
       <label for="roleOther">Which role did you have in mind?</label>
       <input id="roleOther" placeholder="Tell us what you would want to do"><div class="err"></div></div>
@@ -248,6 +266,7 @@ h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radi
   </div>
 </div>
 
+<script src="role-expectations.js?v=15"></script>
 <script src="supabase-config.js?v=14"></script>
 <script src="db.js?v=14"></script>
 <script>
@@ -255,8 +274,10 @@ h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radi
   'use strict';
   var DB = window.SICA_DB;
   var DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
-  var ROLE_LABEL = {vp:'Vice President', treasurer:'Treasurer', secretary:'Secretary',
-                    pr:'PR / Media', other:'Other'};
+  var RX = window.SICA_ROLE_EXPECTATIONS || {roles:{}, legacy:{}};
+  var ROLE_LABEL = {other:'Other'};
+  Object.keys(RX.roles || {}).forEach(function (k) { ROLE_LABEL[k] = RX.roles[k].label; });
+  Object.keys(RX.legacy || {}).forEach(function (k) { ROLE_LABEL[k] = RX.legacy[k]; });
   var WRITTEN = ['q_built','q_weakness','q_sica','q_first_month'];
   var TEXT = ['name','grade','email','role','roleOther','links','commitments','anything_else'].concat(WRITTEN);
   var DRAFT = 'sica.apply.draft';
@@ -267,7 +288,50 @@ h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radi
 
   /* "Other" reveals a field asking what they actually have in mind */
   var roleSel = document.getElementById('role'), otherWrap = document.getElementById('otherWrap');
-  roleSel.addEventListener('change', function () { otherWrap.hidden = roleSel.value !== 'other'; });
+  var expBox = document.getElementById('roleExp');
+
+  /* What the job actually is, shown the moment it is chosen. Built with
+     textContent rather than a template string because every value here
+     is prose with apostrophes and dashes in it. */
+  function showExpectations() {
+    var r = (RX.roles || {})[roleSel.value];
+    expBox.textContent = '';
+    expBox.classList.toggle('warn', !!(r && r.warn));
+    if (!r) { expBox.hidden = true; return; }
+
+    var h = document.createElement('h4'); h.textContent = r.label; expBox.appendChild(h);
+    if (r.aside) {
+      var a = document.createElement('p'); a.className = 'aside'; a.textContent = r.aside;
+      expBox.appendChild(a);
+    }
+    var dl = document.createElement('dl');
+    [['What you own', r.owns], ['Time', r.commitment],
+     ['Success', r.success], ['Reports to', r.reportsTo]].forEach(function (pair) {
+      if (!pair[1]) return;
+      var dt = document.createElement('dt'); dt.textContent = pair[0];
+      var dd = document.createElement('dd'); dd.textContent = pair[1];
+      dl.appendChild(dt); dl.appendChild(dd);
+    });
+    expBox.appendChild(dl);
+    if (r.reality) {
+      var p = document.createElement('p'); p.className = 'real';
+      var b = document.createElement('b'); b.textContent = 'Reality check. ';
+      p.appendChild(b); p.appendChild(document.createTextNode(r.reality));
+      expBox.appendChild(p);
+    }
+    if (RX.universal) {
+      var u = document.createElement('p'); u.className = 'real';
+      u.textContent = 'Every officer: ' + RX.universal;
+      expBox.appendChild(u);
+    }
+    expBox.hidden = false;
+  }
+
+  roleSel.addEventListener('change', function () {
+    otherWrap.hidden = roleSel.value !== 'other';
+    showExpectations();
+  });
+  showExpectations();
 
   /* The limit is words, not characters, so count words. */
   function words(t) { return t.trim() ? t.trim().split(/\s+/).length : 0; }
@@ -392,6 +456,7 @@ h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radi
         if (r) r.checked = true;
       }
       otherWrap.hidden = roleSel.value !== 'other';
+      showExpectations();
       WRITTEN.forEach(function (id) { document.getElementById(id).dispatchEvent(new Event('input')); });
     }
   } catch (e) {}
