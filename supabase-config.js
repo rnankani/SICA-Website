@@ -23,5 +23,5 @@ window.SICA_SUPABASE = {
 
   /* Where a sign-in link returns to. Only used once email confirmation
      or OAuth is switched on; password sign-in does not need it. */
-  redirectTo: 'https://rnankani.github.io/SICA-Website/officers.html'
+  redirectTo: 'https://www.joinsica.page/officers.html'
 };
