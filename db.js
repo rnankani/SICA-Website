@@ -105,7 +105,14 @@
   function sb(path, opts) {
     opts = opts || {};
     var token = null;
-    try { token = localStorage.getItem('sica.token'); } catch (e) {}
+    /* `anon` is for writes any visitor is allowed to make. A stale or
+       expired session token left in localStorage would otherwise be sent
+       as the Authorization header and rejected with a 401 before RLS
+       ever got a look at the row — which is exactly what killed the
+       public application form for anyone who had ever signed in. */
+    if (!opts.anon) {
+      try { token = localStorage.getItem('sica.token'); } catch (e) {}
+    }
     return fetch(CFG.url + '/rest/v1/' + path, {
       method: opts.method || 'GET',
       headers: {
@@ -167,11 +174,12 @@
        cannot read the applications table. Asking for the row back turns
        a successful insert into a row-level-security error. */
     async insert(t, row, opts) {
+      var anon = !!(opts && opts.anon);
       if (opts && opts.minimal) {
-        await sb(t, { method: 'POST', body: row, prefer: 'return=minimal' });
+        await sb(t, { method: 'POST', body: row, prefer: 'return=minimal', anon: anon });
         return true;
       }
-      return (await sb(t, { method: 'POST', body: row }))[0];
+      return (await sb(t, { method: 'POST', body: row, anon: anon }))[0];
     },
     async update(t, id, patch) {
       return (await sb(t + '?id=eq.' + id, { method: 'PATCH', body: patch }))[0];
@@ -208,7 +216,7 @@
           commitments: a.commitments || null,
           anything_else: a.anything_else || null,
           status: 'submitted'
-        }, { minimal: true });
+        }, { minimal: true, anon: true });
       },
       list: function (status) {
         return A.list('applications', { where: status ? { status: status } : null, order: 'created_at' });

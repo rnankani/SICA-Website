@@ -379,7 +379,13 @@ h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radi
     } catch (e) {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Submit application';
-      failEl.textContent = 'That did not go through. Your answers are still here and saved as a draft — press submit again in a moment.';
+      /* Say what actually failed. A bare "try again" is useless when the
+         cause is a schema or permission problem that retrying will never
+         fix, and it hides the one line that makes it debuggable. */
+      var why = (e && e.message) ? String(e.message) : '';
+      failEl.textContent = 'That did not go through. Your answers are still here and saved as a draft.'
+        + (why ? ' (' + why + ')' : ' Press submit again in a moment.');
+      if (window.console) console.error('application submit failed', e);
       saveDraft();
       return;
     }

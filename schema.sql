@@ -369,6 +369,10 @@ drop policy if exists "officers review apps" on applications;
 drop policy if exists "leaders read apps"    on applications;
 drop policy if exists "leaders review apps"  on applications;
 create policy "anyone may apply"     on applications for insert to anon, authenticated with check (true);
+-- A policy alone is not enough: the role also needs the table privilege.
+-- Supabase usually grants these by default, but saying it explicitly
+-- means a table created by any other route still accepts applications.
+grant insert on applications to anon, authenticated;
 -- Only the founder and president read applications. A VP or treasurer
 -- has no business reading someone's stated weaknesses.
 create policy "leaders read apps"   on applications for select using (is_founder());
