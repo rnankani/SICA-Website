@@ -63,6 +63,25 @@ h2{font-size:11.5px;font-weight:600;letter-spacing:.15em;text-transform:uppercas
 .f input::placeholder,.f textarea::placeholder{color:#5C574F}
 .f .count{font-size:11px;color:#5C574F;text-align:right;font-variant-numeric:tabular-nums}
 .f.bad input,.f.bad textarea,.f.bad select{border-color:var(--warn)}
+/* A damped shake, the way a rejected password field moves on macOS: a
+   hard first swing, then each one smaller, settling rather than
+   stopping dead. Amplitude decays roughly by half every other step. */
+@keyframes fieldShake{
+  0%{transform:translateX(0)}
+  8%{transform:translateX(-9px)}   18%{transform:translateX(9px)}
+  28%{transform:translateX(-6px)}  38%{transform:translateX(6px)}
+  50%{transform:translateX(-3.5px)}62%{transform:translateX(3.5px)}
+  74%{transform:translateX(-1.5px)}86%{transform:translateX(1.5px)}
+  100%{transform:translateX(0)}
+}
+.f.shake input,.f.shake textarea,.f.shake select,.f.shake .days,.f.shake .yn{
+  animation:fieldShake .58s cubic-bezier(.36,.07,.19,.97) both
+}
+/* Motion is decoration here; the red border and the message carry the
+   meaning on their own. */
+@media (prefers-reduced-motion:reduce){
+  .f.shake input,.f.shake textarea,.f.shake select,.f.shake .days,.f.shake .yn{animation:none}
+}
 .f .err{font-size:12px;color:var(--warn);min-height:1em}
 .two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;border:1px solid rgba(201,163,79,.5);color:var(--brass-lit);font-size:10px;margin-right:9px;letter-spacing:0}
@@ -271,6 +290,22 @@ h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radi
     var slot = box.querySelector('.err'); if (slot) slot.textContent = msg || '';
   }
 
+  /* Removing the class and forcing a reflow before re-adding it restarts
+     the animation; without that, a second failed submit on the same
+     field would sit perfectly still. */
+  function shakeBad() {
+    [].forEach.call(document.querySelectorAll('.f.bad'), function (box) {
+      box.classList.remove('shake');
+      void box.offsetWidth;
+      box.classList.add('shake');
+    });
+  }
+  document.addEventListener('animationend', function (e) {
+    if (e.animationName === 'fieldShake') {
+      var box = e.target.closest('.f'); if (box) box.classList.remove('shake');
+    }
+  }, true);
+
   function collect() {
     var days = [].slice.call(document.querySelectorAll('#days input:checked')).map(function (c) { return c.value; });
     var af = document.querySelector('input[name=afterschool]:checked');
@@ -318,6 +353,7 @@ h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radi
     if (!a.commitments) ok = false;
 
     if (!ok) {
+      shakeBad();
       var first = document.querySelector('.f.bad input, .f.bad textarea, .f.bad select');
       if (first) { first.scrollIntoView({block:'center', behavior:'smooth'}); first.focus({preventScroll:true}); }
     }
