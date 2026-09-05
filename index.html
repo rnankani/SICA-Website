@@ -80,7 +80,8 @@ img,svg{display:block;max-width:100%}
   font-family:var(--display);font-weight:700;font-size:16px;letter-spacing:.02em;
   color:var(--bone);flex:none;
 }
-.topnav-links{display:flex;align-items:center;gap:clamp(12px,2.2vw,28px);margin-left:auto;overflow-x:auto}
+.topnav-links{display:flex;align-items:center;gap:clamp(12px,2.2vw,28px);margin-left:auto}
+.topnav-toggle{display:none}
 
 /* Officer sign-in. A bordered chip rather than another plain link, so it
    reads as a door instead of a seventh section — and so it is actually
@@ -90,6 +91,7 @@ img,svg{display:block;max-width:100%}
   background:rgba(201,163,79,.1);border:1px solid rgba(201,163,79,.4);
   color:var(--brass-lit);border-radius:6px;padding:7px 13px;cursor:pointer;
   font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  white-space:nowrap;line-height:1;
   transition:background .3s ease,border-color .3s ease;
 }
 /* Recruiting is the one thing this site is currently for, so the apply
@@ -99,6 +101,7 @@ img,svg{display:block;max-width:100%}
   flex:none;display:inline-flex;align-items:center;gap:7px;
   background:var(--brass-lit);color:var(--ink);border-radius:6px;padding:7px 14px;
   font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  white-space:nowrap;line-height:1;
   transition:filter .3s ease,transform .3s cubic-bezier(.16,1,.3,1);
 }
 .topnav-apply i{font-style:normal;transition:transform .3s cubic-bezier(.16,1,.3,1)}
@@ -117,25 +120,34 @@ img,svg{display:block;max-width:100%}
 .topnav-links a.on::after{
   content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--brass-lit);
 }
-/* On a phone the bar becomes two rows: wordmark and the Officers door on
-   top, the section links on their own scrolling row underneath. Cramming
-   eight links plus a button onto one 375px row left the button off-screen. */
+/* Mobile keeps both important actions visible and moves section links into
+   a real menu instead of a clipped horizontal strip. */
 @media (max-width:760px){
   .topnav.solid{background:rgba(10,9,9,.92)}
   .topnav-in{
-    flex-wrap:wrap;row-gap:8px;padding:9px var(--pad);
-    display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;
-    grid-template-areas:"mk . apply off" "links links links links";
+    position:relative;padding:10px max(14px,var(--pad));
+    display:grid;grid-template-columns:auto 1fr auto auto 38px;gap:7px;
+    align-items:center;
   }
-  .topnav-mk{grid-area:mk}
-  .topnav-apply{grid-area:apply;padding:6px 11px;font-size:10px}
-  .topnav-off{grid-area:off;padding:6px 11px;font-size:10px}
+  .topnav-mk{grid-column:1;font-size:15px}
+  .topnav-apply{grid-column:3;padding:9px 10px;font-size:9.5px}
+  .topnav-off{grid-column:4;padding:9px 10px;font-size:9.5px}
+  .topnav-apply i,.topnav-off i{display:none}
+  .topnav-toggle{
+    grid-column:5;display:grid;place-content:center;gap:4px;width:38px;height:36px;
+    border:1px solid rgba(237,232,220,.2);border-radius:6px;background:rgba(237,232,220,.04);
+    color:var(--bone);cursor:pointer;
+  }
+  .topnav-toggle span{display:block;width:16px;height:1px;background:currentColor}
   .topnav-links{
-    grid-area:links;margin-left:0;gap:15px;padding-bottom:2px;
-    -webkit-mask-image:linear-gradient(90deg,#000 90%,transparent);
-    mask-image:linear-gradient(90deg,#000 90%,transparent);
+    display:none;position:absolute;top:100%;left:0;right:0;margin:0;
+    grid-template-columns:repeat(2,minmax(0,1fr));gap:0;
+    padding:10px max(14px,var(--pad)) 16px;background:rgba(10,9,9,.97);
+    border-top:1px solid rgba(237,232,220,.08);border-bottom:1px solid rgba(237,232,220,.1);
   }
-  .topnav-links a{font-size:10.5px;letter-spacing:.09em;padding:3px 0}
+  .topnav.open .topnav-links{display:grid}
+  .topnav-links a{font-size:11px;letter-spacing:.08em;padding:12px 8px;border-bottom:1px solid rgba(237,232,220,.07)}
+  .topnav-links a:nth-last-child(-n+2){border-bottom:0}
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -193,65 +205,12 @@ img,svg{display:block;max-width:100%}
 .word .l{display:block}
 .word .l > i{display:block;font-style:normal;color:var(--brass-lit)}
 
-/* Gated on background-clip:text — the effect needs transparent letters, so
-   without support the wordmark itself would vanish. Degrades to solid brass.
-   JS only ever adds .rake when motion is allowed, for the same reason. */
-@supports ((-webkit-background-clip:text) or (background-clip:text)){
-  .word .l > i{background-clip:text;-webkit-background-clip:text}
-  .word.rake .l > i{
-    color:transparent;
-    background-image:linear-gradient(100deg,
-      var(--brass-lit) 40%, var(--brass-lit) 46%, #FFFFFF 50%, var(--brass-lit) 54%, var(--brass-lit) 60%);
-    background-size:280% 100%;background-position:190% 0;
-    animation:rake 1600ms cubic-bezier(.5,0,.2,1) forwards;
-  }
-  .word.rake .l:nth-child(1) > i{animation-delay:0ms}
-  .word.rake .l:nth-child(2) > i{animation-delay:90ms}
-  .word.rake .l:nth-child(3) > i{animation-delay:180ms}
-  .word.rake .l:nth-child(4) > i{animation-delay:270ms}
-}
-@keyframes rake{to{background-position:-90% 0}}
-
-/* brass rule that draws under the wordmark */
+/* Static brass rule under the wordmark. */
 .rule{height:1px;width:100%;max-width:min(760px,86vw);background:rgba(237,232,220,.14);position:relative;margin-top:clamp(18px,3vh,34px)}
 .rule .fill{
   position:absolute;inset:0 auto 0 0;display:block;width:100%;
-  background-image:linear-gradient(90deg,
-    var(--brass-lit) 40%, var(--brass-lit) 46%, #FFFFFF 50%, var(--brass-lit) 54%, var(--brass-lit) 60%);
-  background-size:280% 100%;background-position:190% 0;
+  background:var(--brass-lit);
   box-shadow:0 0 14px rgba(201,163,79,.6);
-}
-html.js .rule .fill{width:0}
-html.js .rule.in .fill{animation:draw 1100ms cubic-bezier(.16,1,.3,1) forwards}
-@keyframes draw{to{width:100%}}
-/* the shine — identical gradient stops, size and easing as the wordmark's
-   rake, so it reads as the same light, just travelling the line instead */
-html.js .rule.shine .fill{animation:ruleShine 1600ms cubic-bezier(.5,0,.2,1) forwards}
-@keyframes ruleShine{to{background-position:-90% 0}}
-
-/* the twinkle waiting at the line's end — fires once the shine arrives */
-.spark{
-  position:absolute;top:50%;right:-3px;width:20px;height:20px;margin:-10px -10px 0 0;
-  pointer-events:none;
-}
-html.js .spark{opacity:0}
-/* must out-specify `html.js .spark` above (0,2,1) or the twinkle never
-   becomes visible — the burst class alone loses the cascade */
-html.js .spark.burst{opacity:1}
-.spark-core{
-  position:absolute;inset:0;background:#FFFFFF;
-  clip-path:polygon(50% 0%,58.5% 41.5%,100% 50%,58.5% 58.5%,50% 100%,41.5% 58.5%,0% 50%,41.5% 41.5%);
-  filter:drop-shadow(0 0 6px rgba(255,255,255,.85));
-  transform:scale(.3);
-}
-.spark.burst .spark-core{animation:sparkBurst 1500ms cubic-bezier(.16,1,.3,1) forwards}
-@keyframes sparkBurst{
-  0%{transform:scale(.2) rotate(-25deg);opacity:0;filter:drop-shadow(0 0 6px rgba(255,255,255,.9)) brightness(1)}
-  18%{opacity:1}
-  32%{transform:scale(2.6) rotate(0deg);filter:drop-shadow(0 0 26px rgba(255,255,255,1)) brightness(2.6)}
-  55%{transform:scale(.85) rotate(8deg);filter:drop-shadow(0 0 12px rgba(255,244,214,.95)) brightness(1.5)}
-  72%{transform:scale(1.35) rotate(4deg);filter:drop-shadow(0 0 18px rgba(255,255,255,.95)) brightness(2)}
-  100%{transform:scale(1) rotate(0deg);opacity:1;filter:drop-shadow(0 0 12px rgba(201,163,79,.9)) brightness(1.2)}
 }
 /* ─── hero foot ──────────────────────────────────────────── */
 .hero-foot{
@@ -298,15 +257,8 @@ html.js .hero-r.in{
   transition:opacity 1.5s cubic-bezier(.16,1,.3,1),transform 1.5s cubic-bezier(.16,1,.3,1);
 }
 
-/* the one intentional loop on the page: a single soft nudge every 3s */
 .hero-arrow{width:20px;color:var(--brass);opacity:.8}
 .hero-arrow svg{width:100%;height:auto;display:block}
-html.js .hero-arrow.in svg{animation:nudge 3s cubic-bezier(.4,0,.2,1) 2.4s infinite}
-@keyframes nudge{
-  0%,80%,100%{transform:translateY(0)}
-  87%{transform:translateY(7px)}
-  94%{transform:translateY(0)}
-}
 
 /* ─── buttons ────────────────────────────────────────────── */
 .btn{
@@ -377,10 +329,7 @@ html.js .hero-arrow.in svg{animation:nudge 3s cubic-bezier(.4,0,.2,1) 2.4s infin
 /* --lit is 1 for the card nearest the middle of the screen, 0 for the
    rest; it drives the lift, the border and the title shimmer together. */
 .card{
-  --lit:0;
   flex:0 0 clamp(250px,30vw,380px);
-  transform:translateY(calc(var(--lit) * -14px));
-  transition:transform .45s cubic-bezier(.16,1,.3,1),background .5s ease,border-color .45s ease;
   border:1px solid rgba(237,232,220,.06);
   background:var(--bone-dim);border-radius:16px;padding:clamp(24px,2.6vw,38px);
   min-height:clamp(280px,38vh,400px);display:flex;flex-direction:column;
@@ -390,22 +339,7 @@ html.js .hero-arrow.in svg{animation:nudge 3s cubic-bezier(.4,0,.2,1) 2.4s infin
 .card:hover{background:#2A2620}
 .card.on{border-color:rgba(201,163,79,.34);background:#221E18}
 
-/* Gold moving through the title of the live card. Gated on
-   background-clip:text — without it the letters would be invisible. */
-@supports ((-webkit-background-clip:text) or (background-clip:text)){
-  .card.on h4{
-    color:transparent;
-    background-image:linear-gradient(100deg,
-      var(--brass) 38%, #F2DCA6 50%, var(--brass) 62%);
-    background-size:280% 100%;
-    -webkit-background-clip:text;background-clip:text;
-    animation:cardShine 2.8s linear infinite;
-  }
-}
-@keyframes cardShine{from{background-position:190% 0}to{background-position:-90% 0}}
-@media (prefers-reduced-motion:reduce){
-  .card.on h4{animation:none;color:var(--brass-lit);background-image:none}
-}
+.card.on h4{color:var(--brass-lit)}
 .card .ph{font-family:var(--head);font-weight:700;font-size:clamp(54px,7vw,92px);line-height:.85;letter-spacing:-.04em;color:var(--bone);opacity:.13}
 .card h4{font-family:var(--head);font-weight:700;font-size:clamp(24px,2.6vw,34px);letter-spacing:-.02em;margin-top:auto}
 .card p{font-size:14.5px;color:var(--on-bone);margin-top:12px;line-height:1.6}
@@ -434,11 +368,13 @@ html.js .hero-arrow.in svg{animation:nudge 3s cubic-bezier(.4,0,.2,1) 2.4s infin
 .evt h4{font-family:var(--head);font-weight:700;font-size:clamp(22px,2.4vw,32px);letter-spacing:-.02em;line-height:1.05;margin-top:auto}
 .evt p{font-size:14.5px;margin-top:12px;line-height:1.6;opacity:.72}
 
-/* ─── founder: the story, on its own ───
-   Single column since the portrait was removed; the measure is what
-   keeps it readable now, not the column split. */
-.founder-story{margin-top:clamp(40px,6vh,72px)}
+/* ─── founder: a real person beside the story ─── */
+.founder-story{margin-top:clamp(40px,6vh,72px);display:grid;grid-template-columns:minmax(240px,400px) minmax(0,1fr);gap:clamp(34px,6vw,90px);align-items:start}
 .founder-story .editorial{margin-top:0;max-width:56ch}
+.founder-photo{max-width:400px}
+.founder-photo img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:18px;border:1px solid rgba(237,232,220,.15);background:var(--bone-dim)}
+.founder-photo figcaption{margin-top:12px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--on-bone)}
+@media (max-width:760px){.founder-story{grid-template-columns:1fr}.founder-photo{max-width:none;width:100%}}
 
 /* inline link inside running copy */
 .lnk{
@@ -561,17 +497,10 @@ html.js .bloom.in{opacity:1;transform:none}
   fill:var(--brass-lit);
   filter:drop-shadow(0 0 6px rgba(201,163,79,.45));
 }
-html.js .sig-text{clip-path:inset(0 100% 0 0)}
-html.js .sig-draw.in .sig-text{animation:sigWipe 1400ms cubic-bezier(.45,.05,.35,1) forwards}
-@keyframes sigWipe{to{clip-path:inset(0 0 0 0)}}
-
 .sig-underline{
   fill:none;stroke:var(--brass-lit);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;
   filter:drop-shadow(0 0 6px rgba(201,163,79,.45));
 }
-html.js .sig-underline{stroke-dasharray:var(--l2,300);stroke-dashoffset:var(--l2,300)}
-html.js .sig-draw.in .sig-underline{animation:sign 700ms cubic-bezier(.5,0,.3,1) 1250ms forwards}
-@keyframes sign{to{stroke-dashoffset:0}}
 .sig-wrap .by{margin-top:16px}
 
 /* ─── evidence bar chart (mission) ────────────────────────
@@ -670,23 +599,15 @@ html:not(.js) .hye-final,.hye.is-static .hye-final{position:static;opacity:1;mar
 .mc-timeline::before{
   content:'';position:absolute;left:5px;top:6px;bottom:6px;width:1px;
   background:linear-gradient(180deg,var(--brass-lit) 0%,var(--brass) 100%);
-  transform:scaleY(0);transform-origin:top;
+  transform:none;
 }
-html.js .meetingcard.in .mc-timeline::before{animation:mcLine 1200ms cubic-bezier(.16,1,.3,1) forwards}
-@keyframes mcLine{to{transform:scaleY(1)}}
 .mc-step{position:relative;padding:0 0 clamp(30px,4.5vh,46px) 32px}
 .mc-step:last-child{padding-bottom:0}
 .mc-dot{
   position:absolute;left:0;top:5px;width:11px;height:11px;border-radius:50%;
   background:var(--ink);border:2px solid var(--brass-lit);
 }
-html.js .mc-step{opacity:0;transform:translateY(14px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
-.meetingcard.in .mc-step{opacity:1;transform:none}
-.meetingcard.in .mc-step:nth-child(1){transition-delay:160ms}
-.meetingcard.in .mc-step:nth-child(2){transition-delay:320ms}
-.meetingcard.in .mc-step:nth-child(3){transition-delay:480ms}
-.meetingcard.in .mc-step:nth-child(4){transition-delay:640ms}
-.meetingcard.in .mc-step:nth-child(5){transition-delay:800ms}
+html.js .mc-step{opacity:1;transform:none}
 .mc-time{
   display:block;font-family:var(--ui);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
   color:var(--brass-lit);margin-bottom:9px;
@@ -908,12 +829,22 @@ html.js .mc-reassure{opacity:0;transform:translateY(10px);transition:opacity .7s
 html.js .rv{opacity:0;transform:translateY(30px);transition:opacity 1s cubic-bezier(.16,1,.3,1),transform 1s cubic-bezier(.16,1,.3,1)}
 html.js .rv.in{opacity:1;transform:none}
 
+/* ─── restrained motion pass ───────────────────────────────
+   Content may fade in once. Decorative movement, shimmer, drawing and
+   scroll-linked card scaling are intentionally disabled. */
+html.js .hero-r,html.js .bloom,html.js .rv{opacity:0;transform:none;transition:opacity .65s ease}
+html.js .hero-r.in,html.js .bloom.in,html.js .rv.in{opacity:1;transform:none}
+.card,.card.on{transform:none;transition:none}
+.card.on h4{color:var(--bone);background:none}
+.demo-stage{--lit:1!important;opacity:1!important;transform:none!important;transition:none}
+.who-grid .evt{opacity:1!important;transform:none!important;transition:border-color .3s ease}
+
 /* ═══════════════════════════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════════════════════════ */
 @media (max-width:900px){
 }
-@media (max-width:760px){.hero{padding-top:104px}}
+@media (max-width:760px){.hero{padding-top:82px}}
 @media (max-width:1080px){
   .evt,.evt:nth-child(n),.who-grid .evt,.who-grid .evt:nth-child(n){grid-column:span 12}
   .hero-foot{grid-template-columns:1fr;align-items:start}
@@ -959,6 +890,9 @@ html:not(.js) .demo-stage{--lit:1}
     <button class="topnav-off" type="button" id="officerBtn">
       <span>Officers</span><i aria-hidden="true">&rarr;</i>
     </button>
+    <button class="topnav-toggle" type="button" id="navToggle" aria-controls="topnavLinks" aria-expanded="false" aria-label="Open navigation menu">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </nav>
 
@@ -972,7 +906,6 @@ html:not(.js) .demo-stage{--lit:1}
     </h1>
     <div class="rule" id="rule">
       <i class="fill" id="ruleFill"></i>
-      <i class="spark" id="ruleSpark"><i class="spark-core"></i></i>
     </div>
     <p class="lockup hero-r">Student Influence &amp; Communication Association <i>&middot;</i> Cupertino High School</p>
   </div>
@@ -1277,6 +1210,10 @@ html:not(.js) .demo-stage{--lit:1}
       <div class="kicker rv"><i></i><span class="eyebrow">Who built this?</span></div>
       <h2 class="h2 bloom">Not just heard. <em>Listened to.</em></h2>
       <div class="founder-story">
+        <figure class="founder-photo rv">
+          <img src="assets/founder-reyansh.png" alt="Reyansh Nankani, founder of SICA" width="640" height="640" loading="lazy" decoding="async">
+          <figcaption>Reyansh Nankani &middot; Founder</figcaption>
+        </figure>
         <div class="editorial">
           <p class="drop rv">As Vice President of <a class="lnk" href="https://CodeStarters.org/#team" target="_blank" rel="noopener noreferrer">Codestarters</a>, I watched something strange happen over and over: the students who got picked for leadership roles &mdash; and who actually performed once they had them &mdash; weren&rsquo;t always the ones with the best grades. It came down to communication. The ability to give your ideas real weight, to influence a room instead of getting talked over.</p>
           <p class="turn rv">That&rsquo;s why I built SICA: a club that teaches you to be <b>listened to.</b> Not just heard &mdash; listened to.</p>
@@ -1372,15 +1309,8 @@ html:not(.js) .demo-stage{--lit:1}
      One gesture — up 20px and in — on every hero element, staggered 200ms
      apart in document order. Plain timers, never rAF: rAF is suspended in a
      background tab, which would leave the hero permanently blank. */
-  var rule = $('rule'), hero = $('hero'), word = $('word');
-  var ruleFill = $('ruleFill'), ruleSpark = $('ruleSpark');
+  var rule = $('rule');
   var heroR = [].slice.call(document.querySelectorAll('.hero-r'));
-
-  /* Commit the drawn width inline before swapping animations: once .shine
-     replaces .draw on the fill, the draw animation's forwards-held width
-     stops applying, and the bar would snap back to zero just as the shine
-     starts travelling it. */
-  function lockRule(){ ruleFill.style.width = '100%'; }
 
   function land(){
     heroR.forEach(function(el, i){
@@ -1390,18 +1320,6 @@ html:not(.js) .demo-stage{--lit:1}
     rule.classList.add('in');
   }
   setTimeout(land, reduced ? 0 : 140);
-
-  /* One light: it rakes across the letters once they've settled, then travels
-     the rule beneath them and twinkles off its end. Never under reduced
-     motion — .rake makes the glyphs transparent, so a suppressed animation
-     there would leave the wordmark invisible rather than merely still. */
-  if (!reduced){
-    setTimeout(function(){ word.classList.add('rake'); }, 900);
-    /* the rule finishes drawing at ~1240ms (140 + 1100) — the light picks it
-       up from there, and the star fires the moment it reaches the end */
-    setTimeout(function(){ lockRule(); rule.classList.add('shine'); }, 1400);
-    setTimeout(function(){ ruleSpark.classList.add('burst'); }, 3000);
-  }
 
   /* ─── global smooth scroll ───────────────────────────────
      Lenis-style: this drives the *real* scroll position rather than
@@ -1468,35 +1386,10 @@ html:not(.js) .demo-stage{--lit:1}
     });
   });
 
-  function clamp01(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
-  function ease(x){ x = clamp01(x); return x * x * (3 - 2 * x); }
-
   /* ─── meeting demo: each stage lights as it nears the middle ───── */
-  var demoStages = [].slice.call(document.querySelectorAll('.demo-stage'));
-  function updateDemo(){
-    if (!demoStages.length) return;
-    var mid = innerHeight / 2;
-    demoStages.forEach(function(s){
-      var r = s.getBoundingClientRect();
-      if (r.bottom < 0 || r.top > innerHeight){ s.style.setProperty('--lit', 0); return; }
-      var d = Math.abs((r.top + r.height / 2) - mid) / (innerHeight * 0.5);
-      s.style.setProperty('--lit', (1 - clamp01(d)).toFixed(3));
-    });
-  }
 
   /* ─── who belongs here: whichever card is nearest the middle of the
      screen holds full contrast, the rest sit back ─────────────────── */
-  var whoCards = [].slice.call(document.querySelectorAll('.who-grid .evt'));
-  function updateWho(){
-    if (!whoCards.length || reduced) return;
-    var mid = innerHeight / 2;
-    whoCards.forEach(function(c){
-      var r = c.getBoundingClientRect();
-      if (r.bottom < 0 || r.top > innerHeight){ c.style.setProperty('--stage', 0); return; }
-      var d = Math.abs((r.top + r.height / 2) - mid) / (innerHeight * 0.55);
-      c.style.setProperty('--stage', (1 - clamp01(d)).toFixed(3));
-    });
-  }
 
   /* ─── numbers count up as their bar grows ────────────────
      The HTML ships the final figures, so with no JS the correct numbers
@@ -1617,56 +1510,7 @@ html:not(.js) .demo-stage{--lit:1}
      The section is 2.5 screens tall and the stage inside it is sticky, so
      the browser does the pinning natively; we only paint the crossfade. */
   var hye = $('have-you-ever');
-  var hyeLines = hye ? [].slice.call(hye.querySelectorAll('.hye-line')) : [];
-  var hyeLead  = hye ? hye.querySelector('.hye-lead') : null;
-  var hyeFinal = hye ? hye.querySelector('.hye-final') : null;
-
-  /* Windows overlap by exactly FADE, so statement i's exit *is* statement
-     i+1's entrance — one crossfade, never a blink through an empty stage. */
-  var STEP = 0.20,        // scroll distance between entrances
-      FADE = 0.05,        // length of every crossfade
-      DRIFT = 20;         // px each statement travels while fading
-
-  if (hye && reduced) hye.classList.add('is-static');
-
-  function paint(el, o, y){
-    el.style.opacity = o.toFixed(3);
-    el.style.transform = 'translate3d(0,' + y.toFixed(1) + 'px,0)';
-  }
-
-  function updateHye(){
-    if (!hye || hye.classList.contains('is-static')) return;
-
-    var r = hye.getBoundingClientRect(), vh = innerHeight;
-    var travel = hye.offsetHeight - vh;
-    var p = travel > 0 ? clamp01(-r.top / travel) : 0;
-
-    /* The stage is sticky, so it rides up into view *before* the pin engages.
-       Statement one fades in on that approach — otherwise the reader watches
-       a blank screen scroll past for a full viewport. */
-    var entering = ease(clamp01((vh - r.top) / vh));
-
-    if (hyeLead){
-      hyeLead.style.opacity = (entering * (1 - ease((p - 0.60) / 0.10))).toFixed(3);
-    }
-
-    var finalAt = hyeLines.length * STEP;
-
-    hyeLines.forEach(function(el, i){
-      var a = i * STEP;
-      if (i > 0 && p < a){ paint(el, 0, DRIFT); return; }
-      if (p > a + STEP){ paint(el, 0, -DRIFT); return; }
-      /* the first statement rides in on the approach, not on pin progress */
-      var into = i === 0 ? entering : ease((p - a) / FADE);
-      var out  = ease((p - (a + STEP - FADE)) / FADE);
-      paint(el, into * (1 - out), DRIFT * (1 - into) - DRIFT * out);
-    });
-
-    if (hyeFinal){
-      var tf = ease((p - finalAt) / FADE);
-      paint(hyeFinal, tf, 26 * (1 - tf));
-    }
-  }
+  if (hye) hye.classList.add('is-static');
 
   /* One rAF loop drives the lerp and every scroll-linked paint, so they can
      never disagree about where the page is. Cheap when nothing moves. */
@@ -1676,17 +1520,11 @@ html:not(.js) .demo-stage{--lit:1}
     var y = scrollY, h = document.documentElement.scrollHeight;
     if (y !== lastY || h !== lastH){
       lastY = y; lastH = h;
-      updateHye();
-      updateDemo();
       updateNav();
-      updateWho();
       drive();
     }
     requestAnimationFrame(frame);
   }
-  updateHye();
-  updateDemo();
-  updateWho();
   updateNav();
   requestAnimationFrame(frame);
 
@@ -1694,6 +1532,23 @@ html:not(.js) .demo-stage{--lit:1}
   var topnav = $('topnav');
   var navLinks = [].slice.call(document.querySelectorAll('#topnavLinks a'));
   var navTargets = navLinks.map(function(a){ return document.querySelector(a.getAttribute('href')); });
+  var navToggle = $('navToggle');
+
+  function setNavOpen(open){
+    if (!topnav || !navToggle) return;
+    topnav.classList.toggle('open', open);
+    navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    navToggle.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+  }
+
+  if (navToggle){
+    navToggle.addEventListener('click', function(){
+      setNavOpen(!topnav.classList.contains('open'));
+    });
+    navLinks.forEach(function(a){ a.addEventListener('click', function(){ setNavOpen(false); }); });
+    addEventListener('keydown', function(e){ if (e.key === 'Escape') setNavOpen(false); });
+    addEventListener('resize', function(){ if (innerWidth > 760) setNavOpen(false); });
+  }
 
   function updateNav(){
     if (!topnav) return;
@@ -1734,28 +1589,6 @@ html:not(.js) .demo-stage{--lit:1}
   }, 2600);
 
   /* ─── signature draw ─────────────────────────────────── */
-  var sig = $('sig');
-  if (sig){
-    var underline = sig.querySelector('.sig-underline');
-    try {
-      if (underline) sig.style.setProperty('--l2', Math.ceil(underline.getTotalLength()));
-    } catch(e){}
-    var drawSig = function(){ sig.classList.add('in'); };
-    var gio = new IntersectionObserver(function(es){
-      es.forEach(function(e){ if (e.isIntersecting){ drawSig(); gio.disconnect(); } });
-    }, {threshold:0.5});
-    gio.observe(sig);
-    /* Fallback: unlike the count-up (which ships correct final numbers) an
-       un-drawn signature is just an invisible name, so guarantee it draws once
-       scrolled to, even if the observer never delivers. */
-    var sigFallback = function(){
-      if (sig.classList.contains('in')) { removeEventListener('scroll', sigFallback); return; }
-      var r = sig.getBoundingClientRect();
-      if (r.top < innerHeight * 0.8 && r.bottom > 0){ drawSig(); removeEventListener('scroll', sigFallback); }
-    };
-    addEventListener('scroll', sigFallback, {passive:true});
-  }
-
   /* ─── faq ────────────────────────────────────────────── */
   document.querySelectorAll('#faqList .q button').forEach(function(btn){
     btn.addEventListener('click', function(){
