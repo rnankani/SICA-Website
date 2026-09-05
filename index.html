@@ -616,7 +616,7 @@ html.js .evidence.in .bar-fill{width:var(--w,0)}
    scroll position, so the pace stays under the reader's own hand. No
    particles, no blur ramp, no second effect — the reveal is the moment.
    ═══════════════════════════════════════════════════════════ */
-.hye{position:relative;height:215vh}
+.hye{position:relative;height:245vh}
 .hye-pin{
   position:sticky;top:0;height:100vh;overflow:hidden;
   display:grid;place-content:center;justify-items:center;
@@ -672,7 +672,7 @@ html:not(.js) .hye-stage,.hye.is-static .hye-stage{height:auto;display:grid;gap:
 html:not(.js) .hye-line,.hye.is-static .hye-line{position:static;opacity:1;font-size:clamp(19px,2.4vw,29px)}
 html:not(.js) .hye-final,.hye.is-static .hye-final{position:static;opacity:1;margin-top:clamp(52px,8vh,92px);padding-inline:0}
 
-@media (max-width:720px){.hye{height:195vh}}
+@media (max-width:720px){.hye{height:225vh}}
 
 
 /* ─── sample meeting (concrete, replaces the abstract 3-card diagram) ─────
@@ -1726,7 +1726,7 @@ html:not(.js) .demo-stage{--lit:1}
 
   /* Windows overlap by exactly FADE, so statement i's exit *is* statement
      i+1's entrance — one crossfade, never a blink through an empty stage. */
-  var STEP = 0.175,       // scroll distance between entrances
+  var STEP = 0.24,        // scroll distance between entrances
       FADE = 0.06,        // length of every crossfade
       FINAL_AT = 0.70,    // the last statement hands off to the release here
       DRIFT = 20;         // px each statement travels while fading
