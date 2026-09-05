@@ -577,37 +577,18 @@ html.js .sig-draw.in .sig-underline{animation:sign 700ms cubic-bezier(.5,0,.3,1)
 /* ─── evidence bar chart (mission) ────────────────────────
    Bars grow from zero on scroll-in — external hiring-attribute data, framed as
    research, so the eye reads "grades rank last" before the copy says it. */
-.evidence{margin-top:clamp(40px,6vh,72px);max-width:600px}
+.evidence{margin-top:clamp(40px,6vh,72px)}
 .evidence-cap{
   font-family:var(--ui);font-size:11px;font-weight:500;letter-spacing:.14em;
   text-transform:uppercase;color:var(--brass);margin-bottom:clamp(22px,3.5vh,32px);
 }
-/* Label column is a fixed length, not auto: each .bar-row is its own grid, so
-   an auto column sizes per-row and the tracks end up different widths — which
-   makes the bars non-comparable and quietly breaks the chart as evidence. */
-.bar-row{display:grid;grid-template-columns:clamp(92px,30vw,150px) 1fr 44px;align-items:center;gap:clamp(10px,1.6vw,16px);margin-top:15px}
-.bar-label{font-size:13.5px;color:var(--bone);line-height:1.25}
-.bar-track{height:10px;background:rgba(237,232,220,.07);border-radius:6px;overflow:hidden}
-.bar-fill{
-  display:block;  /* the fill is a <span>; inline boxes ignore width — block makes the bar actually render */
-  height:100%;width:0;border-radius:6px;
-  background:linear-gradient(90deg,var(--brass),var(--brass-lit));
-  /* --d staggers each bar so they race left-to-right, GPA landing last and
-     shortest — the punchline lands on its own without copy pointing at it */
-  transition:width 2.6s cubic-bezier(.06,.82,.14,1);
-  transition-delay:var(--d,0ms);
-}
-html.js .evidence.in .bar-fill{width:var(--w,0)}
-.bar-val{font-family:var(--head);font-weight:700;font-size:16px;color:var(--brass-lit);font-variant-numeric:tabular-nums;text-align:right}
-.bar-row.dim .bar-fill{background:rgba(237,232,220,.22)}
-.bar-row.dim .bar-label,.bar-row.dim .bar-val{color:var(--on-bone)}
-.evidence-src{font-size:11px;color:var(--on-bone);margin-top:clamp(22px,3.5vh,30px);line-height:1.5;max-width:52ch}
-.evidence-note{
-  margin-top:clamp(26px,4vh,36px);padding:clamp(18px,2.4vw,26px) clamp(20px,2.6vw,30px);
-  border-left:2px solid var(--brass);background:rgba(201,163,79,.05);border-radius:0 10px 10px 0;
-  font-size:14.5px;line-height:1.62;color:var(--on-bone);max-width:56ch;
-}
-.evidence-note b{color:var(--bone);font-weight:600}
+.stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(12px,2vw,22px)}
+.stat-card{border:1px solid rgba(237,232,220,.14);border-radius:14px;padding:clamp(22px,3vw,34px);background:var(--bone-dim)}
+.stat-number{display:block;font-family:var(--head);font-size:clamp(42px,6vw,76px);font-weight:700;line-height:.9;color:var(--brass-lit);letter-spacing:-.04em}
+.stat-label{display:block;margin-top:16px;font-size:clamp(13px,1.5vw,15.5px);line-height:1.35;color:var(--bone)}
+.stat-card:last-child .stat-number{color:var(--on-bone)}
+.evidence-src{font-size:11px;color:var(--on-bone);margin-top:clamp(18px,3vh,26px);line-height:1.5;max-width:60ch}
+@media (max-width:700px){.stat-grid{grid-template-columns:1fr}.stat-card{display:flex;align-items:center;gap:22px}.stat-label{margin-top:0}}
 
 /* ═══════════════════════════════════════════════════════════
    SIGNATURE MOMENT — the pinned "Have you ever…"
@@ -732,31 +713,9 @@ html.js .mc-reassure{opacity:0;transform:translateY(10px);transition:opacity .7s
 
 /* ─── what it feels like ──────────────────────────────────
    A pause, not a section: no numeral, no kicker rule, three lines. */
-.feels{padding-block:clamp(70px,11vh,130px);text-align:center;position:relative}
-.feels-k{
-  font-size:10px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
-  color:var(--brass);margin-bottom:clamp(24px,4vh,38px);
-}
-.feels-l{
-  font-size:clamp(19px,2.8vw,32px);line-height:1.35;color:var(--on-bone);
-  max-width:24ch;margin-inline:auto;
-}
-.feels-l + .feels-l{margin-top:.5em}
-.feels-l--last{color:var(--bone);max-width:30ch}
 
 /* ─── what it feels like ──────────────────────────────────
    A pause, not a section: no numeral, no kicker rule, three lines. */
-.feels{padding-block:clamp(70px,11vh,130px);text-align:center;position:relative}
-.feels-k{
-  font-size:10px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
-  color:var(--brass);margin-bottom:clamp(24px,4vh,38px);
-}
-.feels-l{
-  font-size:clamp(19px,2.8vw,32px);line-height:1.35;color:var(--on-bone);
-  max-width:24ch;margin-inline:auto;
-}
-.feels-l + .feels-l{margin-top:.5em}
-.feels-l--last{color:var(--bone);max-width:30ch}
 
 /* ─── what SICA is not ────────────────────────────────────
    Named clubs, because "not public speaking" only lands once the
@@ -787,14 +746,15 @@ html.js .mc-reassure{opacity:0;transform:translateY(10px);transition:opacity .7s
   font-size:10.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
   color:var(--brass);padding-bottom:12px;border-bottom:1px solid rgba(237,232,220,.14);
 }
-.skills{list-style:none;display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.skills{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:14px}
 @media (max-width:760px){.skillsets{grid-template-columns:1fr;gap:22px}}
-.skills li{
-  border:1px solid rgba(237,232,220,.16);border-radius:100px;
-  padding:9px 17px;font-size:clamp(13.5px,1.5vw,15.5px);color:var(--on-bone);
-  transition:border-color .3s ease,color .3s ease;
-}
-.skills li:hover{border-color:rgba(201,163,79,.42);color:var(--bone)}
+.skill-card{border:1px solid rgba(237,232,220,.16);border-radius:10px;background:rgba(237,232,220,.02);transition:border-color .3s ease,background .3s ease}
+.skill-card:hover,.skill-card[open]{border-color:rgba(201,163,79,.42);background:rgba(201,163,79,.04)}
+.skill-card summary{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 14px;cursor:pointer;font-size:clamp(13.5px,1.5vw,15.5px);line-height:1.35;color:var(--bone);list-style:none}
+.skill-card summary::-webkit-details-marker{display:none}
+.skill-card summary::after{content:'+';font-size:18px;color:var(--brass);font-weight:400;line-height:1;transition:transform .3s ease}
+.skill-card[open] summary::after{transform:rotate(45deg)}
+.skill-card p{padding:0 14px 13px;font-size:11.5px;line-height:1.4;color:var(--on-bone)}
 
 /* ─── the meeting demo ────────────────────────────────────
    Four stages you scroll through rather than read. Each sits back at 55%
@@ -831,22 +791,13 @@ html.js .mc-reassure{opacity:0;transform:translateY(10px);transition:opacity .7s
 }
 .demo-board span{font-size:clamp(15px,1.8vw,18px);color:var(--on-bone)}
 
-.demo-pair{margin-top:22px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:clamp(10px,2vw,20px);align-items:center}
-.demo-av{
-  display:grid;place-items:center;width:clamp(44px,7vw,58px);height:clamp(44px,7vw,58px);
-  border-radius:50%;border:1px solid rgba(201,163,79,.4);color:var(--brass-lit);
-  font-size:11px;letter-spacing:.06em;background:rgba(201,163,79,.07);
-}
-.demo-av.alt{border-color:rgba(237,232,220,.2);color:var(--on-bone);background:rgba(237,232,220,.04)}
-.demo-talk{display:flex;flex-direction:column;gap:9px}
-.bubl{
-  position:relative;border-radius:14px;padding:11px 15px;font-size:clamp(13.5px,1.5vw,15.5px);
-  background:var(--bone-dim);border:1px solid rgba(237,232,220,.12);color:var(--on-bone);
-  opacity:var(--lit);transform:translateY(calc((1 - var(--lit)) * 10px));
-  transition:opacity .55s ease,transform .55s ease;
-}
-.bubl.b2{transition-delay:.18s}
-.bubl.strong{color:var(--bone);border-color:rgba(201,163,79,.34);background:rgba(201,163,79,.08)}
+.change-grid{margin-top:22px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.change-chip{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;border:1px solid rgba(237,232,220,.13);border-radius:12px;padding:13px 15px;background:var(--bone-dim);font-size:clamp(13px,1.45vw,15px)}
+.change-chip span{color:var(--on-bone);text-align:right}
+.change-chip i{font-style:normal;color:var(--brass)}
+.change-chip strong{color:var(--bone);font-weight:600;text-align:left}
+.change-chip:last-child{grid-column:1/-1}
+.weekly-challenge{margin-top:22px;border:1px solid rgba(201,163,79,.3);border-radius:12px;background:rgba(201,163,79,.07);padding:clamp(18px,3vw,26px);font-size:clamp(15px,1.8vw,18px);color:var(--bone)}
 
 .demo-card{
   margin-top:22px;text-align:left;border:1px solid rgba(201,163,79,.28);border-radius:12px;
@@ -862,10 +813,7 @@ html.js .mc-reassure{opacity:0;transform:translateY(10px);transition:opacity .7s
 .demo-arrow{height:clamp(26px,4vh,42px);display:grid;place-items:center}
 .demo-arrow i{display:block;width:1px;height:100%;background:linear-gradient(180deg,transparent,rgba(201,163,79,.5))}
 
-@media (max-width:620px){
-  .demo-pair{grid-template-columns:1fr;justify-items:center}
-  .demo-talk{width:100%}
-}
+@media (max-width:620px){.change-grid{grid-template-columns:1fr}.change-chip:last-child{grid-column:auto}}
 
 /* ─── verdict line — a large italic statement that closes an argument ────
    Shared by Why SICA and elsewhere: a considered claim, not a scorecard. */
@@ -944,13 +892,18 @@ html.js .mc-reassure{opacity:0;transform:translateY(10px);transition:opacity .7s
   transition:opacity .45s ease,transform .45s cubic-bezier(.16,1,.3,1),border-color .5s ease;
 }
 .who-grid .evt h4{max-width:16ch}
+.grade-card{cursor:pointer}
+.grade-card summary{display:flex;flex-direction:column;min-height:120px;list-style:none;outline:none}
+.grade-card summary::-webkit-details-marker{display:none}
+.grade-card summary::after{content:'Open +';margin-top:18px;font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--brass)}
+.grade-card[open] summary::after{content:'Close −'}
+.grade-card ul{position:relative;z-index:1;margin:18px 0 0 18px;padding-top:18px;border-top:1px solid rgba(237,232,220,.14);font-size:13.5px;line-height:1.7;color:var(--on-bone)}
+.grade-card:hover ul,.grade-card:hover summary::after{color:var(--ink)}
 
 .join-note{margin-top:clamp(20px,3vh,28px);font-family:var(--head);font-style:italic;font-size:clamp(17px,2vw,22px);color:var(--on-ink)}
 .join-note b{font-style:normal;font-weight:700;color:var(--brass-lit)}
 
 .by{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--on-bone)}
-.evidence > .evidence-note:first-child{margin-top:0;margin-bottom:clamp(30px,4.5vh,42px)}
-
 /* ─── shared reveal ──────────────────────────────────────── */
 html.js .rv{opacity:0;transform:translateY(30px);transition:opacity 1s cubic-bezier(.16,1,.3,1),transform 1s cubic-bezier(.16,1,.3,1)}
 html.js .rv.in{opacity:1;transform:none}
@@ -1090,34 +1043,34 @@ html:not(.js) .demo-stage{--lit:1}
         <div class="skillset">
           <h3>At school</h3>
           <ul class="skills">
-            <li>Leading group projects</li>
-            <li>Speaking up in class</li>
-            <li>Explaining ideas</li>
-            <li>Handling disagreement</li>
+            <li><details class="skill-card"><summary>Get a group moving</summary><p>This is leading group projects.</p></details></li>
+            <li><details class="skill-card"><summary>Say what you mean in class</summary><p>This is speaking up.</p></details></li>
+            <li><details class="skill-card"><summary>Make your idea easy to understand</summary><p>This is clear communication.</p></details></li>
+            <li><details class="skill-card"><summary>Disagree without making it weird</summary><p>This is handling disagreement.</p></details></li>
           </ul>
         </div>
         <div class="skillset">
           <h3>With people</h3>
           <ul class="skills">
-            <li>Making friends</li>
-            <li>Building trust</li>
-            <li>Reading people</li>
-            <li>Asking better questions</li>
-            <li>Listening properly</li>
-            <li>Reading a room</li>
+            <li><details class="skill-card"><summary>Make friends easier</summary><p>This is making friends.</p></details></li>
+            <li><details class="skill-card"><summary>Help people feel comfortable with you</summary><p>This is building trust.</p></details></li>
+            <li><details class="skill-card"><summary>Notice how someone really feels</summary><p>This is reading people.</p></details></li>
+            <li><details class="skill-card"><summary>Keep a conversation going</summary><p>This is asking better questions.</p></details></li>
+            <li><details class="skill-card"><summary>Make people feel heard</summary><p>This is active listening.</p></details></li>
+            <li><details class="skill-card"><summary>Know when the vibe changes</summary><p>This is reading a room.</p></details></li>
           </ul>
         </div>
         <div class="skillset">
           <h3>Later in life</h3>
           <ul class="skills">
-            <li>Interviews</li>
-            <li>Networking</li>
-            <li>Persuasion</li>
-            <li>Body language</li>
-            <li>Negotiation</li>
-            <li>Public presence</li>
-            <li>Giving feedback</li>
-            <li>Remembering names</li>
+            <li><details class="skill-card"><summary>Answer when you&rsquo;re put on the spot</summary><p>This is interviewing.</p></details></li>
+            <li><details class="skill-card"><summary>Start conversations with new people</summary><p>This is networking.</p></details></li>
+            <li><details class="skill-card"><summary>Get people to agree with your ideas</summary><p>This is persuasion.</p></details></li>
+            <li><details class="skill-card"><summary>Look confident before you speak</summary><p>This is body language.</p></details></li>
+            <li><details class="skill-card"><summary>Ask for what you want without pushing</summary><p>This is negotiation.</p></details></li>
+            <li><details class="skill-card"><summary>Hold attention when you speak</summary><p>This is presence.</p></details></li>
+            <li><details class="skill-card"><summary>Say what could improve without hurting someone</summary><p>This is giving feedback.</p></details></li>
+            <li><details class="skill-card"><summary>Remember a name after meeting once</summary><p>This is remembering names.</p></details></li>
           </ul>
         </div>
       </div>
@@ -1151,10 +1104,10 @@ html:not(.js) .demo-stage{--lit:1}
       <h2 class="h2 bloom">Every grade. Every personality. <em>Every starting point.</em></h2>
       <p class="sub rv">Built for students who already want an edge &mdash; in leadership, interviews, networking, or just being taken seriously. Whether you&rsquo;re naturally confident or naturally quiet, the practice works the same way.</p>
       <div class="evts who-grid">
-        <article class="evt rv"><div class="ix">9th</div><h4>Freshmen making friends.</h4></article>
-        <article class="evt rv"><div class="ix">10th</div><h4>Sophomores finding confidence.</h4></article>
-        <article class="evt rv"><div class="ix">11th</div><h4>Juniors preparing for interviews.</h4></article>
-        <article class="evt rv"><div class="ix">12th</div><h4>Seniors getting ready for college and beyond.</h4></article>
+        <details class="evt grade-card rv"><summary><span class="ix">9th grade</span><h4>Make friends easier.</h4></summary><ul><li>Read body language</li><li>Keep a conversation going</li><li>Remember names</li></ul></details>
+        <details class="evt grade-card rv"><summary><span class="ix">10th grade</span><h4>Speak up without overthinking.</h4></summary><ul><li>Join a group conversation</li><li>Say an idea clearly</li><li>Recover from an awkward moment</li></ul></details>
+        <details class="evt grade-card rv"><summary><span class="ix">11th grade</span><h4>Handle interviews with confidence.</h4></summary><ul><li>Answer unexpected questions</li><li>Tell a short, clear story</li><li>Ask a memorable follow-up</li></ul></details>
+        <details class="evt grade-card rv"><summary><span class="ix">12th grade</span><h4>Walk into college ready to connect.</h4></summary><ul><li>Introduce yourself naturally</li><li>Work with new groups</li><li>Ask for help without freezing</li></ul></details>
       </div>
     </div>
   </section>
@@ -1179,22 +1132,21 @@ html:not(.js) .demo-stage{--lit:1}
         <div class="demo" id="demo">
           <div class="demo-stage" data-stage="1">
             <div class="demo-k"><span class="demo-n">01</span>Learn<span class="demo-t">10 min</span></div>
-            <p class="demo-h">One practical idea. This week: why most people listen only to respond.</p>
-            <div class="demo-board"><span>Most people listen to reply, not to understand.</span></div>
+            <p class="demo-h">One useful idea: ask one follow-up before changing the subject.</p>
+            <div class="demo-board"><span>No slides. One tip you can use immediately.</span></div>
           </div>
 
           <div class="demo-arrow" aria-hidden="true"><i></i></div>
 
           <div class="demo-stage" data-stage="2">
             <div class="demo-k"><span class="demo-n">02</span>Practice<span class="demo-t">25 min</span></div>
-            <p class="demo-h">You turn to one person, not the room. They talk; you can only ask and summarise.</p>
-            <div class="demo-pair">
-              <div class="demo-who"><span class="demo-av">You</span></div>
-              <div class="demo-talk">
-                <span class="bubl b1">So what actually happened?</span>
-                <span class="bubl b2">Wait &mdash; say more about that.</span>
-              </div>
-              <div class="demo-who"><span class="demo-av alt">Them</span></div>
+            <p class="demo-h">You pair up and run quick, everyday conversation rounds.</p>
+            <div class="change-grid" aria-label="What improves during practice">
+              <div class="change-chip"><span>Awkward</span><i>&rarr;</i><strong>Better</strong></div>
+              <div class="change-chip"><span>Quiet</span><i>&rarr;</i><strong>Speaking up</strong></div>
+              <div class="change-chip"><span>Rambling</span><i>&rarr;</i><strong>Clear</strong></div>
+              <div class="change-chip"><span>Defensive</span><i>&rarr;</i><strong>Curious</strong></div>
+              <div class="change-chip"><span>Stranger</span><i>&rarr;</i><strong>Friend</strong></div>
             </div>
           </div>
 
@@ -1202,10 +1154,10 @@ html:not(.js) .demo-stage{--lit:1}
 
           <div class="demo-stage" data-stage="3">
             <div class="demo-k"><span class="demo-n">03</span>Feedback</div>
-            <p class="demo-h">Specific, and only ever two parts.</p>
+            <p class="demo-h">Your partner gives you one small thing to keep and one to change.</p>
             <div class="demo-card">
               <span class="fb-l">What worked</span>
-              <p>You asked twice before saying anything about yourself.</p>
+              <p>You asked a follow-up instead of switching to your own story.</p>
               <span class="fb-l">One thing to try</span>
               <p>Leave a beat of silence after they finish.</p>
             </div>
@@ -1215,14 +1167,8 @@ html:not(.js) .demo-stage{--lit:1}
 
           <div class="demo-stage" data-stage="4">
             <div class="demo-k"><span class="demo-n">04</span>Try again<span class="demo-t">This week</span></div>
-            <p class="demo-h">Have one conversation where you ask five questions before giving an opinion.</p>
-            <div class="demo-pair">
-              <div class="demo-who"><span class="demo-av">You</span></div>
-              <div class="demo-talk">
-                <span class="bubl b1 strong">What made that hard for you?</span>
-              </div>
-              <div class="demo-who"><span class="demo-av alt">Them</span></div>
-            </div>
+            <p class="demo-h">Repeat the same round once. Then take one challenge into real life.</p>
+            <div class="weekly-challenge"><span class="fb-l">This week&rsquo;s challenge</span>Ask one follow-up in every conversation before talking about yourself.</div>
           </div>
         </div>
 
@@ -1231,17 +1177,6 @@ html:not(.js) .demo-stage{--lit:1}
     </section>
 
   </div>
-
-  <!-- The question the walkthrough leaves behind is not "what happens"
-       but "what is it like". Three sentences, no section number. -->
-  <section class="feels rv" id="feels">
-    <div class="wrap">
-      <p class="feels-k">What it&rsquo;s actually like</p>
-      <p class="feels-l">You&rsquo;ll probably laugh.</p>
-      <p class="feels-l">You&rsquo;ll probably mess up.</p>
-      <p class="feels-l feels-l--last">You&rsquo;ll leave knowing two more people than when you walked in.</p>
-    </div>
-  </section>
 
   <!-- 04 THE CURRICULUM — horizontal rail -->
   <section class="rail" id="curriculum">
@@ -1252,12 +1187,12 @@ html:not(.js) .demo-stage{--lit:1}
         <p class="sub rv">30 weeks. Six phases. Each one builds on the last.</p>
       </div>
       <div class="rail-track" id="track">
-        <article class="card"><div class="ph">01</div><h4>Know yourself</h4><p>Notice what you do under pressure and build steadier confidence.</p><div class="wk">Weeks 1—5</div></article>
-        <article class="card"><div class="ph">02</div><h4>Understand people</h4><p>Pick up on what a group needs and ask better questions.</p><div class="wk">Weeks 6—10</div></article>
-        <article class="card"><div class="ph">03</div><h4>Communicate clearly</h4><p>Turn an idea into words other people can follow.</p><div class="wk">Weeks 11—15</div></article>
-        <article class="card"><div class="ph">04</div><h4>Navigate disagreement</h4><p>Disagree with respect and work through conflict.</p><div class="wk">Weeks 16—20</div></article>
-        <article class="card"><div class="ph">05</div><h4>Lead conversations</h4><p>Start a conversation, guide it, and help a group decide.</p><div class="wk">Weeks 21—25</div></article>
-        <article class="card"><div class="ph">06</div><h4>Apply everything together</h4><p>Use everything you&rsquo;ve practiced in a final challenge.</p><div class="wk">Weeks 26—30</div></article>
+        <article class="card"><div class="ph">01</div><h4>How do I stop overthinking what to say?</h4><p>Notice what you do under pressure and build steadier confidence.</p><div class="wk">Weeks 1—5</div></article>
+        <article class="card"><div class="ph">02</div><h4>How do I actually read a room?</h4><p>Pick up on what a group needs and ask better questions.</p><div class="wk">Weeks 6—10</div></article>
+        <article class="card"><div class="ph">03</div><h4>How do I explain an idea so people get it?</h4><p>Turn an idea into words other people can follow.</p><div class="wk">Weeks 11—15</div></article>
+        <article class="card"><div class="ph">04</div><h4>How do I disagree without it turning into a fight?</h4><p>Disagree with respect and work through conflict.</p><div class="wk">Weeks 16—20</div></article>
+        <article class="card"><div class="ph">05</div><h4>How do I get a group to actually listen to me?</h4><p>Start a conversation, guide it, and help a group decide.</p><div class="wk">Weeks 21—25</div></article>
+        <article class="card"><div class="ph">06</div><h4>Can I do all of this under pressure?</h4><p>Use everything you&rsquo;ve practiced in a final challenge.</p><div class="wk">Weeks 26—30</div></article>
       </div>
       <div class="rail-bar"><i id="railBar"></i></div>
     </div>
@@ -1273,13 +1208,12 @@ html:not(.js) .demo-stage{--lit:1}
 
       <div class="evidence rv">
         <div class="evidence-cap">What employers screen for</div>
-        <div class="bar-row"><span class="bar-label">Problem-solving</span><span class="bar-track"><span class="bar-fill" style="--w:88%;--d:0ms"></span></span><span class="bar-val">~90%</span></div>
-        <div class="bar-row"><span class="bar-label">Teamwork</span><span class="bar-track"><span class="bar-fill" style="--w:78%;--d:130ms"></span></span><span class="bar-val">~80%</span></div>
-        <div class="bar-row dim"><span class="bar-label">GPA as a screen</span><span class="bar-track"><span class="bar-fill" style="--w:38%;--d:290ms"></span></span><span class="bar-val">&lt;40%</span></div>
-        <p class="evidence-src">Nearly 90% of employers screen for problem-solving and nearly 80% for teamwork &mdash; while reliance on GPA as a screening tool has fallen below 40% and keeps dropping. <em>Source: NACE Job Outlook 2024&ndash;2025.</em></p>
-        <div class="evidence-note">
-          It holds even where you would least expect it: research on engineering careers found that up to <b>70% of career advancement</b> traced back to communication, not technical output.
+        <div class="stat-grid">
+          <div class="stat-card"><span class="stat-number">90%</span><span class="stat-label">screen for problem-solving</span></div>
+          <div class="stat-card"><span class="stat-number">80%</span><span class="stat-label">screen for teamwork</span></div>
+          <div class="stat-card"><span class="stat-number">&lt;40%</span><span class="stat-label">still screen by GPA</span></div>
         </div>
+        <p class="evidence-src">Source: NACE Job Outlook 2024&ndash;2025.</p>
       </div>
 
       <p class="verdict-line bloom">These aren&rsquo;t just school skills. <b>They&rsquo;re the ones that actually decide outcomes.</b></p>
@@ -1303,29 +1237,6 @@ html:not(.js) .demo-stage{--lit:1}
       </div>
     </div>
   </section>
-  <!-- 02 WHY WE BUILT IT -->
-  <section class="sec" id="founder">
-    <div class="num" aria-hidden="true">07</div>
-    <div class="wrap">
-      <div class="kicker rv"><i></i><span class="eyebrow">Who built this?</span></div>
-      <h2 class="h2 bloom">Not just heard. <em>Listened to.</em></h2>
-      <div class="founder-story">
-        <div class="editorial">
-          <p class="drop rv">As Vice President of <a class="lnk" href="https://CodeStarters.org/#team" target="_blank" rel="noopener noreferrer">Codestarters</a>, I watched something strange happen over and over: the students who got picked for leadership roles &mdash; and who actually performed once they had them &mdash; weren&rsquo;t always the ones with the best grades. It came down to communication. The ability to give your ideas real weight, to influence a room instead of getting talked over.</p>
-          <p class="turn rv">That&rsquo;s why I built SICA: a club that teaches you to be <b>listened to.</b> Not just heard &mdash; listened to.</p>
-          <div class="sig-wrap rv">
-            <svg class="sig-draw" id="sig" viewBox="0 0 320 110" aria-hidden="true">
-              <text class="sig-text" x="4" y="66">Reyansh N.</text>
-              <path class="sig-underline" d="M 8 84 C 70 96, 190 94, 272 78 C 288 75, 291 82, 280 83"/>
-            </svg>
-            <div class="by">Founder &middot; Cupertino High School</div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
   <!-- COME VISIT (unnumbered — the ask, not a numbered argument) -->
   <!-- ─────────── OFFICER APPLICATIONS ───────────
        The hero button scrolls away and never comes back, so the one
@@ -1355,6 +1266,28 @@ html:not(.js) .demo-stage{--lit:1}
         <p class="sub">Meet people. Try a challenge. Leave with one conversation you&rsquo;ll handle better than you would have last week.</p>
         <p class="join-note">No preparation. No pressure. <b>Just practice.</b></p>
         <div class="acts"><a class="btn btn--gold" href="mailto:thesicaorg@gmail.com?subject=Joining%20the%20next%20SICA%20meeting"><span>Join the Next Meeting</span><i class="dot"></i></a></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 07 WHY WE BUILT IT -->
+  <section class="sec" id="founder">
+    <div class="num" aria-hidden="true">07</div>
+    <div class="wrap">
+      <div class="kicker rv"><i></i><span class="eyebrow">Who built this?</span></div>
+      <h2 class="h2 bloom">Not just heard. <em>Listened to.</em></h2>
+      <div class="founder-story">
+        <div class="editorial">
+          <p class="drop rv">As Vice President of <a class="lnk" href="https://CodeStarters.org/#team" target="_blank" rel="noopener noreferrer">Codestarters</a>, I watched something strange happen over and over: the students who got picked for leadership roles &mdash; and who actually performed once they had them &mdash; weren&rsquo;t always the ones with the best grades. It came down to communication. The ability to give your ideas real weight, to influence a room instead of getting talked over.</p>
+          <p class="turn rv">That&rsquo;s why I built SICA: a club that teaches you to be <b>listened to.</b> Not just heard &mdash; listened to.</p>
+          <div class="sig-wrap rv">
+            <svg class="sig-draw" id="sig" viewBox="0 0 320 110" aria-hidden="true">
+              <text class="sig-text" x="4" y="66">Reyansh N.</text>
+              <path class="sig-underline" d="M 8 84 C 70 96, 190 94, 272 78 C 288 75, 291 82, 280 83"/>
+            </svg>
+            <div class="by">Founder &middot; Cupertino High School</div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -1568,43 +1501,6 @@ html:not(.js) .demo-stage{--lit:1}
   /* ─── numbers count up as their bar grows ────────────────
      The HTML ships the final figures, so with no JS the correct numbers
      are already on screen; we only reset to zero when about to animate. */
-  var evidence = document.querySelector('.evidence');
-  if (evidence && !reduced){
-    var eio = new IntersectionObserver(function(es){
-      es.forEach(function(e){
-        if (!e.isIntersecting) return;
-        eio.disconnect();
-        evidence.querySelectorAll('.bar-val').forEach(function(el, i){
-          var raw = el.textContent, target = parseInt(raw.replace(/\D/g, ''), 10);
-          if (!target) return;
-          var pre = raw.slice(0, raw.search(/\d/)), post = raw.slice(raw.search(/\d/) + String(target).length);
-          /* A 6th-power ease-out: roughly 70% of the count is spent in the
-             first fifth of the time, then it crawls the last few digits in.
-             The bar underneath is given the identical curve and duration so
-             the number and its length always agree. */
-          var dur = 2600, t0 = null, delay = i * 130;
-          var bar = el.parentNode.querySelector('.bar-fill');
-          if (bar){
-            bar.style.transition = 'width ' + dur + 'ms cubic-bezier(.06,.82,.14,1)';
-            bar.style.transitionDelay = delay + 'ms';
-          }
-          el.textContent = pre + '0' + post;
-          setTimeout(function(){
-            function tick(now){
-              if (t0 === null) t0 = now;
-              var q = Math.min((now - t0) / dur, 1);
-              var eased = 1 - Math.pow(1 - q, 6);
-              el.textContent = pre + Math.round(eased * target) + post;
-              if (q < 1) requestAnimationFrame(tick);
-            }
-            requestAnimationFrame(tick);
-            setTimeout(function(){ el.textContent = raw; }, dur + 900);  // watchdog
-          }, delay);
-        });
-      });
-    }, {threshold:0.4});
-    eio.observe(evidence);
-  }
 
   /* ─── officer passcode gate ──────────────────────────────
      A front-door latch, not security: the code sits in this file, so it
