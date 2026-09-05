@@ -630,12 +630,12 @@ html.js .evidence.in .bar-fill{width:var(--w,0)}
 html.js .hye-lead{opacity:0}
 
 /* the four statements share one box and cross-fade in place */
-.hye-stage{position:relative;width:min(940px,88vw);height:clamp(180px,32vh,280px)}
+.hye-stage{position:relative;width:min(940px,88vw);height:clamp(220px,36vh,320px)}
 .hye-line{
   position:absolute;inset:0;margin:0;
   display:grid;place-content:center;text-align:center;
   font-family:var(--head);font-weight:400;
-  font-size:clamp(23px,4.1vw,52px);line-height:1.18;letter-spacing:-.022em;color:var(--bone);
+  font-size:clamp(21px,3.6vw,46px);line-height:1.08;letter-spacing:-.022em;color:var(--bone);
   will-change:opacity,transform;
 }
 .hye-line em{display:block;font-style:italic;color:var(--brass-lit);margin-top:.3em}
@@ -1726,8 +1726,8 @@ html:not(.js) .demo-stage{--lit:1}
 
   /* Windows overlap by exactly FADE, so statement i's exit *is* statement
      i+1's entrance — one crossfade, never a blink through an empty stage. */
-  var STEP = 0.24,        // scroll distance between entrances
-      FADE = 0.06,        // length of every crossfade
+  var STEP = 0.20,        // scroll distance between entrances
+      FADE = 0.05,        // length of every crossfade
       FINAL_AT = 0.70,    // the last statement hands off to the release here
       DRIFT = 20;         // px each statement travels while fading
 
