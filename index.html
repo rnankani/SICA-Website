@@ -654,7 +654,8 @@ html.js .hye-final{opacity:0}
 }
 .hye-final-line{
   font-family:var(--head);font-weight:700;
-  font-size:clamp(33px,6.4vw,88px);line-height:1.03;letter-spacing:-.032em;color:var(--bone);
+  font-size:clamp(33px,6.4vw,76px);line-height:1.03;letter-spacing:-.032em;color:var(--bone);
+  max-width:min(1200px,calc(100vw - (var(--pad) * 2)));margin-inline:auto;text-wrap:balance;
 }
 .hye-final-line em{display:block;font-style:italic;font-weight:400;color:var(--brass-lit);margin-top:.08em}
 
@@ -1728,7 +1729,6 @@ html:not(.js) .demo-stage{--lit:1}
      i+1's entrance — one crossfade, never a blink through an empty stage. */
   var STEP = 0.20,        // scroll distance between entrances
       FADE = 0.05,        // length of every crossfade
-      FINAL_AT = 0.70,    // the last statement hands off to the release here
       DRIFT = 20;         // px each statement travels while fading
 
   if (hye && reduced) hye.classList.add('is-static');
@@ -1754,18 +1754,20 @@ html:not(.js) .demo-stage{--lit:1}
       hyeLead.style.opacity = (entering * (1 - ease((p - 0.60) / 0.10))).toFixed(3);
     }
 
+    var finalAt = hyeLines.length * STEP;
+
     hyeLines.forEach(function(el, i){
       var a = i * STEP;
       if (i > 0 && p < a){ paint(el, 0, DRIFT); return; }
-      if (p > a + STEP + FADE){ paint(el, 0, -DRIFT); return; }
+      if (p > a + STEP){ paint(el, 0, -DRIFT); return; }
       /* the first statement rides in on the approach, not on pin progress */
       var into = i === 0 ? entering : ease((p - a) / FADE);
-      var out  = ease((p - (a + STEP)) / FADE);
+      var out  = ease((p - (a + STEP - FADE)) / FADE);
       paint(el, into * (1 - out), DRIFT * (1 - into) - DRIFT * out);
     });
 
     if (hyeFinal){
-      var tf = ease((p - FINAL_AT) / FADE);   // crossfades with the last exit
+      var tf = ease((p - finalAt) / FADE);
       paint(hyeFinal, tf, 26 * (1 - tf));
     }
   }
