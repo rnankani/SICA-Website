@@ -367,6 +367,9 @@ html.js .hero-arrow.in svg{animation:nudge 3s cubic-bezier(.4,0,.2,1) 2.4s infin
 }
 .h2 em{font-style:normal;font-weight:400;color:var(--on-bone)}
 .sub{font-size:clamp(15px,1.5vw,17.5px);color:var(--on-bone);max-width:56ch;margin-top:24px;line-height:1.65}
+.bullet-copy{margin-top:clamp(22px,3.5vh,32px);padding-left:1.2em;max-width:62ch;color:var(--on-bone)}
+.bullet-copy li{padding-left:.35em;margin-top:10px;font-size:clamp(15px,1.6vw,18px);line-height:1.6}
+.bullet-copy li::marker{color:var(--brass-lit)}
 
 /* ─── 03 curriculum: horizontal rail ─────────────────────── */
 .rail{position:relative;height:260vh} /* JS refines this from the real track width */
@@ -1030,9 +1033,14 @@ html:not(.js) .demo-stage{--lit:1}
     <div class="num" aria-hidden="true">02</div>
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">So which skills?</span></div>
-      <p class="sub rv">This comes down to two real fields: emotional intelligence and social intelligence &mdash; reading yourself under pressure, and reading the people and rooms around you.</p>
-      <p class="sub rv">Staying composed when a conversation gets tense. Noticing when someone&rsquo;s checked out before they say it. Actually connecting with someone instead of small-talking past them. Knowing what to say when a room goes quiet.</p>
-      <h2 class="h2 bloom">You&rsquo;ll get more comfortable speaking up along the way, too &mdash; that&rsquo;s a real side effect of the practice. It&rsquo;s just not the point of it.</h2>
+      <p class="sub rv">Two real fields: emotional intelligence and social intelligence.</p>
+      <ul class="bullet-copy rv">
+        <li>Staying composed when a conversation gets tense</li>
+        <li>Noticing when someone&rsquo;s checked out before they say it</li>
+        <li>Actually connecting with someone instead of small-talking past them</li>
+        <li>Knowing what to say when a room goes quiet</li>
+      </ul>
+      <p class="sub rv">Speaking up gets easier along the way too &mdash; but that&rsquo;s a side effect, not the point.</p>
     </div>
   </section>
 
@@ -1042,15 +1050,18 @@ html:not(.js) .demo-stage{--lit:1}
     <div class="num" aria-hidden="true">03</div>
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">But isn&rsquo;t that just debate?</span></div>
-      <h2 class="h2 bloom">The club you&rsquo;re picturing <em>isn&rsquo;t this one.</em></h2>
-      <p class="about-body rv">Think about a group project. One person naturally gets everyone talking &mdash; they listen, keep things on track, get people to agree, and lead. Someone else in that same group is quiet, maybe even the smartest person there, but never says much.</p>
-      <p class="about-body about-body--turn rv">That gap isn&rsquo;t talent. It&rsquo;s a skill nobody ever taught either of them. <b>SICA is about that gap.</b></p>
-      <div class="notlist rv">
-        <div><span>Debate</span> teaches arguing.</div>
-        <div><span>Toastmasters</span> teaches presenting.</div>
-        <div><span>FBLA</span> teaches competitive presentations.</div>
-        <div class="notlist-is"><span>SICA</span> teaches everyday conversations.</div>
-      </div>
+      <p class="sub rv">Say your friend went to Tahoe last weekend. You ask about it.</p>
+      <ul class="bullet-copy rv">
+        <li>Most people get: &ldquo;Yeah it was nice.&rdquo; Conversation dead.</li>
+        <li>SICA teaches this instead: eye contact, actually facing them, one real follow-up &mdash; &ldquo;oh what&rsquo;d you end up doing?&rdquo;</li>
+        <li>Two minutes later you know something real, and they feel like someone actually cared.</li>
+      </ul>
+      <p class="sub rv">Not a personality trait. A specific, learnable habit.</p>
+      <ul class="bullet-copy rv">
+        <li>Debate teaches arguing.</li>
+        <li>Toastmasters teaches presenting.</li>
+        <li>SICA teaches this.</li>
+      </ul>
     </div>
   </section>
 
@@ -1059,14 +1070,13 @@ html:not(.js) .demo-stage{--lit:1}
     <div class="num" aria-hidden="true">04</div>
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">Is it for me?</span></div>
-      <h2 class="h2 bloom">Every grade. Every personality. <em>Every starting point.</em></h2>
-      <p class="sub rv">Built for students who already want an edge &mdash; in leadership, interviews, networking, or just being taken seriously. Whether you&rsquo;re naturally confident or naturally quiet, the practice works the same way.</p>
-      <div class="evts who-grid">
-        <details class="evt grade-card rv"><summary><span class="ix">9th grade</span><h4>Make friends easier.</h4></summary><ul><li>Read body language</li><li>Keep a conversation going</li><li>Remember names</li></ul></details>
-        <details class="evt grade-card rv"><summary><span class="ix">10th grade</span><h4>Speak up without overthinking.</h4></summary><ul><li>Join a group conversation</li><li>Say an idea clearly</li><li>Recover from an awkward moment</li></ul></details>
-        <details class="evt grade-card rv"><summary><span class="ix">11th grade</span><h4>Handle interviews with confidence.</h4></summary><ul><li>Answer unexpected questions</li><li>Tell a short, clear story</li><li>Ask a memorable follow-up</li></ul></details>
-        <details class="evt grade-card rv"><summary><span class="ix">12th grade</span><h4>Walk into college ready to connect.</h4></summary><ul><li>Introduce yourself naturally</li><li>Work with new groups</li><li>Ask for help without freezing</li></ul></details>
-      </div>
+      <ul class="bullet-copy rv">
+        <li>9th grade &mdash; make friends easier</li>
+        <li>10th grade &mdash; speak up without overthinking</li>
+        <li>11th grade &mdash; handle interviews with confidence</li>
+        <li>12th grade &mdash; walk into college ready to connect</li>
+      </ul>
+      <p class="sub rv">Every grade. Every personality. Every starting point.</p>
     </div>
   </section>
 
@@ -1098,7 +1108,11 @@ html:not(.js) .demo-stage{--lit:1}
 
           <div class="demo-stage" data-stage="2">
             <div class="demo-k"><span class="demo-n">02</span>Practice<span class="demo-t">25 min</span></div>
-            <p class="demo-h">You pair up and run quick, everyday conversation rounds.</p>
+            <ul class="bullet-copy demo-h">
+              <li>You pair up. One person shares something small &mdash; what they did this weekend.</li>
+              <li>Instead of a flat &ldquo;oh nice,&rdquo; the other person faces them, makes eye contact, asks one real follow-up.</li>
+              <li>That&rsquo;s the entire rep. You just run it a few times.</li>
+            </ul>
             <div class="change-grid" aria-label="What improves during practice">
               <div class="change-chip"><span>Awkward</span><i>&rarr;</i><strong>Better</strong></div>
               <div class="change-chip"><span>Quiet</span><i>&rarr;</i><strong>Speaking up</strong></div>
@@ -1161,20 +1175,12 @@ html:not(.js) .demo-stage{--lit:1}
     <div class="num" aria-hidden="true">06</div>
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">Does any of this actually matter?</span></div>
-      <h2 class="h2 bloom">Employers screen for this <em>before they screen for grades.</em></h2>
-      <p class="sub rv">Employers consistently rank communication and teamwork among the most important things they look for.</p>
-
-      <div class="evidence rv">
-        <div class="evidence-cap">What employers screen for</div>
-        <div class="stat-grid">
-          <div class="stat-card"><span class="stat-number">90%</span><span class="stat-label">screen for problem-solving</span></div>
-          <div class="stat-card"><span class="stat-number">80%</span><span class="stat-label">screen for teamwork</span></div>
-          <div class="stat-card"><span class="stat-number">&lt;40%</span><span class="stat-label">still screen by GPA</span></div>
-        </div>
-        <p class="evidence-src">Source: NACE Job Outlook 2024&ndash;2025.</p>
-      </div>
-
-      <p class="verdict-line bloom">These aren&rsquo;t just school skills. <b>They&rsquo;re the ones that actually decide outcomes.</b></p>
+      <ul class="bullet-copy rv">
+        <li>90% of employers screen for problem-solving</li>
+        <li>80% screen for teamwork</li>
+        <li>Under 40% still screen by GPA</li>
+      </ul>
+      <p class="sub rv">Source: NACE Job Outlook 2024&ndash;2025. These aren&rsquo;t just school skills &mdash; they decide outcomes.</p>
     </div>
   </section>
 
