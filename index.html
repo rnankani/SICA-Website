@@ -148,6 +148,17 @@ img,svg{display:block;max-width:100%}
   display:grid;grid-template-rows:auto 1fr auto;
   padding:clamp(58px,9vh,78px) var(--pad) clamp(22px,4vh,40px);
 }
+.hero-bubbles{
+  position:absolute;z-index:1;right:clamp(20px,7vw,110px);top:clamp(90px,17vh,160px);
+  width:clamp(72px,10vw,136px);color:var(--brass-lit);opacity:.72;pointer-events:none;
+  filter:drop-shadow(0 0 10px rgba(201,163,79,.22));
+}
+.hero-bubbles .bubble-shine{stroke-dasharray:18 180;animation:bubbleShimmer 4.8s ease-in-out infinite}
+@keyframes bubbleShimmer{
+  0%,60%,100%{stroke-dashoffset:198;opacity:.08;filter:drop-shadow(0 0 0 rgba(201,163,79,0))}
+  76%{opacity:1;filter:drop-shadow(0 0 7px rgba(201,163,79,.9))}
+  92%{stroke-dashoffset:0;opacity:.08}
+}
 
 /* the ghost word behind everything */
 .ghost{
@@ -370,6 +381,25 @@ html.js .hero-arrow.in svg{animation:nudge 3s cubic-bezier(.4,0,.2,1) 2.4s infin
 .bullet-copy{margin-top:clamp(22px,3.5vh,32px);padding-left:1.2em;max-width:62ch;color:var(--on-bone)}
 .bullet-copy li{padding-left:.35em;margin-top:10px;font-size:clamp(15px,1.6vw,18px);line-height:1.6}
 .bullet-copy li::marker{color:var(--brass-lit)}
+.section-icon{width:clamp(54px,6vw,76px);margin-top:clamp(24px,3.5vh,34px);color:var(--brass-lit);opacity:.78}
+.section-icon svg{width:100%;height:auto}
+
+/* A quiet inventory of the range: one continuous line, not another card grid. */
+.skills-marquee{
+  width:100vw;margin-left:calc(50% - 50vw);margin-top:clamp(42px,6vh,70px);
+  overflow:hidden;border-block:1px solid rgba(201,163,79,.2);background:var(--ink-deep);
+}
+.skills-marquee-track{
+  display:flex;width:max-content;will-change:transform;
+  animation:skillsTicker 34s linear infinite;
+}
+.skills-marquee:hover .skills-marquee-track{animation-play-state:paused}
+.skills-marquee-group{
+  flex:none;padding:13px 26px 13px 0;white-space:nowrap;
+  color:var(--brass-lit);font-size:clamp(10px,1vw,12px);font-weight:500;
+  letter-spacing:.1em;text-transform:uppercase;
+}
+@keyframes skillsTicker{to{transform:translateX(-50%)}}
 
 /* ─── 03 curriculum: horizontal rail ─────────────────────── */
 .rail{position:relative;height:260vh} /* JS refines this from the real track width */
@@ -776,6 +806,8 @@ html.js .mc-reassure{opacity:0;transform:translateY(10px);transition:opacity .7s
   font-size:10.5px;font-weight:600;letter-spacing:.17em;text-transform:uppercase;
   color:var(--brass);
 }
+.step-icon{width:18px;height:18px;color:var(--brass-lit);flex:none}
+.step-icon svg{width:100%;height:100%}
 .demo-n{font-family:var(--ui);color:var(--on-bone);font-weight:500}
 .demo-t{
   font-family:var(--ui);font-size:10px;font-weight:500;letter-spacing:.1em;
@@ -916,6 +948,7 @@ html.js .rv.in{opacity:1;transform:none}
 @media (max-width:900px){
 }
 @media (max-width:760px){.hero{padding-top:104px}}
+@media (max-width:760px){.hero-bubbles{top:116px;right:20px;width:64px;opacity:.58}}
 @media (max-width:1080px){
   .evt,.evt:nth-child(n),.who-grid .evt,.who-grid .evt:nth-child(n){grid-column:span 12}
   .hero-foot{grid-template-columns:1fr;align-items:start}
@@ -932,6 +965,7 @@ html.js .rv.in{opacity:1;transform:none}
 html:not(.js) .demo-stage{--lit:1}
 @media (prefers-reduced-motion:reduce){
   .demo-stage{--lit:1!important}
+  .skills-marquee-track{animation:none!important}
   html{scroll-behavior:auto}
   *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
 }
@@ -964,6 +998,16 @@ html:not(.js) .demo-stage{--lit:1}
 <!-- ══════════════════ HERO ══════════════════ -->
 <header class="hero" id="hero">
   <div class="ghost" aria-hidden="true">Influence</div>
+  <svg class="hero-bubbles hero-r" viewBox="0 0 140 110" fill="none" aria-hidden="true">
+    <g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 18h64a13 13 0 0 1 13 13v24a13 13 0 0 1-13 13H46L29 83l4-15h-5a13 13 0 0 1-13-13V31a13 13 0 0 1 13-13Z"/>
+      <path d="M92 39h19a13 13 0 0 1 13 13v24a13 13 0 0 1-13 13h-7l5 14-17-14H65a13 13 0 0 1-13-13v-8"/>
+    </g>
+    <g class="bubble-shine" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 18h64a13 13 0 0 1 13 13v24a13 13 0 0 1-13 13H46L29 83l4-15h-5a13 13 0 0 1-13-13V31a13 13 0 0 1 13-13Z"/>
+      <path d="M92 39h19a13 13 0 0 1 13 13v24a13 13 0 0 1-13 13h-7l5 14-17-14H65a13 13 0 0 1-13-13v-8"/>
+    </g>
+  </svg>
 
   <div class="hero-mid">
     <h1 class="word display hero-r" id="word" aria-label="SICA">
@@ -1024,8 +1068,15 @@ html:not(.js) .demo-stage{--lit:1}
     <div class="num" aria-hidden="true">01</div>
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">What is SICA?</span></div>
-      <h2 class="h2 bloom">One skill a week. <em>Twenty minutes practising it with one other person.</em></h2>
-      <p class="sub rv">A meeting is forty minutes at lunch. You learn one idea for ten. You pair up and practise it for twenty. You get one specific piece of feedback. You leave with one thing to try that week. That is the entire club.</p>
+      <div class="section-icon rv" aria-hidden="true">
+        <svg viewBox="0 0 80 58" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="22" cy="16" r="8"/><circle cx="58" cy="16" r="8"/>
+          <path d="M8 51c1-13 6-20 14-20s13 7 14 20M44 51c1-13 6-20 14-20s13 7 14 20M32 21l6 4-6 4M48 21l-6 4 6 4"/>
+        </svg>
+      </div>
+      <p class="sub rv">Say your friend went to Tahoe last weekend. You ask about it. Most people get: &ldquo;Yeah it was nice.&rdquo; Conversation dead.</p>
+      <p class="sub rv">SICA teaches the other version &mdash; eye contact, actually facing them, one real follow-up. Two minutes later you know something real about their weekend, and they feel like someone actually cared to ask.</p>
+      <h2 class="h2 bloom">That&rsquo;s the whole idea, one small skill at a time. <em>Every meeting is 40 minutes at lunch: learn one idea for 10 minutes, pair up and practice it for 20, get one piece of feedback, leave with one thing to try that week.</em></h2>
     </div>
   </section>
 
@@ -1033,14 +1084,20 @@ html:not(.js) .demo-stage{--lit:1}
     <div class="num" aria-hidden="true">02</div>
     <div class="wrap">
       <div class="kicker rv"><i></i><span class="eyebrow">So which skills?</span></div>
-      <p class="sub rv">Two real fields: emotional intelligence and social intelligence.</p>
+      <p class="sub rv">Basically two things: keeping your own head straight under pressure, and actually reading the people around you.</p>
       <ul class="bullet-copy rv">
         <li>Staying composed when a conversation gets tense</li>
         <li>Noticing when someone&rsquo;s checked out before they say it</li>
         <li>Actually connecting with someone instead of small-talking past them</li>
         <li>Knowing what to say when a room goes quiet</li>
       </ul>
-      <p class="sub rv">Speaking up gets easier along the way too &mdash; but that&rsquo;s a side effect, not the point.</p>
+      <h2 class="h2 bloom">Speaking up gets easier along the way too &mdash; <em>that&rsquo;s a side effect, not the point.</em></h2>
+      <div class="skills-marquee" aria-label="Skills covered by SICA">
+        <div class="skills-marquee-track" id="skillsMarqueeTrack">
+          <span class="skills-marquee-group">Remembering names &middot; Small talk that doesn&rsquo;t die &middot; Reading body language &middot; Actually listening &middot; Disagreeing without a fight &middot; Talking to strangers &middot; Reading a room &middot; Negotiation &middot; Persuasion &middot; Staying composed under pressure &middot; Social Dynamics &middot;</span>
+          <span class="skills-marquee-group" aria-hidden="true">Remembering names &middot; Small talk that doesn&rsquo;t die &middot; Reading body language &middot; Actually listening &middot; Disagreeing without a fight &middot; Talking to strangers &middot; Reading a room &middot; Negotiation &middot; Persuasion &middot; Staying composed under pressure &middot; Social Dynamics &middot;</span>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -1100,7 +1157,7 @@ html:not(.js) .demo-stage{--lit:1}
              because the page already holds you still twice. -->
         <div class="demo" id="demo">
           <div class="demo-stage" data-stage="1">
-            <div class="demo-k"><span class="demo-n">01</span>Learn<span class="demo-t">10 min</span></div>
+            <div class="demo-k"><span class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M8.3 15.2A7 7 0 1 1 15.7 15.2C14.6 16 14 16.8 14 18h-4c0-1.2-.6-2-1.7-2.8Z"/></svg></span><span class="demo-n">01</span>Learn<span class="demo-t">10 min</span></div>
             <p class="demo-h">One useful idea: ask one follow-up before changing the subject.</p>
             <div class="demo-board"><span>No slides. One tip you can use immediately.</span></div>
           </div>
@@ -1108,7 +1165,7 @@ html:not(.js) .demo-stage{--lit:1}
           <div class="demo-arrow" aria-hidden="true"><i></i></div>
 
           <div class="demo-stage" data-stage="2">
-            <div class="demo-k"><span class="demo-n">02</span>Practice<span class="demo-t">25 min</span></div>
+            <div class="demo-k"><span class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13M14 5l3 3-3 3M20 16H7M10 13l-3 3 3 3"/></svg></span><span class="demo-n">02</span>Practice<span class="demo-t">25 min</span></div>
             <ul class="bullet-copy demo-h">
               <li>You pair up. One person shares something small &mdash; what they did this weekend.</li>
               <li>Instead of a flat &ldquo;oh nice,&rdquo; the other person faces them, makes eye contact, asks one real follow-up.</li>
@@ -1126,7 +1183,7 @@ html:not(.js) .demo-stage{--lit:1}
           <div class="demo-arrow" aria-hidden="true"><i></i></div>
 
           <div class="demo-stage" data-stage="3">
-            <div class="demo-k"><span class="demo-n">03</span>Feedback</div>
+            <div class="demo-k"><span class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.6 2.7L16.5 9"/></svg></span><span class="demo-n">03</span>Feedback</div>
             <p class="demo-h">Your partner gives you one small thing to keep and one to change.</p>
             <div class="demo-card">
               <span class="fb-l">What worked</span>
@@ -1139,7 +1196,7 @@ html:not(.js) .demo-stage{--lit:1}
           <div class="demo-arrow" aria-hidden="true"><i></i></div>
 
           <div class="demo-stage" data-stage="4">
-            <div class="demo-k"><span class="demo-n">04</span>Try again<span class="demo-t">This week</span></div>
+            <div class="demo-k"><span class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7v5h-5M4 17v-5h5M18.5 10A7 7 0 0 0 6.2 7.5L4 12M5.5 14A7 7 0 0 0 17.8 16.5L20 12"/></svg></span><span class="demo-n">04</span>Try again<span class="demo-t">This week</span></div>
             <p class="demo-h">Repeat the same round once. Then take one challenge into real life.</p>
             <div class="weekly-challenge"><span class="fb-l">This week&rsquo;s challenge</span>Ask one follow-up in every conversation before talking about yourself.</div>
           </div>
@@ -1332,6 +1389,18 @@ html:not(.js) .demo-stage{--lit:1}
   'use strict';
   var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   var $ = function(id){ return document.getElementById(id); };
+  var skillsMarqueeTrack = $('skillsMarqueeTrack');
+  var tickerAnimation = !reduced && skillsMarqueeTrack && skillsMarqueeTrack.getAnimations ? skillsMarqueeTrack.getAnimations()[0] : null;
+  var tickerRate = 1, tickerMotionY = scrollY;
+
+  function updateTickerSpeed(y){
+    if (!tickerAnimation) return;
+    var velocity = Math.abs(y - tickerMotionY);
+    tickerMotionY = y;
+    var target = 1 + Math.min(2.5, velocity / 18);
+    tickerRate += (target - tickerRate) * (target > tickerRate ? .24 : .08);
+    tickerAnimation.updatePlaybackRate(tickerRate);
+  }
 
   /* ─── hero entrance ──────────────────────────────────────
      One gesture — up 20px and in — on every hero element, staggered 200ms
@@ -1639,6 +1708,7 @@ html:not(.js) .demo-stage{--lit:1}
   function frame(){
     stepSmooth();
     var y = scrollY, h = document.documentElement.scrollHeight;
+    updateTickerSpeed(y);
     if (y !== lastY || h !== lastH){
       lastY = y; lastH = h;
       updateHye();
