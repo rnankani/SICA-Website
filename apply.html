@@ -37,6 +37,26 @@ a{color:inherit;text-decoration:none}
 h1{font-weight:700;font-size:clamp(30px,5.4vw,52px);line-height:1.05;letter-spacing:-.035em;margin-top:22px;max-width:20ch;text-wrap:balance}
 .lede{font-size:clamp(15px,1.8vw,18px);color:var(--on-bone);max-width:60ch;margin-top:18px;line-height:1.7}
 
+/* Everything an applicant needs to decide without guessing or DMing first. */
+.clarity{margin-top:clamp(30px,5vh,48px);display:flex;flex-direction:column;gap:16px}
+.deadline{border:1px solid rgba(201,163,79,.42);border-radius:12px;padding:16px 18px;background:rgba(201,163,79,.08);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.deadline b{font-size:14px;color:var(--bone)}
+.deadline span{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--brass-lit)}
+.clarity-title{font-size:11px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--on-ink);margin:10px 0 0}
+.pipeline{list-style:none;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));position:relative;border:1px solid var(--line);border-radius:12px;background:var(--ink);overflow:hidden}
+.pipeline li{position:relative;padding:18px 14px;min-height:108px;border-right:1px solid var(--line)}
+.pipeline li:last-child{border-right:0}
+.pipeline .n{display:block;font-size:9px;font-weight:600;letter-spacing:.14em;color:var(--brass-lit);margin-bottom:10px}
+.pipeline b{display:block;font-size:12.5px;line-height:1.35}
+.pipeline small{display:block;font-size:10.5px;color:var(--on-ink);line-height:1.35;margin-top:6px}
+.clarity-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.clarity-card{border:1px solid var(--line);border-radius:11px;background:var(--ink);padding:17px 18px}
+.clarity-card.wide{grid-column:1/-1}
+.clarity-card h3{font-size:13.5px;font-weight:600;color:var(--bone);margin-bottom:8px}
+.clarity-card p,.clarity-card li{font-size:12.8px;color:var(--on-bone);line-height:1.6}
+.clarity-card ul{margin:0;padding-left:17px;display:flex;flex-direction:column;gap:7px}
+.clarity-card strong{color:var(--bone);font-weight:600}
+
 h2{font-size:11.5px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--on-ink);margin:clamp(38px,6vh,62px) 0 16px}
 
 .roles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -139,7 +159,8 @@ h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radi
 
 .foot{border-top:1px solid var(--line);margin-top:clamp(44px,7vh,80px);padding-top:22px;font-size:12px;color:#65605A;display:flex;flex-wrap:wrap;gap:8px 20px}
 .foot a{color:var(--brass-lit)}
-@media (max-width:620px){.roles,.two{grid-template-columns:1fr}}
+@media (max-width:720px){.pipeline{grid-template-columns:repeat(2,minmax(0,1fr))}.pipeline li{border-bottom:1px solid var(--line)}.pipeline li:nth-child(2n){border-right:0}.pipeline li:nth-last-child(-n+2){border-bottom:0}}
+@media (max-width:620px){.roles,.two,.clarity-grid{grid-template-columns:1fr}.clarity-card.wide{grid-column:auto}}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition-duration:.001ms!important}}
 </style>
 </head>
@@ -154,9 +175,57 @@ h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radi
 
 <div class="wrap">
   <div class="form" id="form">
-    <span class="eyebrow"><i></i>Now accepting</span>
+    <span class="eyebrow" id="deadlineStatus"><i></i>Applications close September 25</span>
     <h1>Apply for a founding officer role.</h1>
-    <p class="lede">SICA launches with five officers. This is the team that writes the first curriculum, runs the first meetings, and decides what the club becomes &mdash; before there is anything to inherit. About 45 minutes a week outside the meeting.</p>
+    <p class="lede">SICA launches with five officers. This is the team that writes the first curriculum, runs the first meetings, and decides what the club becomes &mdash; before there is anything to inherit.</p>
+
+    <section class="clarity" aria-labelledby="clarityTitle">
+      <div class="deadline" role="status">
+        <b>Applications close September 25</b>
+        <span id="daysLeft">Deadline approaching</span>
+      </div>
+
+      <h2 class="clarity-title" id="clarityTitle">What happens after you apply</h2>
+      <ol class="pipeline" aria-label="Officer selection and training timeline">
+        <li><span class="n">01</span><b>Apply</b><small>By September 25</small></li>
+        <li><span class="n">02</span><b>Interview invites</b><small>September 27</small></li>
+        <li><span class="n">03</span><b>Interviews</b><small>Week of September 29</small></li>
+        <li><span class="n">04</span><b>Team announced</b><small>October 5</small></li>
+        <li><span class="n">05</span><b>Training</b><small>October 6&ndash;November 1</small></li>
+        <li><span class="n">06</span><b>Club application</b><small>Submitted after training</small></li>
+      </ol>
+
+      <div class="clarity-grid">
+        <article class="clarity-card wide">
+          <h3>The time commitment changes by phase</h3>
+          <ul>
+            <li><strong>Right now, before approval:</strong> minimal &mdash; mostly showing up to training sessions.</li>
+            <li><strong>During training, October 6&ndash;November 1:</strong> about 1&ndash;1.5 hours a week across two sessions, plus prep for meetings you are assigned to own.</li>
+            <li><strong>Once SICA is approved and running:</strong> Vice President about 2 hours a week; Treasurer/Secretary and PR/Media about 1&ndash;2 hours a week.</li>
+          </ul>
+        </article>
+        <article class="clarity-card">
+          <h3>The interview</h3>
+          <p>A relaxed 15-minute, one-on-one conversation with Reyansh, SICA&rsquo;s founder. No panel and no presentation.</p>
+        </article>
+        <article class="clarity-card">
+          <h3>Three open seats</h3>
+          <p>One Vice President, one Treasurer/Secretary, and one PR/Media Director. A strong runner-up may be offered another open role; otherwise, they can join the waitlist.</p>
+        </article>
+        <article class="clarity-card">
+          <h3>Who can apply</h3>
+          <p>Any grade can apply for these officer roles. Only the President role has the CHS sophomore/junior restriction, and that role is not currently open.</p>
+        </article>
+        <article class="clarity-card">
+          <h3>If you miss training</h3>
+          <p>Each session is summarized. Missing one occasionally is fine; missing most sessions is not.</p>
+        </article>
+        <article class="clarity-card wide">
+          <h3>How you will hear back</h3>
+          <p>Every update &mdash; interview invitation, decision, or waitlist status &mdash; goes to the school email entered below.</p>
+        </article>
+      </div>
+    </section>
 
     <!-- ── 1 ── -->
     <h2><span class="sn">1</span>Basic info</h2>
@@ -250,11 +319,6 @@ h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radi
     <p class="submit-fail" id="submitFail"></p>
     <p class="note" id="modeNote"></p>
 
-    <div class="banner">
-      <b>What happens next</b>
-      <p>The founder reads every application. If it looks like a fit you get a short conversation, then one real piece of work with a week to do it &mdash; a run of show, a week&rsquo;s discussion questions, a flyer. We decide within three days of that and tell everyone either way, including the people we don&rsquo;t pick.</p>
-    </div>
-
     <div class="foot">
       <span>SICA &middot; Cupertino High School</span>
       <a href="mailto:thesicaorg@gmail.com">thesicaorg@gmail.com</a>
@@ -276,6 +340,19 @@ h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radi
 <script>
 (function () {
   'use strict';
+  function updateDeadline(){
+    var now = new Date();
+    var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    var deadline = new Date(2026, 8, 25);
+    var days = Math.round((deadline - today) / 86400000);
+    var out = document.getElementById('daysLeft');
+    if (!out) return;
+    out.textContent = days > 1 ? days + ' days left' :
+      days === 1 ? '1 day left' : days === 0 ? 'Closes today' : 'Applications closed';
+  }
+  updateDeadline();
+  setInterval(updateDeadline, 60000);
+
   var DB = window.SICA_DB;
   var DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
   var RX = window.SICA_ROLE_EXPECTATIONS || {roles:{}, legacy:{}};

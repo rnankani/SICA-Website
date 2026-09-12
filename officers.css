@@ -232,12 +232,24 @@ a.card:hover,.card.link:hover{border-color:rgba(201,163,79,.34)}
 .kv dd{font-size:13.5px;color:var(--text)}
 .kv a{color:var(--brass)}
 
+/* President-only working document: the four-week officer training plan. */
+.training-calendar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.training-week{background:var(--raised);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.training-week h3{font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--brass);margin-bottom:14px}
+.training-session{padding:13px 0;border-top:1px solid var(--line-soft)}
+.training-session:first-of-type{border-top:0;padding-top:0}
+.training-session b{display:block;font-size:13.5px;font-weight:600;margin-bottom:5px}
+.training-session p{font-size:12.8px;color:var(--text-2);line-height:1.62}
+.training-note{margin-top:10px;border-left:2px solid var(--brass);padding:10px 12px;background:var(--brass-wash);font-size:12px;color:var(--text-2);line-height:1.55}
+
 /* empty */
 .empty{border:1px dashed var(--line);border-radius:var(--r);padding:34px 22px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:11px;background:var(--surface)}
 .empty .ic{width:38px;height:38px;border-radius:9px;background:var(--raised-2);display:grid;place-items:center}
 .empty .ic svg{width:19px;height:19px;stroke:var(--text-3);stroke-width:1.5;fill:none}
 .empty b{font-size:14.5px}
 .empty p{font-size:13px;color:var(--text-3);max-width:44ch}
+
+@media (max-width:760px){.training-calendar{grid-template-columns:1fr}}
 
 /* ─── handbook ────────────────────────────────────────────── */
 .hb{display:grid;grid-template-columns:minmax(0,1fr) 218px;gap:clamp(24px,4vw,54px);align-items:start}

@@ -69,6 +69,34 @@
         <div class="card"><p style="font-size:13.5px;color:var(--text-2)">Founded SICA after serving as Vice President of Codestarters. Priority this term is the club application &mdash; everything else waits on signatures and an advisor. Per <a href="handbook.html#ch9" style="color:var(--brass)">Handbook &sect;9</a>, must hand a full session to a Vice President by week four.</p></div>
       </div>
     </div>
+
+    <section id="presidentDocs" hidden>
+      <h2 class="sec-h">President docs &middot; Training calendar</h2>
+      <p class="lede" style="margin-bottom:16px">Eight sessions, twice weekly, during lunch or after school &middot; October 6&ndash;November 1</p>
+      <div class="training-calendar">
+        <article class="training-week">
+          <h3>Week 1</h3>
+          <div class="training-session"><b>Session 1 &middot; Welcome + role assignment</b><p>Walk through the constitution and each officer&rsquo;s role expectations document together.</p></div>
+          <div class="training-session"><b>Session 2 &middot; Foundations</b><p>Discuss EQ foundations and Goleman basics, then walk through the full curriculum so everyone sees the whole arc before owning a piece of it.</p></div>
+        </article>
+        <article class="training-week">
+          <h3>Week 2</h3>
+          <div class="training-session"><b>Session 3 &middot; Experience the meeting</b><p>Run a live walkthrough of the 40-minute meeting template. Officers participate as students instead of only hearing how it works.</p></div>
+          <div class="training-session"><b>Session 4 &middot; Assign curriculum ownership</b><p>Give each officer two or three meetings to own, plus matched reading from Cialdini, Voss, Rosenberg, or Gallo according to role.</p></div>
+          <p class="training-note">Attend the CHS Application Info Meeting whenever it is scheduled this week or next. Once CHS sets the date, treat it as fixed and non-negotiable.</p>
+        </article>
+        <article class="training-week">
+          <h3>Week 3</h3>
+          <div class="training-session"><b>Session 5 &middot; Practice-teach</b><p>Each officer teaches their assigned meeting to the rest of the team and receives real feedback.</p></div>
+          <div class="training-session"><b>Session 6 &middot; Application work session</b><p>Finalize the constitution, semester plan, and officer-centered answers together as a team.</p></div>
+        </article>
+        <article class="training-week">
+          <h3>Week 4</h3>
+          <div class="training-session"><b>Session 7 &middot; Mock interview</b><p>Practice for CHS&rsquo;s later interview round in mid-November and sharpen how officers explain the club generally.</p></div>
+          <div class="training-session"><b>Session 8 &middot; Dress rehearsal + submit</b><p>Run a full dress rehearsal of Meeting 1, then submit the club application.</p></div>
+        </article>
+      </div>
+    </section>
   </main>
 </div>
 <script src="references-data.js?v=14"></script>
@@ -78,5 +106,15 @@
 <script src="roles.js?v=14"></script>
 <script src="tasks.js?v=14"></script>
 <script src="officers.js?v=14"></script>
+<script>
+window.sicaPageInit = function () {
+  var reveal = function (role) {
+    if (role === 'founder' || role === 'president') document.getElementById('presidentDocs').hidden = false;
+  };
+  var auth = window.SICA_AUTH;
+  if (auth && auth.live) auth.profile().then(function (profile) { reveal(profile && profile.role); });
+  else reveal(window.SICA_ROLES && window.SICA_ROLES.active ? window.SICA_ROLES.active() : null);
+};
+</script>
 </body>
 </html>
