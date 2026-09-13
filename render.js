@@ -73,10 +73,10 @@
       return '<h2 class="sec-h">' + b.title + '</h2><div class="panel"><div class="rows">' +
         b.items.map(function (t) {
           return '<label class="row2 tgl"><b>' + t[0] + '</b>' +
-                 '<input type="checkbox"' + (t[1] ? ' checked' : '') + ' disabled>' +
+                 '<input type="checkbox"' + (t[1] ? ' checked' : '') + '>' +
                  '<span class="sw" aria-hidden="true"></span></label>';
         }).join('') + '</div></div>' +
-        '<p class="hint">Switches are read-only until the database is connected &mdash; a toggle that does not persist is worse than one that is clearly not live yet.</p>';
+        '<p class="hint">Settings and feature preferences. Toggles animate smoothly and save locally until the database connection is live.</p>';
     },
 
     officers: function () {
@@ -198,6 +198,21 @@
 
     main.innerHTML = h;
     document.title = 'SICA — ' + page.title;
+
+    // Restore locally saved toggle states for this page
+    var tgls = main.querySelectorAll('.tgl input[type="checkbox"]');
+    if (tgls.length) {
+      tgls.forEach(function (inp, idx) {
+        var sk = 'sica_tgl_' + key + '_' + idx;
+        try {
+          var saved = localStorage.getItem(sk);
+          if (saved !== null) inp.checked = saved === '1';
+        } catch(e) {}
+        inp.addEventListener('change', function () {
+          try { localStorage.setItem(sk, inp.checked ? '1' : '0'); } catch(e) {}
+        });
+      });
+    }
 
     /* Every em dash above is a value the database owns. With Supabase
        connected this fills them in; without it they stay dashes, which
