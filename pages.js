@@ -26,7 +26,6 @@
       crumb: 'Work', title: 'Tasks',
       lede: 'Everything assigned, who owns it, and what is overdue.',
       blocks: [
-        { type: 'stats', items: [ s('Open'), s('Due this week'), s('Overdue'), s('Completed') ] },
         { type: 'tabs', items: ['Board', 'List', 'Timeline', 'Calendar'] },
         { type: 'board', columns: ['Backlog', 'This week', 'In progress', 'Done'] },
         { type: 'note', title: 'What a task carries',
