@@ -31,8 +31,8 @@
           <div class="row"><span class="t">MEDIA</span><span class="w">Camera not booked</span><span class="who">Unassigned</span></div>
         </div>
       </div>
-      <div class="card"><h3>Start here</h3>
-        <div class="rows" style="margin-top:4px">
+      <div class="card"><h3>Start here &amp; Documents</h3>
+        <div class="rows" id="dashboardDocsRows" style="margin-top:4px">
           <div class="row"><span class="t">CH01</span><span class="w"><a href="handbook.html#ch1">Culture &mdash; the standing rule</a></span><span class="who">Handbook</span></div>
           <div class="row"><span class="t">CH09</span><span class="w"><a href="handbook.html#ch9">Succession &mdash; the test</a></span><span class="who">Handbook</span></div>
         </div>
@@ -43,15 +43,44 @@
 <script src="references-data.js?v=14"></script>
 <script src="supabase-config.js?v=14"></script>
 <script src="auth.js?v=14"></script>
-<script src="db.js?v=14"></script>
+<script src="db.js?v=15"></script>
 <script src="roles.js?v=14"></script>
 <script src="tasks.js?v=14"></script>
 <script src="officers.js?v=14"></script>
 <script>
-window.sicaPageInit = function(){
+window.sicaPageInit = async function(){
   var d = new Date();
-  document.getElementById('today').textContent =
-    d.toLocaleDateString(undefined, {weekday:'long', day:'numeric', month:'long'});
+  var todayEl = document.getElementById('today');
+  if (todayEl) {
+    todayEl.textContent = d.toLocaleDateString(undefined, {weekday:'long', day:'numeric', month:'long'});
+  }
+
+  // Load dynamic uploaded documents onto dashboard
+  var rowsEl = document.getElementById('dashboardDocsRows');
+  if (rowsEl && window.SICA_DB && window.SICA_DB.documents) {
+    try {
+      var docs = await window.SICA_DB.documents.list();
+      var activeRole = (window.SICA_ROLES && window.SICA_ROLES.active()) || 'president';
+      var isPresidentOrFounder = activeRole === 'president' || activeRole === 'founder';
+      var visibleDocs = (docs || []).filter(function(doc) {
+        if (doc.owner_role === 'president' && !isPresidentOrFounder) return false;
+        return true;
+      });
+
+      visibleDocs.slice(0, 3).forEach(function(doc) {
+        var row = document.createElement('div');
+        row.className = 'row';
+        var tag = doc.owner_role === 'president' ? 'PRES' : 'DOC';
+        var titleSafe = (doc.title || 'Document').replace(/</g, '&lt;');
+        row.innerHTML = '<span class="t">' + tag + '</span>' +
+          '<span class="w"><a href="' + (doc.url || 'library.html') + '" download="' + titleSafe + '" target="_blank">' + titleSafe + '</a></span>' +
+          '<span class="who"><a href="library.html" style="color:var(--brass)">Library</a></span>';
+        rowsEl.prepend(row);
+      });
+    } catch(e) {
+      console.warn('Could not load dashboard documents:', e);
+    }
+  }
 };
 </script>
 </body>

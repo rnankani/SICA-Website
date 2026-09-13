@@ -311,6 +311,16 @@ create table if not exists documents (
   updated_at timestamptz not null default now()
 );
 
+-- Uploaded handbooks are private Storage objects. Keep metadata here so
+-- the dashboard can search, label and permission them without putting
+-- binary/base64 data into Postgres.
+alter table documents add column if not exists storage_path text;
+alter table documents add column if not exists file_name text;
+alter table documents add column if not exists mime_type text;
+alter table documents add column if not exists size_bytes bigint;
+alter table documents add column if not exists created_by uuid references profiles on delete set null;
+alter table documents add column if not exists created_at timestamptz not null default now();
+
 create table if not exists expenses (
   id          uuid primary key default gen_random_uuid(),
   date        date not null default current_date,
@@ -618,10 +628,68 @@ drop policy if exists "read announcements"   on announcements;
 drop policy if exists "officers post"        on announcements;
 drop policy if exists "read documents"       on documents;
 drop policy if exists "officers manage docs" on documents;
+drop policy if exists "officers add docs"    on documents;
+drop policy if exists "officers update docs" on documents;
+drop policy if exists "officers delete docs" on documents;
 create policy "read announcements"   on announcements for select using (is_officer());
 create policy "officers post"        on announcements for all    using (is_officer()) with check (is_officer());
-create policy "read documents"       on documents     for select using (is_officer());
-create policy "officers manage docs" on documents     for all    using (is_officer()) with check (is_officer());
+create policy "read documents"       on documents     for select using (
+  is_officer() and (
+    owner_role is null or owner_role <> 'president'::sica_role or
+    exists (select 1 from profiles where id = auth.uid() and role in ('founder','president'))
+  )
+);
+create policy "officers add docs"    on documents for insert with check (is_officer());
+create policy "officers update docs" on documents for update using (
+  is_officer() and (
+    owner_role is null or owner_role <> 'president'::sica_role or
+    exists (select 1 from profiles where id = auth.uid() and role in ('founder','president'))
+  )
+) with check (is_officer());
+create policy "officers delete docs" on documents for delete using (
+  is_officer() and (
+    owner_role is null or owner_role <> 'president'::sica_role or
+    exists (select 1 from profiles where id = auth.uid() and role in ('founder','president'))
+  )
+);
+
+-- A private bucket prevents handbook URLs from becoming public links.
+-- Storage policies mirror the documents-table boundary: officers may
+-- access files only after signing in to the portal.
+insert into storage.buckets (id, name, public)
+values ('sica-documents', 'sica-documents', false)
+on conflict (id) do update set public = false;
+
+drop policy if exists "officers read document files" on storage.objects;
+drop policy if exists "officers upload document files" on storage.objects;
+drop policy if exists "officers delete document files" on storage.objects;
+create policy "officers read document files" on storage.objects for select
+using (
+  bucket_id = 'sica-documents' and public.is_officer() and (
+    (storage.foldername(name))[1] = 'officers' or
+    ((storage.foldername(name))[1] = 'president' and exists (
+      select 1 from public.profiles where id = auth.uid() and role in ('founder','president')
+    ))
+  )
+);
+create policy "officers upload document files" on storage.objects for insert
+with check (
+  bucket_id = 'sica-documents' and public.is_officer() and (
+    (storage.foldername(name))[1] = 'officers' or
+    ((storage.foldername(name))[1] = 'president' and exists (
+      select 1 from public.profiles where id = auth.uid() and role in ('founder','president')
+    ))
+  )
+);
+create policy "officers delete document files" on storage.objects for delete
+using (
+  bucket_id = 'sica-documents' and public.is_officer() and (
+    (storage.foldername(name))[1] = 'officers' or
+    ((storage.foldername(name))[1] = 'president' and exists (
+      select 1 from public.profiles where id = auth.uid() and role in ('founder','president')
+    ))
+  )
+);
 
 -- money: treasurer, president and founder only
 drop policy if exists "treasury only" on expenses;

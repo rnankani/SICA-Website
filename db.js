@@ -41,7 +41,8 @@
     tasks:        ['id', 'title', 'description', 'owner_role', 'owner_id', 'due', 'priority',
                    'status', 'position', 'meeting_id', 'created_at', 'completed_at', 'completed_by'],
     announcements:['id', 'title', 'body', 'audience', 'author_id', 'publish_at', 'pinned'],
-    documents:    ['id', 'title', 'category', 'url', 'owner_role', 'updated_at'],
+    documents:    ['id', 'title', 'category', 'url', 'storage_path', 'file_name', 'mime_type',
+                   'size_bytes', 'owner_role', 'created_by', 'created_at', 'updated_at'],
     expenses:     ['id', 'date', 'item', 'amount', 'paid_by', 'approved_by', 'receipt_url',
                    'category', 'status'],
     settings:     ['key', 'value'],
@@ -180,6 +181,57 @@
       try { d = await r.json(); } catch (e) {}
       if (!r.ok) throw new Error((d && (d.message || d.hint)) || ('Error ' + r.status));
       return d;
+    });
+  }
+
+  /* Private Supabase Storage helpers. Files live in Storage; the
+     documents table stores only searchable metadata and permissions. */
+  var DOCUMENT_BUCKET = 'sica-documents';
+  function authToken() {
+    var token = null;
+    try { token = localStorage.getItem('sica.token'); } catch (e) {}
+    return token || CFG.anonKey;
+  }
+  function storagePath(path) {
+    return String(path || '').split('/').map(encodeURIComponent).join('/');
+  }
+  async function storageRequest(path, opts) {
+    opts = opts || {};
+    var headers = Object.assign({
+      apikey: CFG.anonKey,
+      Authorization: 'Bearer ' + authToken()
+    }, opts.headers || {});
+    var response = await fetch(CFG.url + '/storage/v1/' + path, {
+      method: opts.method || 'GET', headers: headers, body: opts.body
+    });
+    var text = await response.text();
+    if (!response.ok) {
+      var message = text;
+      try { var parsed = JSON.parse(text); message = parsed.message || parsed.error || text; } catch (e) {}
+      throw new Error(message || ('Storage error ' + response.status));
+    }
+    if (!text) return null;
+    try { return JSON.parse(text); } catch (e) { return text; }
+  }
+  async function uploadDocumentFile(file, path) {
+    return storageRequest('object/' + DOCUMENT_BUCKET + '/' + storagePath(path), {
+      method: 'POST',
+      headers: { 'Content-Type': file.type || 'application/octet-stream', 'x-upsert': 'false' },
+      body: file
+    });
+  }
+  async function signedDocumentUrl(path) {
+    var result = await storageRequest('object/sign/' + DOCUMENT_BUCKET + '/' + storagePath(path), {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ expiresIn: 3600 })
+    });
+    if (!result || !result.signedURL) return null;
+    return CFG.url + '/storage/v1' + result.signedURL;
+  }
+  async function removeDocumentFile(path) {
+    return storageRequest('object/' + DOCUMENT_BUCKET, {
+      method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prefixes: [path] })
     });
   }
 
@@ -392,8 +444,46 @@
                 mark: function (row) { return A.insert('attendance', row); } },
     announcements: { list: function () { return A.list('announcements', { order: 'publish_at' }); },
                 create: function (a) { return A.insert('announcements', a); } },
-    documents: { list: function () { return A.list('documents', { order: 'updated_at' }); },
-                create: function (d) { return A.insert('documents', d); } },
+    documents: {
+      list: async function () {
+        var rows = await A.list('documents', { order: 'updated_at' });
+        if (!LIVE) return rows;
+        return Promise.all(rows.map(async function (row) {
+          if (!row.storage_path) return row; // legacy URL-based document
+          try { return Object.assign({}, row, { url: await signedDocumentUrl(row.storage_path) }); }
+          catch (e) { return Object.assign({}, row, { url: null, storage_error: e.message }); }
+        }));
+      },
+      upload: async function (file, metadata) {
+        if (!LIVE) throw new Error('File sync is unavailable until Supabase is configured.');
+        var cleanName = String(file.name || 'document').replace(/[^a-zA-Z0-9._-]+/g, '-');
+        var unique = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+        var visibilityFolder = metadata.owner_role === 'president' ? 'president' : 'officers';
+        var path = visibilityFolder + '/' + unique + '/' + cleanName;
+        await uploadDocumentFile(file, path);
+        try {
+          return await A.insert('documents', {
+            title: metadata.title,
+            category: metadata.category || 'Handbooks & Guides',
+            storage_path: path,
+            file_name: file.name,
+            mime_type: file.type || 'application/octet-stream',
+            size_bytes: file.size,
+            owner_role: metadata.owner_role || null,
+            updated_at: new Date().toISOString()
+          });
+        } catch (e) {
+          try { await removeDocumentFile(path); } catch (cleanupError) {}
+          throw e;
+        }
+      },
+      create: function (d) { return A.insert('documents', d); },
+      remove: async function (id) {
+        var row = await A.get('documents', id);
+        if (LIVE && row && row.storage_path) await removeDocumentFile(row.storage_path);
+        return A.remove('documents', id);
+      }
+    },
     expenses: { list: function () { return A.list('expenses', { order: 'date' }); },
                 create: function (e) { return A.insert('expenses', e); } },
     /* Keyed on the setting name, not on an id — and a setting nobody has
