@@ -57,7 +57,7 @@
       note: 'Supreme admin. Every permission, and currently holds President as well.',
       nav: [
         { group: 'Overview', items: [
-          p('dashboard', 'Dashboard', 'founder.html', I.grid),
+          p('dashboard', 'Dashboard', 'officers.html', I.grid),
           p('analytics', 'Analytics', 'analytics.html', I.chart)
         ]},
         { group: 'Run the club', items: [
@@ -157,9 +157,15 @@
 
   var ORDER = ['founder', 'president', 'vp', 'secretary', 'treasurer', 'pr'];
 
-  /* Only the Founder may impersonate. Until auth exists the signed-in
-     role is the Founder, which is why the switcher is available at all. */
-  function signedInRole() { return 'founder'; }
+  /* The authenticated profile is the source of truth. Local mode keeps
+     Founder as the development fallback. */
+  function signedInRole() {
+    try {
+      var p = JSON.parse(localStorage.getItem('sica.profile') || 'null');
+      if (p && ROLES[p.role]) return p.role;
+    } catch (e) {}
+    return 'founder';
+  }
 
   /* Does the signed-in person hold this role outright, rather than only
      being able to look at it? Founder holds President today, so switching
@@ -172,7 +178,7 @@
   function activeRole() {
     var r = null;
     try { r = localStorage.getItem('sica-role'); } catch (e) {}
-    return ROLES[r] ? r : signedInRole();
+    return signedInRole() === 'founder' && ROLES[r] ? r : signedInRole();
   }
 
   function setRole(id) {
@@ -180,6 +186,15 @@
     try { localStorage.setItem('sica-role', id); } catch (e) {}
     return true;
   }
+
+  var PERMISSIONS = {
+    founder:   ['tasks.view_team','tasks.create','tasks.assign','tasks.edit_any','tasks.archive','settings.manage'],
+    president: ['tasks.view_team','tasks.create','tasks.assign','tasks.edit_any','tasks.archive'],
+    vp:        ['tasks.create','tasks.edit_own'],
+    secretary: ['tasks.create','tasks.edit_own'],
+    treasurer: ['tasks.create','tasks.edit_own'],
+    pr:        ['tasks.create','tasks.edit_own']
+  };
 
   window.SICA_ROLES = {
     all: ROLES,
@@ -190,6 +205,10 @@
     set: setRole,
     get: function (id) { return ROLES[id || activeRole()]; },
     holds: holds,
+    permissions: PERMISSIONS,
+    can: function (permission) {
+      return (PERMISSIONS[activeRole()] || []).indexOf(permission) >= 0;
+    },
     isImpersonating: function () { return !holds(activeRole()); }
   };
 })();

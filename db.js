@@ -38,8 +38,11 @@
     members:      ['id', 'profile_id', 'joined_at', 'status', 'tags', 'notes'],
     meetings:     ['id', 'number', 'topic', 'week_ref', 'date', 'room', 'status', 'notes'],
     attendance:   ['id', 'meeting_id', 'profile_id', 'present', 'is_new'],
-    tasks:        ['id', 'title', 'description', 'owner_role', 'owner_id', 'due', 'priority',
-                   'status', 'position', 'meeting_id', 'created_at', 'completed_at', 'completed_by'],
+    tasks:        ['id', 'title', 'description', 'owner_role', 'owner_id', 'start_date', 'due',
+                   'priority', 'status', 'progress', 'category', 'position', 'meeting_id',
+                   'created_by', 'created_at', 'updated_at', 'completed_at', 'completed_by', 'archived_at'],
+    task_subtasks:['id', 'task_id', 'title', 'completed', 'position', 'created_at'],
+    task_activity:['id', 'task_id', 'user_id', 'action', 'detail', 'created_at'],
     announcements:['id', 'title', 'body', 'audience', 'author_id', 'publish_at', 'pinned'],
     documents:    ['id', 'title', 'category', 'url', 'storage_path', 'file_name', 'mime_type',
                    'size_bytes', 'owner_role', 'created_by', 'created_at', 'updated_at'],
@@ -285,6 +288,11 @@
 
   var A = LIVE ? supabase : local;
 
+  function currentProfile() {
+    try { return JSON.parse(localStorage.getItem('sica.profile') || 'null'); }
+    catch (e) { return null; }
+  }
+
   /* ─── the API pages actually use ─────────────────────────
      Named for what the club does, not for what the table is called. */
   var DB = {
@@ -392,30 +400,58 @@
     /* Ordering uses a float `position` rather than an index, so moving one
        task rewrites one row instead of renumbering the whole list. */
     tasks: {
-      list: async function (status) {
-        var rows = await A.list('tasks', { where: status ? { status: status } : null });
-        return rows.sort(function (a, b) { return (a.position || 0) - (b.position || 0); });
+      list: async function (opts) {
+        if (typeof opts === 'string') opts = { status: opts };
+        opts = opts || {};
+        var rows = await A.list('tasks', { where: opts.status ? { status: opts.status } : null });
+        if (!opts.includeArchived) rows = rows.filter(function (r) { return !r.archived_at; });
+        return rows.sort(function (a, b) {
+          return String(a.due || '9999-12-31').localeCompare(String(b.due || '9999-12-31')) ||
+                 (a.position || 0) - (b.position || 0);
+        });
       },
       create: async function (t) {
-        var open = await A.list('tasks', { where: { status: 'open' } });
-        var min = open.reduce(function (m, r) { return Math.min(m, r.position || 0); }, 0);
-        return A.insert('tasks', {
+        var all = await A.list('tasks', {});
+        var min = all.reduce(function (m, r) { return Math.min(m, r.position || 0); }, 0);
+        var profile = currentProfile();
+        var row = await A.insert('tasks', {
           title: t.title,
           description: t.description || '',
           owner_role: t.owner_role || null,
+          owner_id: t.owner_id || null,
+          start_date: t.start_date || null,
           due: t.due || null,
-          priority: t.priority || 'normal',
-          status: 'open',
-          position: min - 1000            /* newest sits at the top */
+          priority: t.priority || 'medium',
+          status: t.status || 'not_started',
+          progress: Number(t.progress) || 0,
+          category: t.category || null,
+          created_by: profile && profile.id || null,
+          updated_at: new Date().toISOString(),
+          completed_at: t.completed_at || null,
+          position: min - 1000
         });
+        await DB.taskActivity.add(row.id, 'created', 'Task created');
+        return row;
       },
-      update: function (id, p) { return A.update('tasks', id, p); },
+      update: async function (id, p) {
+        p.updated_at = new Date().toISOString();
+        var row = await A.update('tasks', id, p);
+        await DB.taskActivity.add(id, 'updated', Object.keys(p).filter(function (k) { return k !== 'updated_at'; }).join(', '));
+        return row;
+      },
       remove: function (id) { return A.remove('tasks', id); },
+      archive: async function (id) {
+        var row = LIVE ? await rpc('archive_task', { task_id: id })
+                       : await A.update('tasks', id, { archived_at: new Date().toISOString(), updated_at: new Date().toISOString() });
+        await DB.taskActivity.add(id, 'archived', 'Task archived');
+        return row;
+      },
       complete: function (id, done) {
-        return A.update('tasks', id, {
-          status: done ? 'done' : 'open',
+        return DB.tasks.update(id, {
+          status: done ? 'completed' : 'not_started',
+          progress: done ? 100 : 0,
           completed_at: done ? new Date().toISOString() : null,
-          completed_by: done ? ((window.SICA_ROLES && window.SICA_ROLES.active()) || null) : null
+          completed_by: done ? ((currentProfile() && currentProfile().id) || null) : null
         });
       },
       /* Drop `id` between `before` and `after`, halfway between their
@@ -431,10 +467,11 @@
       counts: async function () {
         var all = await A.list('tasks', {});
         var today = new Date().toISOString().slice(0, 10);
-        var open = all.filter(function (t) { return t.status === 'open'; });
+        all = all.filter(function (t) { return !t.archived_at; });
+        var open = all.filter(function (t) { return t.status !== 'completed'; });
         return {
           open: open.length,
-          done: all.filter(function (t) { return t.status === 'done'; }).length,
+          done: all.filter(function (t) { return t.status === 'completed'; }).length,
           overdue: open.filter(function (t) { return t.due && t.due < today; }).length,
           soon: open.filter(function (t) { return t.due && t.due >= today; }).length
         };
@@ -482,6 +519,19 @@
         var row = await A.get('documents', id);
         if (LIVE && row && row.storage_path) await removeDocumentFile(row.storage_path);
         return A.remove('documents', id);
+      }
+    },
+    taskSubtasks: {
+      list: function (taskId) { return A.list('task_subtasks', { where: { task_id: taskId }, order: 'position' }); },
+      create: function (taskId, title, position) { return A.insert('task_subtasks', { task_id: taskId, title: title, position: position || 0 }); },
+      update: function (id, patch) { return A.update('task_subtasks', id, patch); },
+      remove: function (id) { return A.remove('task_subtasks', id); }
+    },
+    taskActivity: {
+      list: function (taskId) { return A.list('task_activity', { where: { task_id: taskId }, order: 'created_at' }); },
+      add: function (taskId, action, detail) {
+        var profile = currentProfile();
+        return A.insert('task_activity', { task_id: taskId, user_id: profile && profile.id || null, action: action, detail: detail || null });
       }
     },
     expenses: { list: function () { return A.list('expenses', { order: 'date' }); },

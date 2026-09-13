@@ -292,6 +292,84 @@ create table if not exists tasks (
 );
 create index if not exists tasks_order on tasks (status, position);
 
+-- Task workspace v2. Additive migrations keep every existing task.
+alter table tasks drop constraint if exists tasks_priority_check;
+alter table tasks drop constraint if exists tasks_status_check;
+alter table tasks drop constraint if exists tasks_progress_check;
+alter table tasks add column if not exists start_date date;
+alter table tasks add column if not exists progress int not null default 0;
+alter table tasks add column if not exists category text;
+alter table tasks add column if not exists created_by uuid references profiles on delete set null;
+alter table tasks add column if not exists updated_at timestamptz not null default now();
+alter table tasks add column if not exists archived_at timestamptz;
+update tasks set priority = 'medium' where priority = 'normal';
+update tasks set status = 'not_started' where status = 'open';
+update tasks set status = 'completed', progress = 100 where status = 'done';
+alter table tasks add constraint tasks_priority_check
+  check (priority in ('low','medium','high','urgent'));
+alter table tasks add constraint tasks_status_check
+  check (status in ('not_started','in_progress','blocked','completed'));
+alter table tasks add constraint tasks_progress_check check (progress between 0 and 100);
+create index if not exists tasks_owner_due on tasks (owner_role, due) where archived_at is null;
+
+create table if not exists task_subtasks (
+  id uuid primary key default gen_random_uuid(),
+  task_id uuid not null references tasks on delete cascade,
+  title text not null,
+  completed boolean not null default false,
+  position int not null default 0,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists task_activity (
+  id uuid primary key default gen_random_uuid(),
+  task_id uuid not null references tasks on delete cascade,
+  user_id uuid references profiles on delete set null,
+  action text not null,
+  detail text,
+  created_at timestamptz not null default now()
+);
+
+-- Column-level task guard. UI permissions are convenience; this trigger
+-- is the enforcement boundary for assignment and archiving.
+create or replace function enforce_task_permissions()
+returns trigger language plpgsql security definer set search_path = public as $$
+declare my_role sica_role;
+begin
+  if auth.uid() is null then return new; end if;
+  select role into my_role from profiles where id = auth.uid();
+  if my_role in ('founder','president') then return new; end if;
+  if tg_op = 'INSERT' then
+    if new.owner_role is distinct from my_role and new.owner_id is distinct from auth.uid() then
+      raise exception 'You may only create tasks assigned to yourself.' using errcode = 'insufficient_privilege';
+    end if;
+  else
+    if new.owner_role is distinct from old.owner_role or
+       (new.owner_id is distinct from old.owner_id and not (old.owner_id is null and new.owner_id = auth.uid())) then
+      raise exception 'You may not reassign this task.' using errcode = 'insufficient_privilege';
+    end if;
+    if new.archived_at is distinct from old.archived_at then
+      raise exception 'Only the Founder or President may archive tasks.' using errcode = 'insufficient_privilege';
+    end if;
+  end if;
+  return new;
+end; $$;
+drop trigger if exists task_permission_guard on tasks;
+create trigger task_permission_guard before insert or update on tasks
+for each row execute function enforce_task_permissions();
+
+create or replace function archive_task(task_id uuid)
+returns tasks language plpgsql security definer set search_path = public as $$
+declare result tasks%rowtype;
+begin
+  if not exists (select 1 from profiles where id = auth.uid() and role in ('founder','president')) then
+    raise exception 'Only the Founder or President may archive tasks.' using errcode = 'insufficient_privilege';
+  end if;
+  update tasks set archived_at = now(), updated_at = now() where id = task_id returning * into result;
+  return result;
+end; $$;
+grant execute on function archive_task(uuid) to authenticated;
+
 create table if not exists announcements (
   id         uuid primary key default gen_random_uuid(),
   title      text not null,
@@ -609,11 +687,49 @@ drop policy if exists "read meetings"            on meetings;
 drop policy if exists "officers manage meetings" on meetings;
 drop policy if exists "officers manage tasks"    on tasks;
 drop policy if exists "read own tasks"           on tasks;
+drop policy if exists "task visibility"          on tasks;
+drop policy if exists "task creation"            on tasks;
+drop policy if exists "task updates"             on tasks;
+drop policy if exists "task deletion"            on tasks;
 create policy "officers manage members"  on members  for all    using (is_officer()) with check (is_officer());
 create policy "read meetings"            on meetings for select using (is_officer());
 create policy "officers manage meetings" on meetings for all    using (is_officer()) with check (is_officer());
-create policy "officers manage tasks"    on tasks    for all    using (is_officer()) with check (is_officer());
-create policy "read own tasks"           on tasks    for select using (owner_id = auth.uid() or is_officer());
+create policy "task visibility" on tasks for select using (
+  is_officer() and (
+    owner_id = auth.uid() or created_by = auth.uid() or
+    owner_role = (select role from profiles where id = auth.uid()) or
+    exists (select 1 from profiles where id = auth.uid() and role in ('founder','president'))
+  )
+);
+create policy "task creation" on tasks for insert with check (
+  is_officer() and (
+    owner_id = auth.uid() or owner_role = (select role from profiles where id = auth.uid()) or
+    exists (select 1 from profiles where id = auth.uid() and role in ('founder','president'))
+  )
+);
+create policy "task updates" on tasks for update using (
+  is_officer() and (
+    owner_id = auth.uid() or created_by = auth.uid() or
+    owner_role = (select role from profiles where id = auth.uid()) or
+    exists (select 1 from profiles where id = auth.uid() and role in ('founder','president'))
+  )
+) with check (is_officer());
+create policy "task deletion" on tasks for delete using (
+  exists (select 1 from profiles where id = auth.uid() and role = 'founder')
+);
+
+drop policy if exists "task subtask access" on task_subtasks;
+drop policy if exists "task activity read" on task_activity;
+drop policy if exists "task activity add" on task_activity;
+create policy "task subtask access" on task_subtasks for all using (
+  exists (select 1 from tasks where tasks.id = task_subtasks.task_id)
+) with check (exists (select 1 from tasks where tasks.id = task_subtasks.task_id));
+create policy "task activity read" on task_activity for select using (
+  exists (select 1 from tasks where tasks.id = task_activity.task_id)
+);
+create policy "task activity add" on task_activity for insert with check (
+  exists (select 1 from tasks where tasks.id = task_activity.task_id)
+);
 
 -- attendance: a member may read only their own row
 drop policy if exists "read own attendance"      on attendance;
@@ -729,6 +845,8 @@ alter table member_hours      enable row level security;
 alter table curriculum_weeks  enable row level security;
 alter table audit_log         enable row level security;
 alter table email_outbox      enable row level security;
+alter table task_subtasks     enable row level security;
+alter table task_activity     enable row level security;
 
 -- The officer surfaces. One loop would be tidier, but writing them out
 -- means a policy can be read where it is used.

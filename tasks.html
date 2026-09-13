@@ -1,53 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex, nofollow">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow">
 <title>SICA &mdash; Tasks</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="officers.css?v=15">
+<link rel="stylesheet" href="officers.css?v=16">
 </head>
-<body data-page="tasks">
-<div class="shell">
-  <nav class="rail" id="rail"></nav>
-  <main>
-    <div class="topbar">
-      <div>
-        <div class="crumb">Work</div>
-        <h1 class="ptitle">Tasks</h1>
-        <p class="lede">Shared across every officer. Tick one off and it moves to Completed, and onto the dashboard&rsquo;s activity feed.</p>
-      </div>
-    </div>
-    <div class="mc-grid" id="tkStats"></div>
-    <div class="panel" style="margin-top:14px"><div id="taskList"></div></div>
-    <p class="dbfoot">Tasks are stored locally in this browser until Supabase is connected. Everything you do here &mdash; add, tick, reorder, describe, delete &mdash; already writes through the same data layer, so nothing changes when it goes live.</p>
-  </main>
-</div>
-<script src="references-data.js?v=14"></script>
-<script src="supabase-config.js?v=14"></script>
-<script src="auth.js?v=14"></script>
-<script src="db.js?v=14"></script>
-<script src="roles.js?v=14"></script>
-<script src="tasks.js?v=14"></script>
-<script src="officers.js?v=14"></script>
-<script>
-window.sicaPageInit = function(){
-  var stats = document.getElementById('tkStats');
-  function paint(c){
-    var S=[['Open',c.open],['Due later',c.soon],['Overdue',c.overdue],['Completed',c.done]];
-    stats.innerHTML = S.map(function(s,i){
-      return '<div class="stat' + (i===2 && s[1] ? ' warn' : '') + '">' +
-        '<span class="stat-k">' + s[0] + '</span>' +
-        '<span class="stat-v">' + s[1] + '</span></div>';
-    }).join('');
-  }
-  window.sicaTaskList(document.getElementById('taskList'), {
-    onChange: function(){ window.SICA_DB.tasks.counts().then(paint); }
-  });
-};
-</script>
-</body>
-</html>
+<body data-page="tasks"><div class="shell"><nav class="rail" id="rail"></nav><main class="task-main"><div id="taskWorkspace" aria-live="polite"><div class="task-loading">Loading your work…</div></div></main></div>
+<script src="references-data.js?v=14"></script><script src="supabase-config.js?v=14"></script><script src="auth.js?v=14"></script><script src="db.js?v=16"></script><script src="roles.js?v=16"></script><script src="tasks.js?v=16"></script><script src="officers.js?v=14"></script>
+<script>window.sicaPageInit=function(){window.sicaTaskWorkspace(document.getElementById('taskWorkspace'));};</script>
+</body></html>

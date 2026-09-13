@@ -18,6 +18,11 @@
      Rendered rather than copy-pasted into eight files: one definition
      means a new tab is a single line here, not eight edits. */
   function renderRail(){
+    /* The profile may have loaded after this script was parsed. Resolve
+       the role at render time so a first-time officer never inherits the
+       Founder navigation from the local fallback. */
+    ROLE = R.get();
+    NAV = ROLE.nav;
     var rail = document.getElementById('rail');
     if (!rail) return;
     var h = '<button class="brand" id="railToggle" type="button" aria-label="Collapse sidebar" aria-expanded="true">' +

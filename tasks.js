@@ -1,265 +1,61 @@
-/* ═══════════════════════════════════════════════════════════
-   The shared task list.
-
-   One component, mounted twice: compact on the dashboard, full on the
-   Tasks page. Both read and write the same rows through SICA_DB, so a
-   task ticked on the dashboard is ticked everywhere.
-
-   Everything persists immediately — there is no save button, the way
-   Notion has no save button. With Supabase connected these become
-   network writes and nothing else changes.
-   ═══════════════════════════════════════════════════════════ */
+/* SICA task workspace: one responsive My/Team surface backed by SICA_DB. */
 (function () {
   'use strict';
+  var STATUS={not_started:'Not Started',in_progress:'In Progress',blocked:'Blocked',completed:'Completed'};
+  var PRIORITY={low:'Low',medium:'Medium',high:'High',urgent:'Urgent'};
+  function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function iso(d){return d.toISOString().slice(0,10);} function day(v){return v?new Date(v+'T12:00:00'):null;}
+  function addDays(d,n){var x=new Date(d);x.setDate(x.getDate()+n);return x;} function daysBetween(a,b){return Math.round((day(b)-day(a))/86400000);}
+  function pretty(v){return v?day(v).toLocaleDateString(undefined,{month:'short',day:'numeric'}):'No date';} function today(){return iso(new Date());}
+  function profile(){try{return JSON.parse(localStorage.getItem('sica.profile')||'null');}catch(e){return null;}}
+  function role(){return window.SICA_ROLES?window.SICA_ROLES.active():'founder';}
+  function roleLabel(id){var r=window.SICA_ROLES;return r&&r.all[id]?r.all[id].label:'Unassigned';}
+  function can(p){return!!(window.SICA_ROLES&&window.SICA_ROLES.can(p));}
+  function isMine(t){var p=profile();return(p&&t.owner_id===p.id)||t.owner_role===role();}
+  function active(t){return t.status!=='completed';} function overdue(t){return active(t)&&t.due&&t.due<today();}
+  function dueSoon(t){if(!active(t)||!t.due)return false;var n=daysBetween(today(),t.due);return n>=0&&n<=7;}
+  function options(first,rest,selected){var o=Object.assign({},first,rest||{});return Object.keys(o).map(function(k){return'<option value="'+k+'"'+(k===selected?' selected':'')+'>'+o[k]+'</option>';}).join('');}
 
-  var PRIORITIES = ['low', 'normal', 'high'];
-
-  function esc(t) {
-    return String(t == null ? '' : t)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+  function ensureChrome(){
+    if(document.getElementById('taskModal'))return;
+    document.body.insertAdjacentHTML('beforeend','<div class="task-shade" id="taskModal" hidden><section class="task-modal" role="dialog" aria-modal="true" aria-labelledby="taskModalTitle"><header><div><span class="eyebrow">Task</span><h2 id="taskModalTitle">Add task</h2></div><button type="button" class="icon-btn" data-close aria-label="Close">&times;</button></header><form id="taskForm"><input type="hidden" id="tfId"><div class="task-form-body"><label class="field full"><span>Task name *</span><input id="tfTitle" required maxlength="140"></label><label class="field full"><span>Description</span><textarea id="tfDescription" rows="3" placeholder="Enough context to start without asking around"></textarea></label><label class="field"><span>Start date *</span><input id="tfStart" type="date" required></label><label class="field"><span>Due date *</span><input id="tfDue" type="date" required></label><label class="field"><span>Status</span><select id="tfStatus"></select></label><label class="field"><span>Priority</span><select id="tfPriority"></select></label><label class="field"><span>Assigned to</span><select id="tfOwner"></select></label><label class="field"><span>Progress (%)</span><input id="tfProgress" type="number" min="0" max="100" step="5"></label><label class="field full"><span>Project / category</span><input id="tfCategory" maxlength="60" placeholder="e.g. Club launch"></label><p class="form-error full" id="taskFormError" role="alert"></p></div><footer><button type="button" class="btn ghost" data-close>Cancel</button><button class="btn" id="taskSave">Save task</button></footer></form></section></div><div class="task-shade detail-shade" id="taskDetail" hidden><aside class="task-detail" role="dialog" aria-modal="true" aria-labelledby="detailTitle"><div id="detailBody"></div></aside></div>');
   }
 
-  function roleLabel(id) {
-    var R = window.SICA_ROLES;
-    return (R && R.all[id]) ? R.all[id].label : 'Anyone';
+  function taskRow(t){var isOver=overdue(t);return'<button class="task-row" data-task="'+t.id+'"><span class="task-check '+(t.status==='completed'?'done':'')+'" aria-hidden="true">'+(t.status==='completed'?'✓':'')+'</span><span class="task-copy"><b>'+esc(t.title)+'</b><small>'+(esc(t.category)||'General')+' · '+esc(roleLabel(t.owner_role))+'</small></span><span class="status-chip s-'+esc(t.status)+'">'+esc(STATUS[t.status]||t.status)+'</span><span class="priority-chip p-'+esc(t.priority)+'">'+esc(PRIORITY[t.priority]||t.priority)+'</span><span class="task-date '+(isOver?'over':'')+'">'+(isOver?'<strong>OVERDUE</strong> ':'')+pretty(t.due)+'</span><span class="task-progress"><i style="width:'+Math.max(0,Math.min(100,t.progress||0))+'%"></i><em>'+(t.progress||0)+'%</em></span></button>';}
+
+  function gantt(rows){
+    var dated=rows.filter(function(t){return t.start_date&&t.due;}).slice(0,12);
+    if(!dated.length)return'<div class="task-empty compact"><b>No dated tasks yet</b><span>Add start and due dates to build your timeline.</span></div>';
+    var start=day(today());start.setDate(start.getDate()-2);var span=35;dated.forEach(function(t){if(day(t.start_date)<start)start=day(t.start_date);});
+    var ticks='';for(var i=0;i<span;i+=5)ticks+='<span style="left:'+(i/span*100)+'%">'+addDays(start,i).toLocaleDateString(undefined,{month:'short',day:'numeric'})+'</span>';
+    return'<div class="gantt-scroll"><div class="gantt"><div class="gantt-head"><b>Task</b><div>'+ticks+'</div></div>'+dated.map(function(t){var a=Math.max(0,Math.min(span-1,Math.round((day(t.start_date)-start)/86400000))),z=Math.max(a+1,Math.min(span,Math.round((day(t.due)-start)/86400000)+1));return'<button class="gantt-row" data-task="'+t.id+'"><span>'+esc(t.title)+'<small>'+esc(roleLabel(t.owner_role))+'</small></span><i class="gantt-track"><em class="gantt-bar s-'+esc(t.status)+'" style="left:'+(a/span*100)+'%;width:'+((z-a)/span*100)+'%"><u>'+(t.progress||0)+'%</u></em></i></button>';}).join('')+'</div></div>';
   }
 
-  function dueMeta(t) {
-    if (!t.due) return null;
-    var today = new Date().toISOString().slice(0, 10);
-    var d = new Date(t.due + 'T00:00:00');
-    var label = d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
-    if (t.due < today) return { label: label, cls: 'over' };
-    if (t.due === today) return { label: 'Today', cls: 'soon' };
-    return { label: label, cls: '' };
-  }
-
-  function when(iso) {
-    if (!iso) return '';
-    var diff = (Date.now() - new Date(iso)) / 1000;
-    if (diff < 60) return 'just now';
-    if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
-    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
-    return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
-  }
-
-  /* ─── mount ──────────────────────────────────────────────
-     opts.compact — dashboard version: no filters, fewer fields.
-     opts.onChange — fired after any write, so a host page can refresh
-     its own counters and activity feed. */
-  window.sicaTaskList = function (el, opts) {
-    opts = opts || {};
-    var DB = window.SICA_DB;
-    var open = [], done = [], expanded = null, filter = 'all', dragId = null;
-
-    async function load() {
-      var all = await DB.tasks.list();
-      open = all.filter(function (t) { return t.status !== 'done'; });
-      done = all.filter(function (t) { return t.status === 'done'; })
-                .sort(function (a, b) { return (b.completed_at || '') > (a.completed_at || '') ? 1 : -1; });
-      draw();
-      if (opts.onChange) opts.onChange({ open: open, done: done });
-    }
-
-    function visible() {
-      if (filter === 'all') return open;
-      var today = new Date().toISOString().slice(0, 10);
-      if (filter === 'overdue') return open.filter(function (t) { return t.due && t.due < today; });
-      if (filter === 'mine') {
-        var me = window.SICA_ROLES ? window.SICA_ROLES.active() : null;
-        return open.filter(function (t) { return t.owner_role === me; });
-      }
-      return open.filter(function (t) { return t.priority === filter; });
-    }
-
-    function row(t) {
-      var d = dueMeta(t);
-      var isOpen = expanded === t.id;
-      return '<li class="tk' + (isOpen ? ' open' : '') + '" data-id="' + t.id + '" draggable="true">' +
-        '<div class="tk-main">' +
-          '<button class="tk-box" data-act="toggle" aria-label="Mark complete"></button>' +
-          '<button class="tk-t" data-act="expand">' + esc(t.title) +
-            (t.description ? '<i class="tk-hasdesc" title="Has notes"></i>' : '') +
-          '</button>' +
-          '<span class="tk-meta">' +
-            (t.priority && t.priority !== 'normal'
-              ? '<span class="tk-pri ' + t.priority + '">' + t.priority + '</span>' : '') +
-            (t.owner_role ? '<span class="tk-own">' + esc(roleLabel(t.owner_role)) + '</span>' : '') +
-            (d ? '<span class="tk-due ' + d.cls + '">' + d.label + '</span>' : '') +
-          '</span>' +
-          '<span class="tk-grip" title="Drag to reorder" aria-hidden="true"></span>' +
-        '</div>' +
-        (isOpen ? detail(t) : '') +
-      '</li>';
-    }
-
-    function detail(t) {
-      var R = window.SICA_ROLES;
-      var roleOpts = '<option value="">Anyone</option>' + (R ? R.order.map(function (id) {
-        return '<option value="' + id + '"' + (t.owner_role === id ? ' selected' : '') + '>' +
-               esc(R.all[id].label) + '</option>';
-      }).join('') : '');
-      return '<div class="tk-d">' +
-        '<textarea class="tk-desc" data-act="desc" rows="2" placeholder="Add a description…">' +
-          esc(t.description) + '</textarea>' +
-        '<div class="tk-fields">' +
-          '<label>Owner<select data-act="owner">' + roleOpts + '</select></label>' +
-          '<label>Due<input type="date" data-act="due" value="' + esc(t.due || '') + '"></label>' +
-          '<label>Priority<select data-act="pri">' + PRIORITIES.map(function (p) {
-            return '<option value="' + p + '"' + (t.priority === p ? ' selected' : '') + '>' + p + '</option>';
-          }).join('') + '</select></label>' +
-        '</div>' +
-        '<div class="tk-acts">' +
-          '<button class="tk-up" data-act="up">Move up</button>' +
-          '<button class="tk-up" data-act="down">Move down</button>' +
-          '<button class="tk-del" data-act="del">Delete</button>' +
-        '</div></div>';
-    }
-
-    function draw() {
-      var list = visible();
-      var filters = opts.compact ? '' :
-        '<div class="tk-filters">' +
-        [['all', 'All'], ['mine', 'Mine'], ['overdue', 'Overdue'], ['high', 'High priority']]
-          .map(function (f) {
-            return '<button class="tk-f' + (filter === f[0] ? ' on' : '') + '" data-f="' + f[0] + '">' +
-                   f[1] + '</button>';
-          }).join('') + '</div>';
-
-      var body = list.length
-        ? '<ul class="tk-list">' + list.map(row).join('') + '</ul>'
-        : '<p class="tk-empty">' + (open.length
-            ? 'Nothing matches this filter.'
-            : 'No tasks yet. Add the first one below.') + '</p>';
-
-      var doneBlock = (!opts.compact && done.length)
-        ? '<div class="tk-donehead">Completed<span>' + done.length + '</span>' +
-          '<button class="tk-clear" data-act="clearDone">Clear</button></div>' +
-          '<ul class="tk-list tk-donelist">' + done.slice(0, 20).map(function (t) {
-            return '<li class="tk done" data-id="' + t.id + '">' +
-              '<div class="tk-main"><button class="tk-box on" data-act="toggle" ' +
-              'aria-label="Mark not complete"></button>' +
-              '<span class="tk-t">' + esc(t.title) + '</span>' +
-              '<span class="tk-meta"><span class="tk-when">' + when(t.completed_at) + '</span></span>' +
-              '<button class="tk-x" data-act="del" aria-label="Delete">&times;</button></div></li>';
-          }).join('') + '</ul>'
-        : '';
-
-      el.innerHTML = filters + body +
-        '<form class="tk-add"><input placeholder="Add a task and press Enter" ' +
-        'aria-label="New task"><button type="submit">Add</button></form>' + doneBlock;
-    }
-
-    /* ─── writes ─────────────────────────────────────────── */
-    async function add(title) {
-      if (!title.trim()) return;
-      await DB.tasks.create({ title: title.trim() });
-      await load();
-    }
-    async function toggle(id) {
-      var t = open.concat(done).filter(function (x) { return x.id === id; })[0];
-      if (!t) return;
-      var li = el.querySelector('.tk[data-id="' + id + '"]');
-      if (li && t.status !== 'done') {
-        /* strike through first, then let it move — the row visibly
-           completes rather than vanishing mid-click */
-        li.classList.add('striking');
-        await new Promise(function (r) { setTimeout(r, 260); });
-      }
-      await DB.tasks.complete(id, t.status !== 'done');
-      expanded = null;
-      await load();
-    }
-    async function patch(id, p) { await DB.tasks.update(id, p); await load(); }
-    async function del(id) { await DB.tasks.remove(id); expanded = null; await load(); }
-
-    async function move(id, dir) {
-      var list = visible();
-      var i = list.findIndex(function (t) { return t.id === id; });
-      var j = i + dir;
-      if (i < 0 || j < 0 || j >= list.length) return;
-      var before = dir < 0 ? (list[j - 1] ? list[j - 1].position : null) : list[j].position;
-      var after  = dir < 0 ? list[j].position : (list[j + 1] ? list[j + 1].position : null);
-      await DB.tasks.move(id, before, after);
-      await load();
-    }
-
-    async function dropOn(id, targetId) {
-      if (id === targetId) return;
-      var list = visible();
-      var ti = list.findIndex(function (t) { return t.id === targetId; });
-      if (ti < 0) return;
-      var before = list[ti - 1] ? list[ti - 1].position : null;
-      await DB.tasks.move(id, before, list[ti].position);
-      await load();
-    }
-
-    /* ─── events ─────────────────────────────────────────── */
-    el.addEventListener('click', function (e) {
-      var f = e.target.closest('.tk-f');
-      if (f) { filter = f.dataset.f; draw(); return; }
-      if (e.target.dataset.act === 'clearDone') {
-        Promise.all(done.map(function (t) { return DB.tasks.remove(t.id); })).then(load);
-        return;
-      }
-      var li = e.target.closest('.tk');
-      if (!li) return;
-      var id = li.dataset.id, act = e.target.dataset.act;
-      if (act === 'toggle') toggle(id);
-      else if (act === 'del') del(id);
-      else if (act === 'up') move(id, -1);
-      else if (act === 'down') move(id, 1);
-      else if (act === 'expand') { expanded = expanded === id ? null : id; draw(); }
-    });
-
-    el.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var i = e.target.querySelector('input');
-      add(i.value); i.value = '';
-    });
-
-    /* field edits save on blur / change, never on every keystroke */
-    el.addEventListener('change', function (e) {
-      var li = e.target.closest('.tk'); if (!li) return;
-      var id = li.dataset.id, a = e.target.dataset.act;
-      if (a === 'owner') patch(id, { owner_role: e.target.value || null });
-      else if (a === 'due') patch(id, { due: e.target.value || null });
-      else if (a === 'pri') patch(id, { priority: e.target.value });
-    });
-    el.addEventListener('focusout', function (e) {
-      if (e.target.dataset.act !== 'desc') return;
-      var li = e.target.closest('.tk'); if (!li) return;
-      var t = open.filter(function (x) { return x.id === li.dataset.id; })[0];
-      if (t && t.description !== e.target.value) patch(li.dataset.id, { description: e.target.value });
-    });
-
-    el.addEventListener('dragstart', function (e) {
-      var li = e.target.closest('.tk'); if (!li) return;
-      dragId = li.dataset.id; li.classList.add('dragging');
-      e.dataTransfer.effectAllowed = 'move';
-    });
-    el.addEventListener('dragover', function (e) {
-      if (!dragId) return;
-      e.preventDefault();
-      var li = e.target.closest('.tk');
-      el.querySelectorAll('.tk.over').forEach(function (n) { n.classList.remove('over'); });
-      if (li && li.dataset.id !== dragId) li.classList.add('over');
-    });
-    el.addEventListener('drop', function (e) {
-      e.preventDefault();
-      var li = e.target.closest('.tk');
-      if (li && dragId) dropOn(dragId, li.dataset.id);
-      dragId = null;
-    });
-    el.addEventListener('dragend', function () {
-      dragId = null;
-      el.querySelectorAll('.dragging,.over').forEach(function (n) {
-        n.classList.remove('dragging', 'over');
-      });
-    });
-
-    load();
-    return { reload: load };
+  window.sicaTaskWorkspace=function(root){
+    ensureChrome();var DB=window.SICA_DB,R=window.SICA_ROLES;var state={tasks:[],officers:[],scope:'my',officer:'all',status:'all',priority:'all',date:'all',selected:null};
+    var modal=document.getElementById('taskModal'),detail=document.getElementById('taskDetail');
+    function visible(){var rows=state.tasks.filter(function(t){return state.scope==='team'||isMine(t);});if(state.officer!=='all')rows=rows.filter(function(t){return t.owner_role===state.officer;});if(state.status!=='all')rows=rows.filter(function(t){return t.status===state.status;});if(state.priority!=='all')rows=rows.filter(function(t){return t.priority===state.priority;});if(state.date==='overdue')rows=rows.filter(overdue);if(state.date==='today')rows=rows.filter(function(t){return t.due===today();});if(state.date==='week')rows=rows.filter(function(t){var n=t.due?daysBetween(today(),t.due):99;return n>=0&&n<=7;});if(state.date==='month')rows=rows.filter(function(t){return t.due&&t.due.slice(0,7)===today().slice(0,7);});return rows;}
+    function stats(){var mine=state.tasks.filter(isMine),basis=can('tasks.view_team')?state.tasks:mine,pct=basis.length?Math.round(basis.filter(function(t){return t.status==='completed';}).length/basis.length*100):0;return'<div class="task-stats">'+[['My tasks',mine.filter(active).length,'What needs attention'],['Due soon',mine.filter(dueSoon).length,'Next seven days'],['Overdue',mine.filter(overdue).length,'Needs a decision'],[can('tasks.view_team')?'Team progress':'My progress',pct+'%','Tasks completed']].map(function(s,i){return'<div class="task-stat '+(i===2&&s[1]?'danger':'')+'"><span>'+s[0]+'</span><b>'+s[1]+'</b><small>'+s[2]+'</small></div>';}).join('')+'</div>';}
+    function filters(){var h={all:'All statuses'},p={all:'All priorities'},d={all:'Any date',today:'Today',week:'This week',month:'This month',overdue:'Overdue'},out='<div class="task-filters">';if(state.scope==='team'){var ro={all:'All officers'};R.order.forEach(function(id){ro[id]=R.all[id].label;});out+='<select data-filter="officer" aria-label="Filter by officer">'+options(ro,null,state.officer)+'</select>';}return out+'<select data-filter="status" aria-label="Filter by status">'+options(h,STATUS,state.status)+'</select><select data-filter="priority" aria-label="Filter by priority">'+options(p,PRIORITY,state.priority)+'</select><select data-filter="date" aria-label="Filter by date">'+options(d,null,state.date)+'</select></div>';}
+    function draw(){var rows=visible();root.innerHTML='<div class="task-head"><div><span class="eyebrow">Officer workspace</span><h1>Tasks</h1><p>'+(state.scope==='my'?'Your work, deadlines, and next move.':'One view of what the whole team owns.')+'</p></div><button class="btn" data-add>+ Add Task</button></div><div class="view-toggle" role="tablist"><button data-scope="my" class="'+(state.scope==='my'?'on':'')+'" role="tab">My Tasks</button>'+(can('tasks.view_team')?'<button data-scope="team" class="'+(state.scope==='team'?'on':'')+'" role="tab">Team Tasks</button>':'')+'</div>'+stats()+filters()+'<section class="task-panel"><header><div><span class="eyebrow">'+(state.scope==='my'?'My work':'Team work')+'</span><h2>'+rows.length+' task'+(rows.length===1?'':'s')+'</h2></div><span>Click a task for details</span></header>'+(rows.length?'<div class="task-list">'+rows.map(taskRow).join('')+'</div>':'<div class="task-empty"><b>'+(state.scope==='my'?'No tasks yet':'No team tasks')+'</b><span>'+(state.scope==='my'?'Add your first task to start planning SICA.':'Your team has no tasks matching these filters.')+'</span><button class="btn" data-add>+ Add Task</button></div>')+'</section><section class="task-panel timeline-panel"><header><div><span class="eyebrow">Timeline</span><h2>'+(state.scope==='my'?'My timeline':'Team timeline')+'</h2></div><span>35-day view · horizontally scrollable</span></header>'+gantt(rows)+'</section>';}
+    async function load(){try{state.tasks=await DB.tasks.list();state.officers=await DB.officers.list();draw();}catch(e){root.innerHTML='<div class="task-error"><b>Couldn’t load tasks.</b><span>Check your connection and try again.</span><button class="btn" data-retry>Try again</button></div>';}}
+    function ownerOptions(selected){return R.order.map(function(id){return'<option value="'+id+'"'+(id===selected?' selected':'')+'>'+esc(R.all[id].label)+'</option>';}).join('');}
+    function openForm(t){t=t||{};modal.hidden=false;document.body.classList.add('modal-open');document.getElementById('taskModalTitle').textContent=t.id?'Edit task':'Add task';document.getElementById('tfId').value=t.id||'';document.getElementById('tfTitle').value=t.title||'';document.getElementById('tfDescription').value=t.description||'';document.getElementById('tfStart').value=t.start_date||today();document.getElementById('tfDue').value=t.due||iso(addDays(new Date(),7));document.getElementById('tfStatus').innerHTML=options({},STATUS,t.status||'not_started');document.getElementById('tfPriority').innerHTML=options({},PRIORITY,t.priority||'medium');var own=document.getElementById('tfOwner');own.innerHTML=ownerOptions(t.owner_role||role());own.disabled=!can('tasks.assign');document.getElementById('tfProgress').value=t.progress||0;document.getElementById('tfCategory').value=t.category||'';document.getElementById('taskFormError').textContent='';document.getElementById('tfTitle').focus();}
+    function closeForm(){modal.hidden=true;document.body.classList.remove('modal-open');}
+    async function openDetail(id){var t=state.tasks.find(function(x){return x.id===id;});if(!t)return;state.selected=t;var subs=await DB.taskSubtasks.list(id),acts=await DB.taskActivity.list(id);detail.hidden=false;document.body.classList.add('modal-open');document.getElementById('detailBody').innerHTML='<header><div><span class="eyebrow">'+esc(t.category||'General')+'</span><h2 id="detailTitle">'+esc(t.title)+'</h2></div><button class="icon-btn" data-detail-close aria-label="Close">&times;</button></header><div class="detail-content"><div class="detail-chips"><span class="status-chip s-'+t.status+'">'+STATUS[t.status]+'</span><span class="priority-chip p-'+t.priority+'">'+PRIORITY[t.priority]+'</span>'+(overdue(t)?'<span class="over-label">! OVERDUE · '+pretty(t.due)+'</span>':'')+'</div><div class="detail-grid"><div><span>Assigned officer</span><b>'+esc(roleLabel(t.owner_role))+'</b></div><div><span>Start</span><b>'+pretty(t.start_date)+'</b></div><div><span>Due</span><b>'+pretty(t.due)+'</b></div><div><span>Progress</span><b>'+(t.progress||0)+'%</b></div></div><section><h3>Description</h3><p>'+(esc(t.description)||'No description yet.')+'</p></section><section><h3>Progress</h3><div class="detail-progress"><i style="width:'+(t.progress||0)+'%"></i></div></section><section><h3>Subtasks</h3><div class="subtasks">'+(subs.length?subs.map(function(s){return'<label><input type="checkbox" data-sub="'+s.id+'" '+(s.completed?'checked':'')+'><span>'+esc(s.title)+'</span></label>';}).join(''):'<p>No subtasks yet.</p>')+'<form id="subtaskForm"><input maxlength="100" placeholder="Add a subtask"><button>Add</button></form></div></section><section><h3>Activity</h3><div class="activity">'+(acts.length?acts.slice(0,8).map(function(a){return'<p><i></i><span><b>'+esc(a.action.replace(/_/g,' '))+'</b><small>'+esc(a.detail||'')+' · '+pretty(String(a.created_at||'').slice(0,10))+'</small></span></p>';}).join(''):'<p>No activity yet.</p>')+'</div></section></div><footer>'+(can('tasks.archive')?'<button class="btn ghost danger" data-archive>Archive</button>':'')+'<span></span><button class="btn ghost" data-edit>Edit</button><button class="btn" data-finish>'+(t.status==='completed'?'Reopen':'Finish task')+'</button></footer>';}
+    function closeDetail(){detail.hidden=true;document.body.classList.remove('modal-open');state.selected=null;}
+    root.addEventListener('click',function(e){var s=e.target.closest('[data-scope]');if(s){state.scope=s.dataset.scope;state.officer='all';draw();return;}if(e.target.closest('[data-add]')){openForm();return;}if(e.target.closest('[data-retry]')){load();return;}var t=e.target.closest('[data-task]');if(t)openDetail(t.dataset.task);});
+    root.addEventListener('change',function(e){if(e.target.dataset.filter){state[e.target.dataset.filter]=e.target.value;draw();}});
+    modal.addEventListener('click',function(e){if(e.target===modal||e.target.closest('[data-close]'))closeForm();});
+    detail.addEventListener('click',async function(e){if(e.target===detail||e.target.closest('[data-detail-close]')){closeDetail();return;}if(!state.selected)return;if(e.target.closest('[data-edit]')){var t=state.selected;closeDetail();openForm(t);}if(e.target.closest('[data-finish]')){await DB.tasks.complete(state.selected.id,state.selected.status!=='completed');closeDetail();await load();}if(e.target.closest('[data-archive]')&&confirm('Archive this task?\n\nIt will leave active views but remain in the database.')){await DB.tasks.archive(state.selected.id);closeDetail();await load();}});
+    detail.addEventListener('change',async function(e){if(e.target.dataset.sub){await DB.taskSubtasks.update(e.target.dataset.sub,{completed:e.target.checked});await openDetail(state.selected.id);}});
+    detail.addEventListener('submit',async function(e){if(e.target.id!=='subtaskForm')return;e.preventDefault();var i=e.target.querySelector('input');if(i.value.trim()){await DB.taskSubtasks.create(state.selected.id,i.value.trim(),Date.now());await openDetail(state.selected.id);}});
+    document.getElementById('taskForm').addEventListener('submit',async function(e){e.preventDefault();var err=document.getElementById('taskFormError'),start=document.getElementById('tfStart').value,due=document.getElementById('tfDue').value,progress=Math.max(0,Math.min(100,Number(document.getElementById('tfProgress').value)||0));if(!start||!due||start>due){err.textContent='Due date must be on or after the start date.';return;}var id=document.getElementById('tfId').value,ownerRole=document.getElementById('tfOwner').value,owner=state.officers.find(function(o){return o.role===ownerRole;}),taskStatus=document.getElementById('tfStatus').value,payload={title:document.getElementById('tfTitle').value.trim(),description:document.getElementById('tfDescription').value.trim(),start_date:start,due:due,status:taskStatus,priority:document.getElementById('tfPriority').value,progress:taskStatus==='completed'?100:progress,owner_role:ownerRole,owner_id:owner&&owner.id||null,category:document.getElementById('tfCategory').value.trim()||null,completed_at:taskStatus==='completed'?new Date().toISOString():null},b=document.getElementById('taskSave');b.disabled=true;b.textContent='Saving…';try{id?await DB.tasks.update(id,payload):await DB.tasks.create(payload);closeForm();await load();}catch(x){err.textContent='Couldn’t save this task. Check your connection and try again.';}finally{b.disabled=false;b.textContent='Save task';}});
+    document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeForm();closeDetail();}});load();return{reload:load};
   };
+
+  window.sicaTaskList=function(el,opts){opts=opts||{};async function load(){var all=await window.SICA_DB.tasks.list(),open=all.filter(active),done=all.filter(function(t){return!active(t);});el.innerHTML=open.length?'<div class="task-list">'+open.slice(0,6).map(taskRow).join('')+'</div>':'<p class="tk-empty">No tasks yet.</p>';if(opts.onChange)opts.onChange({open:open,done:done});}load();return{reload:load};};
+
+  window.sicaDashboard=function(root){async function load(){try{var all=await window.SICA_DB.tasks.list(),mine=all.filter(isMine),open=mine.filter(active),next=open.slice().sort(function(a,b){return String(a.due||'9').localeCompare(String(b.due||'9'));}).slice(0,5),basis=can('tasks.view_team')?all:mine,pct=basis.length?Math.round(basis.filter(function(t){return t.status==='completed';}).length/basis.length*100):0,p=profile(),name=p&&p.full_name?p.full_name.split(' ')[0]:(window.SICA_ROLES.get().person||'Officer').split(' ')[0];root.innerHTML='<div class="dash-hero"><div><span class="eyebrow">'+new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})+'</span><h1>Good '+(new Date().getHours()<12?'morning':new Date().getHours()<17?'afternoon':'evening')+', '+esc(name)+'</h1><p>Here’s what needs your attention.</p></div><a class="btn" href="tasks.html">Open tasks</a></div><div class="task-stats">'+[['My tasks',open.length],['Due soon',open.filter(dueSoon).length],['Overdue',open.filter(overdue).length],[can('tasks.view_team')?'Team progress':'My progress',pct+'%']].map(function(s,i){return'<a class="task-stat '+(i===2&&s[1]?'danger':'')+'" href="tasks.html"><span>'+s[0]+'</span><b>'+s[1]+'</b><small>'+(i===3?'Completed overall':'Open task'+(s[1]===1?'':'s'))+'</small></a>';}).join('')+'</div><div class="dash-grid"><section class="task-panel"><header><div><span class="eyebrow">Upcoming</span><h2>What to work on next</h2></div><a href="tasks.html">View all</a></header>'+(next.length?'<div class="task-list">'+next.map(taskRow).join('')+'</div>':'<div class="task-empty"><b>No tasks yet</b><span>Add your first task to start planning SICA.</span><a class="btn" href="tasks.html">+ Add Task</a></div>')+'</section><section class="task-panel"><header><div><span class="eyebrow">My timeline</span><h2>Next 35 days</h2></div></header>'+miniTimeline(mine)+'</section></div>';}catch(e){root.innerHTML='<div class="task-error"><b>Couldn’t load your dashboard.</b><span>Check your connection and refresh.</span></div>';}}load();};
+  function miniTimeline(rows){var dated=rows.filter(function(t){return active(t)&&t.start_date&&t.due;}).slice(0,5);if(!dated.length)return'<div class="task-empty compact"><b>No dated tasks</b><span>Your timeline will appear here.</span></div>';var span=35;return'<div class="mini-timeline">'+dated.map(function(t){var a=Math.max(0,Math.min(span-1,daysBetween(today(),t.start_date))),z=Math.max(a+1,Math.min(span,daysBetween(today(),t.due)+1));return'<a href="tasks.html" title="'+esc(t.title)+'"><span>'+esc(t.title)+'</span><i><em class="s-'+t.status+'" style="left:'+(a/span*100)+'%;width:'+((z-a)/span*100)+'%"></em></i></a>';}).join('')+'</div>';}
 })();
