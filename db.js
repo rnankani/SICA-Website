@@ -430,29 +430,32 @@
           completed_at: t.completed_at || null,
           position: min - 1000
         });
-        await DB.taskActivity.add(row.id, 'created', 'Task created');
+        try { await DB.taskActivity.add(row.id, 'created', 'Task created'); } catch (activityError) {}
         return row;
       },
       update: async function (id, p) {
         p.updated_at = new Date().toISOString();
         var row = await A.update('tasks', id, p);
-        await DB.taskActivity.add(id, 'updated', Object.keys(p).filter(function (k) { return k !== 'updated_at'; }).join(', '));
+        try { await DB.taskActivity.add(id, 'updated', Object.keys(p).filter(function (k) { return k !== 'updated_at'; }).join(', ')); } catch (activityError) {}
         return row;
       },
       remove: function (id) { return A.remove('tasks', id); },
       archive: async function (id) {
         var row = LIVE ? await rpc('archive_task', { task_id: id })
                        : await A.update('tasks', id, { archived_at: new Date().toISOString(), updated_at: new Date().toISOString() });
-        await DB.taskActivity.add(id, 'archived', 'Task archived');
+        try { await DB.taskActivity.add(id, 'archived', 'Task archived'); } catch (activityError) {}
         return row;
       },
-      complete: function (id, done) {
-        return DB.tasks.update(id, {
+      complete: async function (id, done) {
+        var row = await A.update('tasks', id, {
           status: done ? 'completed' : 'not_started',
           progress: done ? 100 : 0,
           completed_at: done ? new Date().toISOString() : null,
-          completed_by: done ? ((currentProfile() && currentProfile().id) || null) : null
+          completed_by: done ? ((currentProfile() && currentProfile().id) || null) : null,
+          updated_at: new Date().toISOString()
         });
+        try { await DB.taskActivity.add(id, done ? 'completed' : 'reopened', done ? 'Task completed' : 'Task reopened'); } catch (activityError) {}
+        return row;
       },
       /* Drop `id` between `before` and `after`, halfway between their
          positions. No other row is touched. */
@@ -529,6 +532,10 @@
     },
     taskActivity: {
       list: function (taskId) { return A.list('task_activity', { where: { task_id: taskId }, order: 'created_at' }); },
+      recent: async function (limit) {
+        var rows = await A.list('task_activity', { order: 'created_at' });
+        return rows.slice(0, limit || 8);
+      },
       add: function (taskId, action, detail) {
         var profile = currentProfile();
         return A.insert('task_activity', { task_id: taskId, user_id: profile && profile.id || null, action: action, detail: detail || null });

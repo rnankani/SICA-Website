@@ -233,6 +233,10 @@
   ITEMS.push({sec:'Meetings',   k:'M05', label:'Active Listening', rt:'Thu 3 Sep', href:'meetings.html'});
   ITEMS.push({sec:'Team',       k:'PRES',label:'Reyansh Nankani',  rt:'President', href:'president.html'});
   ITEMS.push({sec:'Branding',   k:'HEX', label:'SICA colour palette', rt:'Identity', href:'branding.html'});
+  ITEMS.unshift({sec:'Tasks', k:'NEW', label:'Add task', rt:'Quick action', href:'tasks.html?add=1'});
+  ITEMS.unshift({sec:'Tasks', k:'TEAM', label:'Team tasks', rt:'Workspace', href:'tasks.html?view=team'});
+  ITEMS.unshift({sec:'Tasks', k:'MINE', label:'My tasks', rt:'Workspace', href:'tasks.html'});
+  ITEMS.unshift({sec:'Dashboard', k:'TODAY', label:'Today command center', rt:'Dashboard', href:'officers.html'});
 
   /* References are searchable from anywhere, so a doc is one ⌘K away even
      when you are three tabs deep. Rows with no URL yet are still listed —
