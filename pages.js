@@ -164,7 +164,7 @@
           ['Recruitment banner on homepage', false] ]},
         { type: 'roles' },
         { type: 'fields', title: 'Homepage controls', rows: [
-          ['Hero message', 'Practice the conversations that shape everyday life.'],
+          ['Hero message', 'From first impressions to difficult conversations. Practice the skills that shape how you work with people.'],
           ['Primary CTA', 'Officer applications open'],
           ['Banner', 'Off'],
           ['Featured announcement', null],
