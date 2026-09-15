@@ -65,7 +65,13 @@
           p('members',   'Members',       'members.html',   I.user),
           p('meetings',  'Meetings',      'meetings.html',  I.cal, '4'),
           TASK, p('announcements', 'Announcements', 'announcements.html', I.mega),
-          p('applications', 'Applications', 'applications.html', I.inbox, '3')
+          p('applications', 'Applications', 'applications.html', I.inbox, (function(){
+            try {
+              var c = localStorage.getItem('sica.badge.applications');
+              if (c !== null && parseInt(c, 10) > 0) return c;
+            } catch(e){}
+            return null;
+          })())
         ]},
         { group: 'Resources', items: [LIB, REF, HB, CAL] },
         { group: 'Control', items: [

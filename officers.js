@@ -67,6 +67,69 @@
       t.setAttribute('aria-label', now ? 'Expand sidebar' : 'Collapse sidebar');
       try { localStorage.setItem('sica-rail', now ? '1' : '0'); } catch(e){}
     });
+    syncRailBadges();
+  }
+
+  function updateAppBadge(count){
+    var appLink = document.querySelector('.rail a.navitem[href="applications.html"]');
+    if (appLink) {
+      var cntEl = appLink.querySelector('.cnt');
+      if (count > 0) {
+        if (!cntEl) {
+          cntEl = document.createElement('span');
+          cntEl.className = 'cnt';
+          appLink.appendChild(cntEl);
+        }
+        cntEl.textContent = String(count);
+      } else if (cntEl) {
+        cntEl.remove();
+      }
+    }
+    if (NAV) {
+      NAV.forEach(function(g){
+        g.items.forEach(function(item){
+          if (item.id === 'applications') {
+            item.cnt = count > 0 ? String(count) : null;
+          }
+        });
+      });
+    }
+  }
+
+  function syncRailBadges(){
+    var DB = window.SICA_DB;
+    if (!DB || !DB.applications || typeof DB.applications.counts !== 'function') return;
+    try {
+      var cached = localStorage.getItem('sica.badge.applications');
+      if (cached !== null) {
+        var n = parseInt(cached, 10);
+        if (!isNaN(n)) updateAppBadge(n);
+      }
+    } catch(e){}
+    DB.applications.counts().then(function(c){
+      var count = c && typeof c.submitted === 'number' ? c.submitted : null;
+      if (count !== null) {
+        try { localStorage.setItem('sica.badge.applications', String(count)); } catch(e){}
+        updateAppBadge(count);
+      }
+    }).catch(function(){});
+  }
+
+  window.addEventListener('focus', syncRailBadges);
+  window.sicaSyncRailBadges = syncRailBadges;
+
+  if (window.SICA_DB && window.SICA_DB.applications) {
+    var dbApps = window.SICA_DB.applications;
+    ['setStatus', 'remove', 'create'].forEach(function(fn){
+      var orig = dbApps[fn];
+      if (typeof orig === 'function') {
+        dbApps[fn] = async function() {
+          var res = await orig.apply(this, arguments);
+          syncRailBadges();
+          return res;
+        };
+      }
+    });
   }
 
   /* ─── role switcher ──────────────────────────────────────
