@@ -178,6 +178,7 @@ h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radi
     <span class="eyebrow" id="deadlineStatus"><i></i>Applications close September 25</span>
     <h1>Apply for a founding officer role.</h1>
     <p class="lede">SICA launches with five officers. This is the team that writes the first curriculum, runs the first meetings, and decides what the club becomes &mdash; before there is anything to inherit.</p>
+    <div class="submit-fail" id="legacyRecovery" hidden></div>
 
     <section class="clarity" aria-labelledby="clarityTitle">
       <div class="deadline" role="status">
@@ -336,7 +337,7 @@ h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radi
 
 <script src="role-expectations.js?v=15"></script>
 <script src="supabase-config.js?v=14"></script>
-<script src="db.js?v=14"></script>
+<script src="db.js?v=18"></script>
 <script>
 (function () {
   'use strict';
@@ -362,6 +363,27 @@ h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radi
   var WRITTEN = ['q_built','q_weakness','q_sica','q_first_month'];
   var TEXT = ['name','grade','email','role','roleOther','links','commitments','anything_else'].concat(WRITTEN);
   var DRAFT = 'sica.apply.draft';
+  var RECEIPT = 'sica.apply.receipt';
+  var pendingSubmissionId = null;
+  var legacyRecoveryId = null;
+
+  function newSubmissionId() {
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID();
+    return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, function (c) {
+      return (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16);
+    });
+  }
+  function submissionId() {
+    if (pendingSubmissionId) return pendingSubmissionId;
+    var id = null;
+    try { id = localStorage.getItem(RECEIPT); } catch (e) {}
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id || '')) {
+      id = newSubmissionId();
+      try { localStorage.setItem(RECEIPT, id); } catch (e) {}
+    }
+    pendingSubmissionId = id;
+    return pendingSubmissionId;
+  }
 
   document.getElementById('days').innerHTML = DAYS.map(function (d) {
     return '<label class="dayb"><input type="checkbox" value="' + d + '"><span>' + d.slice(0,3) + '</span></label>';
@@ -460,7 +482,8 @@ h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radi
       q_built: val('q_built'), q_weakness: val('q_weakness'),
       q_sica: val('q_sica'), q_first_month: val('q_first_month'),
       lunch_days: days, after_school: af ? af.value === 'yes' : null,
-      commitments: val('commitments'), anything_else: val('anything_else')
+      commitments: val('commitments'), anything_else: val('anything_else'),
+      submission_id: submissionId()
     };
   }
 
@@ -505,9 +528,19 @@ h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radi
     return ok;
   }
 
-  document.getElementById('modeNote').textContent = DB.live
-    ? 'Submitted straight to SICA. Nothing goes through email.'
-    : 'The club database is not reachable from this page right now, so submitting will not work yet.';
+  var submitBtn = document.getElementById('submit');
+  var modeNote = document.getElementById('modeNote');
+  function updateAvailability() {
+    var ready = DB.live && navigator.onLine !== false;
+    submitBtn.disabled = !ready;
+    modeNote.textContent = ready
+      ? 'Submitted straight to SICA. You will receive a receipt code after the database accepts it.'
+      : 'Applications cannot be submitted right now. Your answers stay on this device as a draft; reconnect and reload this page.';
+    modeNote.classList.toggle('submit-fail', !ready);
+  }
+  updateAvailability();
+  addEventListener('online', updateAvailability);
+  addEventListener('offline', updateAvailability);
 
   /* Named, because a failed submit saves a draft too — losing four
      written answers to a dropped request would be unforgivable. */
@@ -525,39 +558,72 @@ h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radi
     setTimeout(function () { b.textContent = 'Save draft'; }, 1800);
   });
 
-  try {
-    var d = JSON.parse(localStorage.getItem(DRAFT) || 'null');
-    if (d) {
-      TEXT.forEach(function (k) { var e = document.getElementById(k); if (e && d[k]) e.value = d[k]; });
-      (d.lunch_days || []).forEach(function (v) {
-        var c = document.querySelector('#days input[value="' + v + '"]'); if (c) c.checked = true;
-      });
-      if (d.after_school) {
-        var r = document.querySelector('input[name=afterschool][value="' + d.after_school + '"]');
-        if (r) r.checked = true;
-      }
-      otherWrap.hidden = roleSel.value !== 'other';
-      showExpectations();
-      WRITTEN.forEach(function (id) { document.getElementById(id).dispatchEvent(new Event('input')); });
+  function restoreAnswers(d) {
+    if (!d) return;
+    TEXT.forEach(function (k) { var e = document.getElementById(k); if (e && d[k] != null) e.value = d[k]; });
+    (d.lunch_days || []).forEach(function (v) {
+      var c = document.querySelector('#days input[value="' + v + '"]'); if (c) c.checked = true;
+    });
+    if (d.after_school !== '' && d.after_school != null) {
+      var value = typeof d.after_school === 'boolean' ? (d.after_school ? 'yes' : 'no') : d.after_school;
+      var r = document.querySelector('input[name=afterschool][value="' + value + '"]');
+      if (r) r.checked = true;
     }
-  } catch (e) {}
+    otherWrap.hidden = roleSel.value !== 'other';
+    showExpectations();
+    WRITTEN.forEach(function (id) { document.getElementById(id).dispatchEvent(new Event('input')); });
+  }
+
+  var restoredDraft = null;
+  try { restoredDraft = JSON.parse(localStorage.getItem(DRAFT) || 'null'); } catch (e) {}
+  restoreAnswers(restoredDraft);
+
+  /* Versions before September 19 could claim success while saving only
+     to `sica.applications`. Recover that full record on the same device,
+     but require a deliberate new submit and a real database receipt. */
+  if (!restoredDraft) {
+    try {
+      var legacy = JSON.parse(localStorage.getItem('sica.applications') || '[]');
+      var lost = legacy.length ? legacy[legacy.length - 1] : null;
+      if (lost) {
+        legacyRecoveryId = lost.id || null;
+        restoreAnswers({
+          name: lost.name, grade: lost.grade, email: lost.email,
+          role: lost.role_applied, roleOther: lost.role_other,
+          links: lost.links, q_built: lost.q_built, q_weakness: lost.q_weakness,
+          q_sica: lost.q_sica, q_first_month: lost.q_first_month,
+          lunch_days: lost.lunch_days, after_school: lost.after_school,
+          commitments: lost.commitments, anything_else: lost.anything_else
+        });
+        var recovery = document.getElementById('legacyRecovery');
+        recovery.hidden = false;
+        recovery.textContent = 'We found an earlier application saved only on this device. Your answers are restored below. Review them and submit again; only the new receipt code confirms SICA received it.';
+      }
+    } catch (e) {}
+  }
 
   /* Straight into the database. Nothing is handed off anywhere else: if
      the write fails the answers stay on the page and in the draft, and
      the applicant is told to try again rather than being pushed into a
      mail client they may not even have configured. */
-  var submitBtn = document.getElementById('submit');
   submitBtn.addEventListener('click', async function () {
     var a = collect();
     if (!validate(a)) return;
 
     var failEl = document.getElementById('submitFail');
     failEl.textContent = '';
+    if (!DB.live || navigator.onLine === false) {
+      saveDraft();
+      updateAvailability();
+      failEl.textContent = 'Nothing was submitted. Your answers are saved on this device; reconnect and reload before trying again.';
+      return;
+    }
     submitBtn.disabled = true;
     submitBtn.textContent = 'Submitting...';
 
     try {
-      await DB.applications.create(a);
+      var accepted = await DB.applications.create(a);
+      if (!accepted || accepted.id !== a.submission_id) throw new Error('The database did not return a matching receipt.');
     } catch (e) {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Submit application';
@@ -572,10 +638,21 @@ h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radi
       return;
     }
 
-    try { localStorage.removeItem(DRAFT); } catch (e) {}
+    try { localStorage.removeItem(DRAFT); localStorage.removeItem(RECEIPT); } catch (e) {}
+    if (legacyRecoveryId) {
+      try {
+        var oldRows = JSON.parse(localStorage.getItem('sica.applications') || '[]');
+        oldRows = oldRows.filter(function (row) { return row.id !== legacyRecoveryId; });
+        if (oldRows.length) localStorage.setItem('sica.applications', JSON.stringify(oldRows));
+        else localStorage.removeItem('sica.applications');
+      } catch (e) {}
+      legacyRecoveryId = null;
+    }
+    var receipt = 'SICA-' + a.submission_id.slice(0, 8).toUpperCase();
+    pendingSubmissionId = null;
     document.getElementById('doneTitle').textContent = 'Application received';
     document.getElementById('doneBody').textContent =
-      'It is in. The founder reads every one — if it looks like a fit you will hear back within about two weeks.';
+      'It is in. Receipt ' + receipt + '. Save this code — it confirms the database accepted your application. The founder reads every one, and you will hear back within about two weeks.';
     document.getElementById('form').classList.add('hide');
     document.getElementById('done').classList.add('on');
     window.scrollTo({top: 0, behavior: 'smooth'});

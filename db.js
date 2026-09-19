@@ -7,10 +7,9 @@
 
    Two adapters sit behind that contract:
 
-     local     — works today, no account needed. Writes to this browser
-                 only, which is honest but useless for collecting real
-                 applications, so the application form pairs it with an
-                 email hand-off that actually reaches the club.
+     local     — supports officer-interface development in this browser.
+                  Public submissions never use it: anything a visitor
+                  believes they sent must fail closed without Supabase.
 
      supabase  — the real one. Switches on automatically the moment
                  supabase-config.js has a url and key. No page changes.
@@ -264,7 +263,8 @@
     async insert(t, row, opts) {
       var anon = !!(opts && opts.anon);
       if (opts && opts.minimal) {
-        await sb(t, { method: 'POST', body: row, prefer: 'return=minimal', anon: anon });
+        await sb(t, { method: 'POST', body: row,
+                      prefer: opts.prefer || 'return=minimal', anon: anon });
         return true;
       }
       return (await sb(t, { method: 'POST', body: row, anon: anon }))[0];
@@ -288,6 +288,18 @@
 
   var A = LIVE ? supabase : local;
 
+  /* Public submissions must never fall back to this browser. Local mode is
+     useful for building officer tools, but it is data loss when a visitor
+     reasonably believes they sent information to SICA. All anonymous,
+     durable writes go through this fail-closed gate. */
+  async function durablePublicInsert(table, row, opts) {
+    if (!LIVE) {
+      throw new Error('SICA’s secure database is unavailable. Nothing was submitted.');
+    }
+    await supabase.insert(table, row, Object.assign({ minimal: true, anon: true }, opts || {}));
+    return row.id ? { id: row.id } : true;
+  }
+
   function currentProfile() {
     try { return JSON.parse(localStorage.getItem('sica.profile') || 'null'); }
     catch (e) { return null; }
@@ -303,7 +315,12 @@
 
     applications: {
       create: function (a) {
-        return A.insert('applications', {
+        var id = String(a.submission_id || '');
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
+          return Promise.reject(new Error('A secure submission receipt could not be created. Reload and try again.'));
+        }
+        return durablePublicInsert('applications', {
+          id: id,
           name: a.name,
           grade: a.grade ? parseInt(a.grade, 10) : null,
           email: a.email,
@@ -319,7 +336,7 @@
           commitments: a.commitments || null,
           anything_else: a.anything_else || null,
           status: 'submitted'
-        }, { minimal: true, anon: true });
+        }, { prefer: 'resolution=ignore-duplicates,return=minimal' });
       },
       list: function (status) {
         return A.list('applications', { where: status ? { status: status } : null, order: 'created_at' });
@@ -585,8 +602,7 @@
                  /* A public write, the same shape as an application: the
                     person filling it in is not signed in. */
                  respond: function (id, answers) {
-                   return A.insert('form_responses', { form_id: id, answers: answers },
-                                   { minimal: true, anon: true });
+                   return durablePublicInsert('form_responses', { form_id: id, answers: answers });
                  } },
 
     budget:    { list: function () { return A.list('budget_lines', { order: 'category' }); },
@@ -629,9 +645,9 @@
                  remove: function (id) { return A.remove('events', id); },
                  signups: function (id) { return A.list('event_signups', { where: { event_id: id } }); },
                  signUp: function (id, who) {
-                   return A.insert('event_signups', {
+                   return durablePublicInsert('event_signups', {
                      event_id: id, name: who.name || null, email: who.email || null
-                   }, { minimal: true, anon: true });
+                   });
                  } },
 
     graphics:  { list: function () { return A.list('graphics_assets', { order: 'updated_at' }); },

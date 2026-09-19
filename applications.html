@@ -35,7 +35,7 @@
 <script src="role-expectations.js?v=15"></script>
 <script src="supabase-config.js?v=14"></script>
 <script src="auth.js?v=14"></script>
-<script src="db.js?v=14"></script>
+<script src="db.js?v=18"></script>
 <script src="roles.js?v=14"></script>
 <script src="tasks.js?v=14"></script>
 <script src="officers.js?v=14"></script>
@@ -93,12 +93,13 @@ window.sicaPageInit = async function () {
   function card(a) {
     var st = STATUS[a.status] || STATUS.submitted;
     var isOpen = open === a.id;
+    var receipt = a.id ? 'SICA-' + String(a.id).slice(0, 8).toUpperCase() : 'No receipt';
     var roleTxt = ROLE_LABEL[a.role_applied] || a.role_applied;
     if (a.role_applied === 'other' && a.role_other) roleTxt += ' — ' + esc(a.role_other);
 
     var head = '<button class="ap-head" data-act="open" data-id="' + a.id + '">' +
       '<span class="ap-who"><b>' + esc(a.name) + '</b>' +
-        '<small>Grade ' + (a.grade || '—') + ' &middot; ' + esc(a.email) + '</small></span>' +
+        '<small>Grade ' + (a.grade || '—') + ' &middot; ' + esc(a.email) + ' &middot; ' + receipt + '</small></span>' +
       '<span class="ap-role">' + roleTxt + '</span>' +
       '<span class="pill ' + st[0] + '">' + st[1] + '</span>' +
       '<span class="ap-when">' + ago(a.created_at) + '</span>' +
@@ -150,7 +151,17 @@ window.sicaPageInit = async function () {
 
   async function draw() {
     var listEl = document.getElementById('appList');
-    try { rows = await DB.applications.list(); } catch (e) { rows = []; }
+    try {
+      rows = await DB.applications.list();
+    } catch (e) {
+      rows = [];
+      document.getElementById('appStats').innerHTML = '';
+      document.getElementById('appTabs').innerHTML = '';
+      listEl.innerHTML = '<div class="tbl-empty"><b>Applications could not be loaded</b><p>' +
+        'This is a database or access error—not an empty queue. Refresh, then sign out and back in if it continues.</p>' +
+        '<button class="ib" data-act="retry">Try again</button></div>';
+      return;
+    }
 
     var shown = filter === 'all' ? rows : rows.filter(function (r) { return r.status === filter; });
     shown.sort(function (a, b) { return (b.created_at || '') > (a.created_at || '') ? 1 : -1; });
@@ -165,7 +176,7 @@ window.sicaPageInit = async function () {
         '</p></div>';
 
     var c = { submitted: 0, interview: 0, approved: 0, rejected: 0, archived: 0 };
-    try { c = await DB.applications.counts(); } catch (e) {}
+    rows.forEach(function (r) { if (Object.prototype.hasOwnProperty.call(c, r.status)) c[r.status]++; });
     document.getElementById('appStats').innerHTML = [
       ['Waiting on you', c.submitted, c.submitted ? 'Unread' : 'Nothing new'],
       ['Interviews', c.interview, 'Requested'],
@@ -195,6 +206,8 @@ window.sicaPageInit = async function () {
   document.getElementById('appList').addEventListener('click', async function (e) {
     var b = e.target.closest('button'); if (!b) return;
     var id = b.dataset.id, act = b.dataset.act;
+
+    if (act === 'retry') return draw();
 
     if (act === 'delete')     { armed = id;   return draw(); }
     if (act === 'delete-no')  { armed = null; return draw(); }
