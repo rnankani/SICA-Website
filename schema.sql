@@ -680,6 +680,12 @@ grant insert on applications to anon, authenticated;
 -- has no business reading someone's stated weaknesses.
 create policy "leaders read apps"   on applications for select using (is_founder());
 create policy "leaders review apps" on applications for update using (is_founder()) with check (is_founder());
+-- RLS decides which authenticated users may read/review, but PostgreSQL
+-- table privileges must allow the operation before RLS is evaluated.
+-- Make these explicit so a database created outside Supabase defaults
+-- cannot silently return an unusable application inbox.
+grant select, update on applications to authenticated;
+revoke select, update, delete on applications from anon;
 
 -- members, meetings, tasks
 drop policy if exists "officers manage members"  on members;

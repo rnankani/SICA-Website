@@ -286,7 +286,27 @@
     async count(t, where) { return (await this.list(t, { where: where })).length; }
   };
 
-  var A = LIVE ? supabase : local;
+  function unavailable() {
+    throw new Error('SICA’s shared database is unavailable. Reload before viewing or changing data.');
+  }
+  var unavailableAdapter = {
+    mode: 'unavailable',
+    list: async function () { return unavailable(); },
+    get: async function () { return unavailable(); },
+    insert: async function () { return unavailable(); },
+    update: async function () { return unavailable(); },
+    upsert: async function () { return unavailable(); },
+    remove: async function () { return unavailable(); },
+    count: async function () { return unavailable(); }
+  };
+
+  /* Local persistence is an explicit localhost-only development tool.
+     Production must never turn a missing config into a private database
+     that looks shared. Set SICA_LOCAL_DEVELOPMENT=true before db.js only
+     when deliberately prototyping without Supabase. */
+  var LOCAL_DEV = !LIVE && window.SICA_LOCAL_DEVELOPMENT === true &&
+                  /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+  var A = LIVE ? supabase : (LOCAL_DEV ? local : unavailableAdapter);
 
   /* Public submissions must never fall back to this browser. Local mode is
      useful for building officer tools, but it is data loss when a visitor

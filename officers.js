@@ -210,6 +210,14 @@
     }
     var g = document.createElement('div');
     g.className = 'gate'; g.id = 'gate';
+    if (reason === 'database') {
+      g.innerHTML = '<div class="gate-card"><h1>Database unavailable</h1>' +
+        '<p>This workspace only shows shared Supabase data. It will not open a browser-only copy. ' +
+        'Check the connection and reload this page.</p>' +
+        '<a class="btn" href="">Reload</a>' +
+        '<a class="gate-back" href="index.html">&larr; Back to site</a></div>';
+      return;
+    }
 
     g.innerHTML = live
       ? '<div class="gate-card"><h1>Officer sign-in</h1>' +
@@ -429,10 +437,14 @@
       });
       return;
     }
-    var already = false;
-    try { already = sessionStorage.getItem('sica-officer') === '1'; } catch(e){}
-    if (already){ document.body.classList.add('unlocked'); start(); }
-    else showGate();
+    if (window.SICA_DB && window.SICA_DB.mode === 'local') {
+      var already = false;
+      try { already = sessionStorage.getItem('sica-officer') === '1'; } catch(e){}
+      if (already){ document.body.classList.add('unlocked'); start(); }
+      else showGate();
+      return;
+    }
+    showGate('database');
   }
   if (document.readyState === 'loading') addEventListener('DOMContentLoaded', boot);
   else boot();

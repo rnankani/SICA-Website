@@ -35,10 +35,10 @@
 <script src="role-expectations.js?v=15"></script>
 <script src="supabase-config.js?v=14"></script>
 <script src="auth.js?v=14"></script>
-<script src="db.js?v=18"></script>
+<script src="db.js?v=19"></script>
 <script src="roles.js?v=14"></script>
 <script src="tasks.js?v=14"></script>
-<script src="officers.js?v=14"></script>
+<script src="officers.js?v=19"></script>
 <script>
 window.sicaPageInit = async function () {
   var DB = window.SICA_DB, R = window.SICA_ROLES, A = window.SICA_AUTH;
@@ -73,6 +73,8 @@ window.sicaPageInit = async function () {
     archived:  ['p-idle', 'Archived']
   };
   var filter = 'submitted', rows = [], open = null, armed = null;
+  var signedProfile = null;
+  try { signedProfile = JSON.parse(localStorage.getItem('sica.profile') || 'null'); } catch (e) {}
 
   function ago(iso) {
     if (!iso) return '&mdash;';
@@ -169,10 +171,12 @@ window.sicaPageInit = async function () {
     listEl.innerHTML = shown.length
       ? shown.map(card).join('')
       : '<div class="tbl-empty"><b>' +
-        (rows.length ? 'Nothing in this view' : 'No applications yet') + '</b><p>' +
+        (rows.length ? 'Nothing in this view' : 'Supabase returned zero applications') + '</b><p>' +
         (rows.length
           ? 'Try another tab.'
-          : 'They arrive here the moment someone submits the form at <b>Apply</b>. Nothing passes through email.') +
+          : 'Signed in as <b>' + esc(signedProfile && signedProfile.email || 'unknown account') +
+            '</b> with role <b>' + esc(signedProfile && signedProfile.role || role) +
+            '</b>. This is a server result, not browser cache. If another device differs, run the application-access migration in Supabase.') +
         '</p></div>';
 
     var c = { submitted: 0, interview: 0, approved: 0, rejected: 0, archived: 0 };
