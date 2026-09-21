@@ -13,6 +13,11 @@
   var R  = window.SICA_ROLES;
   var ROLE = R.get();
   var NAV = ROLE.nav;
+  function esc(value){
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
 
   /* ─── rail ───────────────────────────────────────────────
      Rendered rather than copy-pasted into eight files: one definition
@@ -25,6 +30,9 @@
     NAV = ROLE.nav;
     var rail = document.getElementById('rail');
     if (!rail) return;
+    var profile = null;
+    try { profile = JSON.parse(localStorage.getItem('sica.profile') || 'null'); } catch(e){}
+    var displayName = profile && profile.full_name ? profile.full_name : ROLE.person;
     var h = '<button class="brand" id="railToggle" type="button" aria-label="Collapse sidebar" aria-expanded="true">' +
             '<span class="brand-ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></span>' +
             '<span class="brand-txt"><b>SICA</b><span>Officer Workspace</span></span></button>';
@@ -46,9 +54,9 @@
             ? '<div class="imp" id="impBar"><span>Viewing as ' + ROLE.label + '</span>' +
               '<button type="button" id="impExit">Exit</button></div>'
             : '') +
-         '<button class="whoami" type="button" id="roleBtn" data-label="' + ROLE.label + '">' +
+         '<button class="whoami" type="button" id="roleBtn" data-label="' + ROLE.label + '" aria-haspopup="menu" aria-expanded="false">' +
          '<span class="av" style="background:linear-gradient(145deg,' + ROLE.color + ',#6E5626)">' + ROLE.short + '</span>' +
-         '<span class="whoami-txt"><b>' + ROLE.person + '</b><span>' + ROLE.label + '</span></span>' +
+         '<span class="whoami-txt"><b>' + esc(displayName) + '</b><span>' + ROLE.label + '</span></span>' +
          '<i class="whoami-c" aria-hidden="true">&#9662;</i></button></div>';
     rail.innerHTML = h;
 
@@ -139,33 +147,58 @@
   function openRoleMenu(){
     if (document.getElementById('roleMenu')) return closeRoleMenu();
     var cur = R.active();
-    var h = '<div class="rm-head">Switch view</div>';
-    R.order.forEach(function(id){
-      var r = R.all[id];
-      h += '<button class="rm-row' + (id === cur ? ' on' : '') + '" data-role="' + id + '">' +
-           '<span class="rm-av" style="background:linear-gradient(145deg,' + r.color + ',#6E5626)">' + r.short + '</span>' +
-           '<span class="rm-t"><b>' + r.label + '</b><span>' + r.person + '</span></span>' +
-           (R.holds(id) ? '<span class="rm-you">you</span>' : '') + '</button>';
-    });
-    h += '<div class="rm-foot">You hold Founder and President. The other four are views for testing &mdash; ' +
-         'nobody else can switch roles.</div>';
+    var signedRole = R.signedInRole();
+    var profile = null;
+    try { profile = JSON.parse(localStorage.getItem('sica.profile') || 'null'); } catch(e){}
+    var h = '';
+    if (signedRole === 'founder') {
+      h += '<div class="rm-head">Switch view</div>';
+      R.order.forEach(function(id){
+        var r = R.all[id];
+        h += '<button class="rm-row' + (id === cur ? ' on' : '') + '" data-role="' + id + '">' +
+             '<span class="rm-av" style="background:linear-gradient(145deg,' + r.color + ',#6E5626)">' + r.short + '</span>' +
+             '<span class="rm-t"><b>' + r.label + '</b><span>' + r.person + '</span></span>' +
+             (R.holds(id) ? '<span class="rm-you">you</span>' : '') + '</button>';
+      });
+      h += '<div class="rm-foot">You hold Founder and President. The other four are views for testing.</div>';
+    }
+    h += '<div class="rm-account">' +
+         '<div class="rm-head">Account</div>' +
+         '<div class="rm-identity"><b>' + esc(profile && profile.full_name || ROLE.person) + '</b>' +
+         '<span>' + esc(profile && profile.email || ROLE.label) + '</span></div>' +
+         '<button class="rm-signout" type="button" id="accountSignOut">Sign out</button></div>';
     var m = document.createElement('div');
     m.className = 'rolemenu'; m.id = 'roleMenu'; m.innerHTML = h;
     document.body.appendChild(m);
+    document.getElementById('roleBtn').setAttribute('aria-expanded', 'true');
     var b = document.getElementById('roleBtn').getBoundingClientRect();
     m.style.left = Math.max(10, b.left) + 'px';
     m.style.bottom = (innerHeight - b.top + 10) + 'px';
     requestAnimationFrame(function(){ m.classList.add('open'); });
     m.addEventListener('click', function(e){
       var row = e.target.closest('.rm-row');
-      if (!row) return;
-      if (R.set(row.dataset.role)) location.reload();
+      if (row && R.set(row.dataset.role)) return location.reload();
+      var out = e.target.closest('#accountSignOut');
+      if (!out) return;
+      out.disabled = true;
+      out.textContent = 'Signing out…';
+      var A = window.SICA_AUTH;
+      Promise.resolve(A && A.signOut ? A.signOut() : null).finally(function(){
+        try {
+          localStorage.removeItem('sica-role');
+          localStorage.removeItem('sica.badge.applications');
+          sessionStorage.removeItem('sica-officer');
+        } catch(err){}
+        location.href = 'officers.html';
+      });
     });
     setTimeout(function(){ addEventListener('click', outsideRole); }, 0);
   }
   function closeRoleMenu(){
     var m = document.getElementById('roleMenu');
     if (m) m.remove();
+    var b = document.getElementById('roleBtn');
+    if (b) b.setAttribute('aria-expanded', 'false');
     removeEventListener('click', outsideRole);
   }
   function outsideRole(e){
