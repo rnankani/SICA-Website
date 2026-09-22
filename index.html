@@ -534,7 +534,7 @@ html.js .skills-list.in li:nth-child(9){animation-delay:560ms} html.js .skills-l
   font-family:var(--display);font-weight:700;letter-spacing:-.045em;line-height:.76;
   font-size:clamp(90px,25.5vw,400px);color:transparent;
   -webkit-text-stroke:1px rgba(237,232,220,.17);
-  padding-inline:var(--pad);margin-bottom:-.14em;user-select:none;
+  padding-inline:var(--pad);margin-bottom:-.14em;user-select:none;pointer-events:none;
 }
 .foot-ask{
   display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;
@@ -1305,7 +1305,7 @@ html:not(.js) .demo-stage{--lit:1}
         <a href="#why-this-matters">Why it matters</a>
         <a href="#officers">Officer applications</a>
         <a href="#join">Visit</a>
-        <a class="foot-officers" href="officers.html">Officers portal</a>
+        <a class="foot-officers" id="officerBtnFoot" href="officers.html">Officers portal</a>
       </nav>
     </div>
   </div>
@@ -1403,16 +1403,10 @@ html:not(.js) .demo-stage{--lit:1}
     setTimeout(function(){ ruleSpark.classList.add('burst'); }, 3000);
   }
 
-  /* ─── global smooth scroll ───────────────────────────────
-     Lenis-style: this drives the *real* scroll position rather than
-     transforming a wrapper, so position:sticky (the pinned section below),
-     IntersectionObserver and anchor links all keep working — a transform
-     scroller would silently break every one of them.
-
-     Pointer-fine devices only. Touch already has momentum scrolling that
-     feels better than anything we'd lerp, and hijacking it there is how
-     smooth-scroll libraries earn their bad reputation. */
-  var smoothOn = !reduced && matchMedia('(hover:hover) and (pointer:fine)').matches;
+  /* Native scrolling is intentional. The former wheel lerp kept moving
+     the page after a fast scroll, so a footer link could slide away between
+     pointer-down and click. Scroll storytelling must never break controls. */
+  var smoothOn = false;
   var sTarget = 0, sCurrent = 0;
 
   function maxScroll(){
@@ -1557,7 +1551,7 @@ html:not(.js) .demo-stage{--lit:1}
     }
     ['officerBtnFoot'].forEach(function(id){
       var b = $(id);
-      if (b) b.addEventListener('click', openGate);
+      if (b) b.addEventListener('click', function(e){ e.preventDefault(); openGate(); });
     });
     $('gateCancel').addEventListener('click', closeGate);
     gate.addEventListener('click', function(e){ if (e.target === gate) closeGate(); });
