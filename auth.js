@@ -118,20 +118,18 @@
       return p;
     },
 
-    /* Health check used by the sign-in screen and Founder Tools, so a
-       misconfigured project says so instead of failing silently. */
+    /* Health check used by the sign-in screen and Founder Tools. Do not
+       probe an RLS-protected data table here: a signed-out visitor is
+       supposed to be unable to SELECT applications, and treating that
+       correct 401 as a bad key made a healthy login screen look broken. */
     ping: async function () {
       if (!LIVE) return { ok: false, reason: 'No url or key in supabase-config.js' };
       try {
-        var r = await fetch(CFG.url + '/rest/v1/applications?select=id&limit=1', {
-          headers: { apikey: CFG.anonKey, Authorization: 'Bearer ' + (read(TOKEN) || CFG.anonKey) }
+        var r = await fetch(CFG.url + '/auth/v1/settings', {
+          headers: { apikey: CFG.anonKey }
         });
-        if (r.status === 404 || r.status === 400) {
-          var b = await r.text();
-          if (b.indexOf('PGRST205') >= 0 || b.indexOf('schema cache') >= 0)
-            return { ok: false, reason: 'Connected, but the tables do not exist yet — run schema.sql.' };
-        }
         if (r.status === 401) return { ok: false, reason: 'Key rejected. Check the anon key.' };
+        if (!r.ok) return { ok: false, reason: 'Supabase returned error ' + r.status + '.' };
         return { ok: true, reason: 'Connected' };
       } catch (e) {
         return { ok: false, reason: 'Cannot reach ' + CFG.url };
