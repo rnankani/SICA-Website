@@ -95,13 +95,12 @@ window.sicaPageInit = async function () {
   function card(a) {
     var st = STATUS[a.status] || STATUS.submitted;
     var isOpen = open === a.id;
-    var receipt = a.id ? 'SICA-' + String(a.id).slice(0, 8).toUpperCase() : 'No receipt';
     var roleTxt = ROLE_LABEL[a.role_applied] || a.role_applied;
     if (a.role_applied === 'other' && a.role_other) roleTxt += ' — ' + esc(a.role_other);
 
     var head = '<button class="ap-head" data-act="open" data-id="' + a.id + '">' +
       '<span class="ap-who"><b>' + esc(a.name) + '</b>' +
-        '<small>Grade ' + (a.grade || '—') + ' &middot; ' + esc(a.email) + ' &middot; ' + receipt + '</small></span>' +
+        '<small>Grade ' + (a.grade || '—') + ' &middot; ' + esc(a.email) + '</small></span>' +
       '<span class="ap-role">' + roleTxt + '</span>' +
       '<span class="pill ' + st[0] + '">' + st[1] + '</span>' +
       '<span class="ap-when">' + ago(a.created_at) + '</span>' +
@@ -151,16 +150,22 @@ window.sicaPageInit = async function () {
       acts + '</div></div>';
   }
 
-  async function draw() {
+  async function draw(retried) {
     var listEl = document.getElementById('appList');
     try {
       rows = await DB.applications.list();
     } catch (e) {
+      if (!retried && e && e.status === 401 && A && A.refresh) {
+        await A.refresh();
+        return draw(true);
+      }
       rows = [];
       document.getElementById('appStats').innerHTML = '';
       document.getElementById('appTabs').innerHTML = '';
       listEl.innerHTML = '<div class="tbl-empty"><b>Applications could not be loaded</b><p>' +
-        'This is a database or access error—not an empty queue. Refresh, then sign out and back in if it continues.</p>' +
+        'Supabase said: <b>' + esc(e && e.message || 'unknown database error') + '</b>. ' +
+        'Signed in as ' + esc(signedProfile && signedProfile.email || 'unknown account') +
+        ' (' + esc(signedProfile && signedProfile.role || role) + ').</p>' +
         '<button class="ib" data-act="retry">Try again</button></div>';
       return;
     }

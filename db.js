@@ -167,9 +167,12 @@
     });
   }
 
-  function rpc(fn, args) {
+  function rpc(fn, args, opts) {
+    opts = opts || {};
     var token = null;
-    try { token = localStorage.getItem('sica.token'); } catch (e) {}
+    if (!opts.anon) {
+      try { token = localStorage.getItem('sica.token'); } catch (e) {}
+    }
     return fetch(CFG.url + '/rest/v1/rpc/' + fn, {
       method: 'POST',
       headers: {
@@ -181,9 +184,18 @@
     }).then(async function (r) {
       var d = null;
       try { d = await r.json(); } catch (e) {}
-      if (!r.ok) throw new Error((d && (d.message || d.hint)) || ('Error ' + r.status));
+      if (!r.ok) {
+        var error = new Error((d && (d.message || d.hint)) || ('Error ' + r.status));
+        error.status = r.status;
+        error.code = d && d.code;
+        throw error;
+      }
       return d;
     });
+  }
+
+  function missingRpc(error) {
+    return error && (error.code === 'PGRST202' || /could not find the function/i.test(error.message || ''));
   }
 
   /* Private Supabase Storage helpers. Files live in Storage; the
@@ -334,12 +346,12 @@
     statuses: APPLICATION_STATUS,
 
     applications: {
-      create: function (a) {
+      create: async function (a) {
         var id = String(a.submission_id || '');
         if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
           return Promise.reject(new Error('A secure submission ID could not be created. Reload and try again.'));
         }
-        return durablePublicInsert('applications', {
+        var row = {
           id: id,
           name: a.name,
           grade: a.grade ? parseInt(a.grade, 10) : null,
@@ -356,9 +368,28 @@
           commitments: a.commitments || null,
           anything_else: a.anything_else || null,
           status: 'submitted'
-        }, { prefer: 'resolution=ignore-duplicates,return=minimal' });
+        };
+        try {
+          var acceptedId = await rpc('submit_application', { payload: row }, { anon: true });
+          return { id: acceptedId };
+        } catch (error) {
+          /* Safe rollout path: the site may deploy a few seconds before the
+             migration. Only a genuinely missing RPC falls back; permission,
+             validation, and server failures remain visible. */
+          if (!missingRpc(error)) throw error;
+          return durablePublicInsert('applications', row,
+            { prefer: 'resolution=ignore-duplicates,return=minimal' });
+        }
       },
-      list: function (status) {
+      list: async function (status) {
+        if (LIVE) {
+          try {
+            var rows = await rpc('list_applications', {});
+            return status ? rows.filter(function (row) { return row.status === status; }) : rows;
+          } catch (error) {
+            if (!missingRpc(error)) throw error;
+          }
+        }
         return A.list('applications', { where: status ? { status: status } : null, order: 'created_at' });
       },
       get: function (id) { return A.get('applications', id); },
