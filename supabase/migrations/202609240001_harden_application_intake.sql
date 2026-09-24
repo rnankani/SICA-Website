@@ -156,4 +156,9 @@ grant execute on function public.list_applications() to authenticated;
 grant execute on function public.application_submission_exists(uuid) to anon, authenticated;
 grant execute on function public.cleanup_application_load_test(text) to anon, authenticated;
 
+-- Remove only the synthetic records created while diagnosing this incident.
+delete from public.applications
+where (name = 'SICA automated load test' and email like 'sica-loadtest+%@invalid.example')
+   or email in ('delivery-test@invalid.example', 'delivery-test-2@invalid.example');
+
 commit;
