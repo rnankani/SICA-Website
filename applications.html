@@ -72,7 +72,9 @@ window.sicaPageInit = async function () {
     rejected:  ['p-warn', 'Rejected'],
     archived:  ['p-idle', 'Archived']
   };
-  var filter = 'submitted', rows = [], open = null, armed = null;
+  /* Start with the complete database, not only unread/submitted rows. A
+     filtered default made reviewed applications look as if they vanished. */
+  var filter = 'all', rows = [], open = null, armed = null;
   var signedProfile = null;
   try { signedProfile = JSON.parse(localStorage.getItem('sica.profile') || 'null'); } catch (e) {}
 
@@ -203,9 +205,9 @@ window.sicaPageInit = async function () {
     }).join('');
 
     document.getElementById('appTabs').innerHTML =
-      [['submitted', 'New', c.submitted], ['interview', 'Interview', c.interview],
+      [['all', 'All', rows.length], ['submitted', 'New', c.submitted], ['interview', 'Interview', c.interview],
        ['approved', 'Approved', c.approved], ['rejected', 'Rejected', c.rejected],
-       ['archived', 'Archived', c.archived], ['all', 'All', rows.length]]
+       ['archived', 'Archived', c.archived]]
       .map(function (t) {
         return '<button class="ptab' + (filter === t[0] ? ' on' : '') + '" data-f="' + t[0] + '">' +
           t[1] + (t[2] ? ' <span class="tabn">' + t[2] + '</span>' : '') + '</button>';
