@@ -403,7 +403,16 @@
          forever is worse than losing it. There is no recycle bin, so
          every caller asks before reaching this. */
       remove: function (id) { return A.remove('applications', id); },
-      setStatus: function (id, status, note) {
+      setStatus: async function (id, status, note) {
+        if (LIVE) {
+          try {
+            return await rpc('set_application_status', {
+              p_id: id, p_status: status, p_note: note || null
+            });
+          } catch (error) {
+            if (!missingRpc(error)) throw error;
+          }
+        }
         return A.update('applications', id, {
           status: status, review_note: note || null,
           reviewed_at: new Date().toISOString(),
@@ -411,7 +420,7 @@
         });
       },
       counts: async function () {
-        var all = await A.list('applications', {});
+        var all = await DB.applications.list();
         var c = { total: all.length };
         APPLICATION_STATUS.forEach(function (s) {
           c[s] = all.filter(function (r) { return r.status === s; }).length;

@@ -35,7 +35,7 @@
 <script src="role-expectations.js?v=15"></script>
 <script src="supabase-config.js?v=14"></script>
 <script src="auth.js?v=22"></script>
-<script src="db.js?v=22"></script>
+<script src="db.js?v=23"></script>
 <script src="roles.js?v=14"></script>
 <script src="tasks.js?v=14"></script>
 <script src="officers.js?v=22"></script>
@@ -243,8 +243,16 @@ window.sicaPageInit = async function () {
     if (act === 'open') { open = open === id ? null : id; armed = null; return draw(); }
     if (['approved', 'interview', 'rejected', 'archived'].indexOf(act) < 0) return;
     armed = null;
-    b.disabled = true;
-    try { await DB.applications.setStatus(id, act); } catch (ex) {}
+    var original = b.textContent;
+    b.disabled = true; b.textContent = 'Saving…';
+    try {
+      await DB.applications.setStatus(id, act);
+    } catch (ex) {
+      b.disabled = false;
+      b.textContent = 'Failed: ' + (ex && ex.message ? ex.message : 'unknown database error');
+      b.title = original;
+      return;
+    }
     await draw();
   });
 
