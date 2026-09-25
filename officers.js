@@ -305,9 +305,6 @@
       }
       var em = document.getElementById('gateEmail').value.trim();
       var pw = document.getElementById('gateCode').value;
-      if (pw.trim().toUpperCase() === CODE) {
-        return unlock();
-      }
       err.textContent = 'Signing in…';
       A.signIn(em, pw)
         .then(function () { return A.profile(true); })

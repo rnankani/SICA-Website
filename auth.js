@@ -88,7 +88,10 @@
       if (!r) return Promise.resolve(null);
       return api('token?grant_type=refresh_token', { body: { refresh_token: r } })
         .then(keep)
-        .catch(function () { store(TOKEN, null); store(REFRESH, null); return null; });
+        .catch(function () {
+          store(TOKEN, null); store(REFRESH, null); store(PROFILE, null);
+          return null;
+        });
     },
 
     user: function () {

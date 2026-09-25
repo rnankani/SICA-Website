@@ -34,11 +34,11 @@
 <script src="references-data.js?v=14"></script>
 <script src="role-expectations.js?v=15"></script>
 <script src="supabase-config.js?v=14"></script>
-<script src="auth.js?v=14"></script>
-<script src="db.js?v=19"></script>
+<script src="auth.js?v=22"></script>
+<script src="db.js?v=22"></script>
 <script src="roles.js?v=14"></script>
 <script src="tasks.js?v=14"></script>
-<script src="officers.js?v=19"></script>
+<script src="officers.js?v=22"></script>
 <script>
 window.sicaPageInit = async function () {
   var DB = window.SICA_DB, R = window.SICA_ROLES, A = window.SICA_AUTH;
@@ -158,6 +158,11 @@ window.sicaPageInit = async function () {
       if (!retried && e && e.status === 401 && A && A.refresh) {
         await A.refresh();
         return draw(true);
+      }
+      if (e && (e.status === 401 || e.status === 403) && A && A.signOut) {
+        await A.signOut();
+        location.href = 'officers.html?reauth=applications';
+        return;
       }
       rows = [];
       document.getElementById('appStats').innerHTML = '';

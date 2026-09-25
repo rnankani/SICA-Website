@@ -384,10 +384,15 @@
       list: async function (status) {
         if (LIVE) {
           try {
-            var rows = await rpc('list_applications', {});
+            var rows = await rpc('list_applications_json', {});
             return status ? rows.filter(function (row) { return row.status === status; }) : rows;
           } catch (error) {
+            /* During the short migration rollout, use the first hardened
+               function—not a direct table SELECT. Direct-table fallback is
+               the failure mode this API exists to remove permanently. */
             if (!missingRpc(error)) throw error;
+            var legacyRows = await rpc('list_applications', {});
+            return status ? legacyRows.filter(function (row) { return row.status === status; }) : legacyRows;
           }
         }
         return A.list('applications', { where: status ? { status: status } : null, order: 'created_at' });

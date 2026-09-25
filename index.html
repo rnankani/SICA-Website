@@ -1305,7 +1305,7 @@ html:not(.js) .demo-stage{--lit:1}
         <a href="#why-this-matters">Why it matters</a>
         <a href="#officers">Officer applications</a>
         <a href="#join">Visit</a>
-        <a class="foot-officers" id="officerBtnFoot" href="officers.html">Officers portal</a>
+        <a class="foot-officers" href="officers.html">Officers portal</a>
       </nav>
     </div>
   </div>
@@ -1549,10 +1549,6 @@ html:not(.js) .demo-stage{--lit:1}
       gateInput.value = '';
       if (lastFocus) lastFocus.focus();
     }
-    ['officerBtnFoot'].forEach(function(id){
-      var b = $(id);
-      if (b) b.addEventListener('click', function(e){ e.preventDefault(); openGate(); });
-    });
     $('gateCancel').addEventListener('click', closeGate);
     gate.addEventListener('click', function(e){ if (e.target === gate) closeGate(); });
     addEventListener('keydown', function(e){ if (e.key === 'Escape' && gate.classList.contains('open')) closeGate(); });
