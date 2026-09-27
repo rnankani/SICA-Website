@@ -86,6 +86,18 @@
     refresh: function () {
       var r = read(REFRESH);
       if (!r) return Promise.resolve(null);
+      /* A valid access token needs no network refresh on every page.
+         Supabase's expiry is embedded in the token; leave a two minute
+         margin for clock drift and navigation in progress. */
+      var current = read(TOKEN);
+      if (current) {
+        try {
+          var encoded = current.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+          var claims = JSON.parse(atob(encoded));
+          if (typeof claims.exp === 'number' && claims.exp * 1000 > Date.now() + 120000)
+            return Promise.resolve({ access_token: current });
+        } catch (e) {}
+      }
       return api('token?grant_type=refresh_token', { body: { refresh_token: r } })
         .then(keep)
         .catch(function () {

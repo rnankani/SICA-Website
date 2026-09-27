@@ -456,7 +456,7 @@
         if (!A.signedIn()) return showGate();
         /* Signed in is not the same as authorised. Anyone may create an
            account; only an officer profile may open the workspace. */
-        return A.profile(true).then(function(p){
+        return A.profile(false).then(function(p){
           if (p && p.role && p.role !== 'member'){
             document.body.classList.add('unlocked');
             start();
