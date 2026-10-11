@@ -7,9 +7,8 @@
    Bearer on every request. Row Level Security then decides what that
    person may actually see.
 
-   Without a token, db.js falls back to the anon key — which under
-   schema.sql can do exactly one thing: insert an application. That is
-   why the public form works signed-out and the portal does not.
+   Without a token, db.js falls back to the anon key. Private officer
+   data is still protected by RLS; new officer intake is currently closed.
    ═══════════════════════════════════════════════════════════ */
 (function () {
   'use strict';
@@ -17,6 +16,7 @@
   var CFG = window.SICA_SUPABASE || {};
   var LIVE = !!(CFG.url && CFG.anonKey);
   var TOKEN = 'sica.token', REFRESH = 'sica.refresh', PROFILE = 'sica.profile';
+  var refreshFlight = null;
 
   function store(k, v) {
     try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {}
@@ -38,7 +38,7 @@
       try { data = await r.json(); } catch (e) {}
       if (!r.ok) {
         var msg = (data && (data.msg || data.error_description || data.message)) || ('Error ' + r.status);
-        throw new Error(msg);
+        var error = new Error(msg); error.status = r.status; throw error;
       }
       return data;
     });
@@ -98,12 +98,18 @@
             return Promise.resolve({ access_token: current });
         } catch (e) {}
       }
-      return api('token?grant_type=refresh_token', { body: { refresh_token: r } })
+      if (refreshFlight) return refreshFlight;
+      refreshFlight = api('token?grant_type=refresh_token', { body: { refresh_token: r } })
         .then(keep)
-        .catch(function () {
-          store(TOKEN, null); store(REFRESH, null); store(PROFILE, null);
-          return null;
-        });
+        .catch(function (error) {
+          if (error.status === 400 || error.status === 401) {
+            store(TOKEN, null); store(REFRESH, null); store(PROFILE, null);
+            return null;
+          }
+          // A temporary outage is not a sign-out. Preserve the session.
+          throw error;
+        }).finally(function () { refreshFlight = null; });
+      return refreshFlight;
     },
 
     user: function () {

@@ -132,8 +132,16 @@
      Talks to PostgREST directly, so there is no SDK to load and no build
      step. Row Level Security in schema.sql decides what each caller may
      actually see; the anon key alone grants nothing. */
-  function sb(path, opts) {
+  async function refreshSharedSession() {
+    var auth = window.SICA_AUTH;
+    if (auth && auth.live && auth.signedIn()) {
+      await auth.refresh();
+      if (!auth.signedIn()) throw new Error('Your session expired. Sign out and sign back in. Your changes have not been submitted.');
+    }
+  }
+  async function sb(path, opts) {
     opts = opts || {};
+    if (!opts.anon) await refreshSharedSession();
     var token = null;
     /* `anon` is for writes any visitor is allowed to make. A stale or
        expired session token left in localStorage would otherwise be sent
@@ -167,8 +175,9 @@
     });
   }
 
-  function rpc(fn, args, opts) {
+  async function rpc(fn, args, opts) {
     opts = opts || {};
+    if (!opts.anon) await refreshSharedSession();
     var token = null;
     if (!opts.anon) {
       try { token = localStorage.getItem('sica.token'); } catch (e) {}
@@ -346,40 +355,8 @@
     statuses: APPLICATION_STATUS,
 
     applications: {
-      create: async function (a) {
-        var id = String(a.submission_id || '');
-        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
-          return Promise.reject(new Error('A secure submission ID could not be created. Reload and try again.'));
-        }
-        var row = {
-          id: id,
-          name: a.name,
-          grade: a.grade ? parseInt(a.grade, 10) : null,
-          email: a.email,
-          role_applied: a.role,
-          role_other: a.role === 'other' ? (a.role_other || null) : null,
-          links: a.links || null,
-          q_built: a.q_built || null,
-          q_weakness: a.q_weakness || null,
-          q_sica: a.q_sica || null,
-          q_first_month: a.q_first_month || null,
-          lunch_days: a.lunch_days && a.lunch_days.length ? a.lunch_days : null,
-          after_school: typeof a.after_school === 'boolean' ? a.after_school : null,
-          commitments: a.commitments || null,
-          anything_else: a.anything_else || null,
-          status: 'submitted'
-        };
-        try {
-          var acceptedId = await rpc('submit_application', { payload: row }, { anon: true });
-          return { id: acceptedId };
-        } catch (error) {
-          /* Safe rollout path: the site may deploy a few seconds before the
-             migration. Only a genuinely missing RPC falls back; permission,
-             validation, and server failures remain visible. */
-          if (!missingRpc(error)) throw error;
-          return durablePublicInsert('applications', row,
-            { prefer: 'resolution=ignore-duplicates,return=minimal' });
-        }
+      create: async function () {
+        throw new Error('Officer applications are closed. This round closed on September 25.');
       },
       list: async function (status) {
         if (LIVE) {
@@ -510,22 +487,24 @@
           created_by: profile && profile.id || null,
           updated_at: new Date().toISOString(),
           completed_at: t.completed_at || null,
+          completed_by: t.completed_by || null,
           position: min - 1000
         });
-        try { await DB.taskActivity.add(row.id, 'created', 'Task created'); } catch (activityError) {}
+        if (!LIVE) await DB.taskActivity.add(row.id, 'created', 'Task created');
         return row;
       },
       update: async function (id, p) {
         p.updated_at = new Date().toISOString();
         var row = await A.update('tasks', id, p);
-        try { await DB.taskActivity.add(id, 'updated', Object.keys(p).filter(function (k) { return k !== 'updated_at'; }).join(', ')); } catch (activityError) {}
+        if (!row || !row.id) throw new Error('Task was not saved. It may have changed or you may not have permission. Refresh and try again.');
+        if (!LIVE) await DB.taskActivity.add(id, 'updated', Object.keys(p).filter(function (k) { return k !== 'updated_at'; }).join(', '));
         return row;
       },
       remove: function (id) { return A.remove('tasks', id); },
       archive: async function (id) {
         var row = LIVE ? await rpc('archive_task', { task_id: id })
                        : await A.update('tasks', id, { archived_at: new Date().toISOString(), updated_at: new Date().toISOString() });
-        try { await DB.taskActivity.add(id, 'archived', 'Task archived'); } catch (activityError) {}
+        if (!LIVE) await DB.taskActivity.add(id, 'archived', 'Task archived');
         return row;
       },
       complete: async function (id, done) {
@@ -536,7 +515,8 @@
           completed_by: done ? ((currentProfile() && currentProfile().id) || null) : null,
           updated_at: new Date().toISOString()
         });
-        try { await DB.taskActivity.add(id, done ? 'completed' : 'reopened', done ? 'Task completed' : 'Task reopened'); } catch (activityError) {}
+        if (!row || !row.id) throw new Error('Task was not saved. Refresh and check your access before trying again.');
+        if (!LIVE) await DB.taskActivity.add(id, done ? 'completed' : 'reopened', done ? 'Task completed' : 'Task reopened');
         return row;
       },
       /* Drop `id` between `before` and `after`, halfway between their

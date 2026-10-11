@@ -44,7 +44,7 @@
              (i.id === page ? ' aria-current="page"' : '') + '>' +
              '<svg viewBox="0 0 24 24">' + i.icon + '</svg>' +
              '<span class="navitem-t">' + i.label + '</span>' +
-             (i.cnt ? '<span class="cnt">' + i.cnt + '</span>' : '') + '</a>';
+             '</a>';
       });
       h += '</div>';
     });
@@ -106,6 +106,7 @@
 
   function syncRailBadges(){
     var DB = window.SICA_DB;
+    if (['founder', 'president'].indexOf(R.active()) === -1) return;
     if (!DB || !DB.applications || typeof DB.applications.counts !== 'function') return;
     try {
       var cached = localStorage.getItem('sica.badge.applications');
@@ -150,7 +151,7 @@
     var signedRole = R.signedInRole();
     var profile = null;
     try { profile = JSON.parse(localStorage.getItem('sica.profile') || 'null'); } catch(e){}
-    var h = '';
+    var h = '<button type="button" class="rm-close" aria-label="Close account menu" style="display:block;margin:4px 4px 6px auto;border:0;background:none;color:inherit;padding:7px;cursor:pointer">Close &times;</button>';
     if (signedRole === 'founder') {
       h += '<div class="rm-head">Switch view</div>';
       R.order.forEach(function(id){
@@ -169,13 +170,14 @@
          '<button class="rm-signout" type="button" id="accountSignOut">Sign out</button></div>';
     var m = document.createElement('div');
     m.className = 'rolemenu'; m.id = 'roleMenu'; m.innerHTML = h;
-    document.body.appendChild(m);
+    (document.getElementById('roleBtn').closest('dialog') || document.body).appendChild(m);
     document.getElementById('roleBtn').setAttribute('aria-expanded', 'true');
     var b = document.getElementById('roleBtn').getBoundingClientRect();
     m.style.left = Math.max(10, b.left) + 'px';
     m.style.bottom = (innerHeight - b.top + 10) + 'px';
     requestAnimationFrame(function(){ m.classList.add('open'); });
     m.addEventListener('click', function(e){
+      if (e.target.closest('.rm-close')) return closeRoleMenu();
       var row = e.target.closest('.rm-row');
       if (row && R.set(row.dataset.role)) return location.reload();
       var out = e.target.closest('#accountSignOut');
@@ -249,6 +251,7 @@
         'Check the connection and reload this page.</p>' +
         '<a class="btn" href="">Reload</a>' +
         '<a class="gate-back" href="index.html">&larr; Back to site</a></div>';
+      document.body.appendChild(g);
       return;
     }
 
@@ -464,7 +467,7 @@
             showGate(p ? 'notOfficer' : null);
           }
         });
-      });
+      }).catch(function(){ showGate('database'); });
       return;
     }
     if (window.SICA_DB && window.SICA_DB.mode === 'local') {

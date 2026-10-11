@@ -1,0 +1,80 @@
+/* Isolated PostgreSQL tests using PGlite. Runs schema + migrations locally.
+   This never connects to Supabase. Requires @electric-sql/pglite. */
+const {PGlite}=require('@electric-sql/pglite');
+const fs=require('node:fs');
+const path=require('node:path');
+const assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'..');
+async function main(){
+ const db=new PGlite();
+ try{
+ await db.exec(`
+ create role anon nologin; create role authenticated nologin;
+ create schema auth; create schema storage;
+ create table auth.users(id uuid primary key, email text, raw_user_meta_data jsonb default '{}');
+ create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('test.uid',true),'')::uuid $$;
+ create function auth.jwt() returns jsonb language sql stable as $$ select coalesce(nullif(current_setting('test.jwt',true),''),'{}')::jsonb $$;
+ grant usage on schema auth to anon,authenticated;
+ grant execute on function auth.uid(),auth.jwt() to anon,authenticated;
+ create table storage.buckets(id text primary key,name text,public boolean);
+ create table storage.objects(id uuid primary key default gen_random_uuid(),bucket_id text,name text);
+ create function storage.foldername(text) returns text[] language sql as $$ select string_to_array($1,'/') $$;
+ `);
+ await db.exec(fs.readFileSync(path.join(root,'schema.sql'),'utf8'));
+ const migrations=fs.readdirSync(path.join(root,'supabase/migrations')).sort();
+ for(const f of migrations)await db.exec(fs.readFileSync(path.join(root,'supabase/migrations',f),'utf8'));
+ for(const f of migrations.filter(f=>f.startsWith('20261011')))await db.exec(fs.readFileSync(path.join(root,'supabase/migrations',f),'utf8'));
+ console.log('PASS full schema, migration chain, repeatable new migrations');
+ const founder='00000000-0000-4000-8000-000000000001',vp='00000000-0000-4000-8000-000000000002',member='00000000-0000-4000-8000-000000000003';
+ await db.exec(`alter table auth.users disable trigger on_auth_user_created;
+ insert into auth.users(id,email) values ('${founder}','founder@example.test'),('${vp}','vp@example.test'),('${member}','member@example.test');
+ insert into profiles(id,email,full_name,role) values ('${founder}','founder@example.test','QA Founder','founder'),('${vp}','vp@example.test','QA VP','vp'),('${member}','member@example.test','QA Member','member');
+ alter table auth.users enable trigger on_auth_user_created;`);
+ const as=async(id,dbRole='authenticated')=>{await db.exec('reset role');await db.query("select set_config('test.uid',$1,false)",[id]);await db.exec('set role '+dbRole);};
+ await as(founder);
+ const task=(await db.query(`insert into tasks(title,owner_id,owner_role,created_by,start_date,due) values ('QA task',$1,'vp',$2,'2026-10-11','2026-10-14') returning *`,[vp,founder])).rows[0];
+ assert.equal(task.status,'not_started');assert.equal(task.priority,'medium');
+ assert.equal((await db.query('select action from task_activity where task_id=$1',[task.id])).rows[0].action,'created');
+ console.log('PASS authenticated task grants, correct defaults and atomic create history');
+ await as(vp);
+ assert.equal((await db.query('select * from tasks')).rows.length,1);
+ await db.query("update tasks set status='completed',progress=100,completed_at=now(),completed_by=$1 where id=$2",[vp,task.id]);
+ assert((await db.query('select action from task_activity where task_id=$1',[task.id])).rows.some(r=>r.action==='completed'));
+ await db.query("update tasks set status='in_progress',progress=60,completed_at=null,completed_by=null where id=$1",[task.id]);
+ assert((await db.query('select action from task_activity where task_id=$1',[task.id])).rows.some(r=>r.action==='reopened'));
+ await assert.rejects(()=>db.query('update tasks set owner_id=$1 where id=$2',[founder,task.id]),/reassign/);
+ await assert.rejects(()=>db.query('select archive_task($1)',[task.id]),/Only the Founder or President/);
+ await assert.rejects(()=>db.query("insert into task_activity(task_id,user_id,action) values ($1,$2,'forged')",[task.id,vp]),/permission denied/);
+ console.log('PASS officer ownership, completion/reopen history, reassignment/archive/audit protections');
+ await as(member);
+ assert.equal((await db.query('select * from tasks')).rows.length,0);
+ await assert.rejects(()=>db.query("insert into tasks(title,owner_id) values ('Bad',$1)",[member]),/row-level security|yourself/);
+ await as('','anon');
+ await assert.rejects(()=>db.query('select * from tasks'),/permission denied/);
+ // Both public intake paths are blocked, including code cached before closure.
+ await assert.rejects(()=>db.query("insert into applications(name,email) values ('QA','qa@example.test')"),/applications are closed/);
+ await assert.rejects(()=>db.query("select submit_application($1::jsonb)",[JSON.stringify({id:'00000000-0000-4000-8000-000000000010',name:'QA',email:'qa@example.test',grade:10,role_applied:'vp'})]),/applications are closed/);
+ console.log('PASS member/anonymous access, direct and RPC intake closure');
+ await as(founder);
+ await db.query('select archive_task($1)',[task.id]);
+ assert((await db.query('select action from task_activity where task_id=$1',[task.id])).rows.some(r=>r.action==='archived'));
+ assert.equal((await db.query('select * from tasks where id=$1',[task.id])).rows.length,1);
+ console.log('PASS archiving preserves the task and records history');
+ await db.exec('reset role');
+ await db.exec("alter table applications disable trigger officer_intake_closed; insert into applications(name,email,role_applied,status) values ('Existing applicant','existing@example.test','vp','submitted'); alter table applications enable trigger officer_intake_closed;");
+ await as(founder);
+ const apps=(await db.query('select list_applications_json() as apps')).rows[0].apps;
+ assert.equal(apps.length,1);
+ await db.query("select set_application_status($1,'interview',null)",[apps[0].id]);
+ assert.equal((await db.query('select list_applications_json() as apps')).rows[0].apps[0].status,'interview');
+ console.log('PASS closure preserves the existing application inbox and review actions');
+ // Force the audit write to fail: the task update must roll back as well.
+ await db.exec('reset role');
+ await db.exec("alter table task_activity add constraint qa_fail_history check (action <> 'updated') not valid");
+ await as(founder);
+ await assert.rejects(()=>db.query("update tasks set title='Must roll back' where id=$1",[task.id]),/qa_fail_history/);
+ assert.equal((await db.query('select title from tasks where id=$1',[task.id])).rows[0].title,'QA task');
+ console.log('PASS failed history write rolls back the task mutation');
+ }finally{await db.close();}
+}
+main().catch(e=>{console.error(e.message);process.exitCode=1;});

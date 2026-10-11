@@ -4,9 +4,9 @@
 -- Paste this whole file into Supabase → SQL Editor → New query → Run.
 -- It is safe to run more than once.
 --
--- Row Level Security is on for every table. The anon key on its own can
--- do exactly one thing: submit an application. Everything else requires
--- a signed-in profile, and most of it requires an officer role.
+-- Row Level Security is on for every table. Private officer data requires
+-- a signed-in profile. New officer intake is currently closed by the
+-- officer_intake_closed trigger at the end of this file.
 -- ═══════════════════════════════════════════════════════════
 
 -- ─── roles ─────────────────────────────────────────────────
@@ -1002,3 +1002,55 @@ group by 1,2 order by 1;
 --
 --   update profiles set role = 'founder'
 --   where email = 'reyanshnankani@gmail.com';
+
+-- Officer intake is closed. Existing applications remain readable/reviewable.
+-- Kept in sync with 202610110001_close_officer_applications.sql.
+create or replace function public.reject_closed_officer_intake()
+returns trigger language plpgsql set search_path = public as $$
+begin
+  raise exception using errcode = 'P0001',
+    message = 'Officer applications are closed. This round closed on September 25.';
+end;
+$$;
+revoke all on function public.reject_closed_officer_intake() from public;
+drop trigger if exists officer_intake_closed on public.applications;
+create trigger officer_intake_closed before insert on public.applications
+  for each row execute function public.reject_closed_officer_intake();
+
+-- Daily-workspace grants and atomic history. Keep in sync with migration
+-- 202610110002_task_workspace_access.sql. RLS still determines visible rows.
+grant usage on schema public to authenticated;
+grant select, insert, update, delete on public.tasks, public.task_subtasks to authenticated;
+grant select on public.task_activity, public.profiles, public.meetings to authenticated;
+alter table public.tasks alter column status set default 'not_started';
+alter table public.tasks alter column priority set default 'medium';
+create or replace function public.record_task_activity()
+returns trigger language plpgsql security definer set search_path = public as $$
+declare event_name text; event_detail text;
+begin
+  if tg_op = 'INSERT' then
+    event_name := 'created'; event_detail := 'Task created';
+  elsif new.archived_at is distinct from old.archived_at and new.archived_at is not null then
+    event_name := 'archived'; event_detail := 'Task archived';
+  elsif new.status = 'completed' and old.status <> 'completed' then
+    event_name := 'completed'; event_detail := 'Task completed';
+  elsif old.status = 'completed' and new.status <> 'completed' then
+    event_name := 'reopened'; event_detail := 'Task reopened';
+  else
+    event_name := 'updated';
+    select string_agg(replace(n.key, '_', ' '), ', ' order by n.key)
+      into event_detail from jsonb_each(to_jsonb(new)) n
+      where n.key <> 'updated_at' and n.value is distinct from to_jsonb(old)->n.key;
+    if event_detail is null then return new; end if;
+    event_detail := 'Changed: ' || event_detail;
+  end if;
+  insert into public.task_activity(task_id, user_id, action, detail)
+    values (new.id, auth.uid(), event_name, event_detail);
+  return new;
+end;
+$$;
+revoke all on function public.record_task_activity() from public;
+revoke insert, update, delete on public.task_activity from anon, authenticated;
+drop trigger if exists task_activity_audit on public.tasks;
+create trigger task_activity_audit after insert or update on public.tasks
+  for each row execute function public.record_task_activity();
