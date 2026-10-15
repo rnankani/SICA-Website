@@ -165,7 +165,7 @@
   // One documents home; Discord owns announcements. Keep legacy URLs valid.
   Object.keys(ROLES).forEach(function(key){
     ROLES[key].nav.forEach(function(group){group.items=group.items.filter(function(item){return ['library','handbook','announcements'].indexOf(item.id)===-1;});});
-    if(key==='founder'||key==='president')ROLES[key].nav[1].items.push(p('interests','Interest signups','interests.html',I.inbox));
+    if(['founder','president','vp'].includes(key))ROLES[key].nav[1].items.push(p('interests','Interest signups','interests.html',I.inbox));
   });
 
   /* The authenticated profile is the source of truth. Local mode keeps

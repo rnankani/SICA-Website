@@ -68,20 +68,35 @@ async function main(){
  await db.query("select set_application_status($1,'interview',null)",[apps[0].id]);
  assert.equal((await db.query('select list_applications_json() as apps')).rows[0].apps[0].status,'interview');
  console.log('PASS closure preserves the existing application inbox and review actions');
- const signup={id:'00000000-0000-4000-8000-000000000020',name:'QA Student',grade:10,student_id:'123456',email:'qa.student@fuhst.org',interest:'I want to practice conversations and make new friends at school.',question:null};
+ // Upgrade an existing old-domain table without losing historical signups.
+ await db.exec('reset role');
+ await db.exec("alter table interest_signups drop constraint interest_signups_email_check");
+ const historicalId='00000000-0000-4000-8000-000000000099';
+ await db.query("insert into interest_signups(id,name,grade,student_id,email,interest) values ($1,'Historical QA',10,'123456','historical@fuhst.org','I want to practice conversations and make new friends at school.')",[historicalId]);
+ await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/202610140002_interest_email_and_access.sql'),'utf8'));
+ assert.equal((await db.query('select email from interest_signups where id=$1',[historicalId])).rows[0].email,'historical@fuhst.org');
+ await assert.rejects(()=>db.query("insert into interest_signups(id,name,grade,student_id,email,interest) values (gen_random_uuid(),'Bad domain',10,'123456','new@fuhst.org','I want to practice conversations and make new friends at school.')"),/interest_signups_email_check/);
+ await db.query('delete from interest_signups where id=$1',[historicalId]);
+ console.log('PASS domain migration preserves historical entries and rejects new old-domain rows');
+ const signup={id:'00000000-0000-4000-8000-000000000020',name:'QA Student',grade:10,student_id:'123456',email:'qa.student@fuhsd.org',interest:'I want to practice conversations and make new friends at school.',question:null};
  const submitInterest=payload=>db.query('select submit_interest($1::jsonb) as accepted',[JSON.stringify(payload)]);
  await as('','anon');
  assert.equal((await submitInterest(signup)).rows[0].accepted,true);
  await submitInterest(signup);
  await submitInterest({...signup,id:'00000000-0000-4000-8000-000000000021',name:'Do not overwrite'});
-  await assert.rejects(()=>submitInterest({...signup,email:'another@fuhst.org'}),/could not confirm/);
+  await assert.rejects(()=>submitInterest({...signup,email:'another@fuhsd.org'}),/could not confirm/);
  for(const field of ['name','grade','student_id','email','interest']){const payload={...signup};delete payload[field];await assert.rejects(()=>submitInterest(payload));}
- await assert.rejects(()=>submitInterest({...signup,email:'qa@gmail.com'}),/@fuhst/);
+ await assert.rejects(()=>submitInterest({...signup,email:'qa@gmail.com'}),/@fuhsd/);
+ await assert.rejects(()=>submitInterest({...signup,email:'qa@fuhst.org'}),/@fuhsd/);
  await assert.rejects(()=>submitInterest({...signup,interest:'one two three four five six seven eight nine ten'}),/11 or 12/);
  await assert.rejects(()=>submitInterest({...signup,interest:'one two three four five six seven eight nine ten eleven twelve thirteen'}),/11 or 12/);
  await assert.rejects(()=>db.query('select * from interest_signups'),/permission denied/);
  await assert.rejects(()=>db.query("insert into interest_signups(id,name,grade,student_id,email,interest) values ($1,$2,$3,$4,$5,$6)",Object.values(signup).slice(0,6)),/permission denied/);
- await as(vp);assert.equal((await db.query('select * from interest_signups')).rows.length,0);
+ for(const role of ['vp','president','secretary','treasurer','pr','member']){
+   await db.exec('reset role');await db.query('update profiles set role=$1 where id=$2',[role,vp]);await as(vp);
+   assert.equal((await db.query('select * from interest_signups')).rows.length,['vp','president'].includes(role)?1:0,role+' signup access');
+ }
+ await db.exec('reset role');await db.query("update profiles set role='vp' where id=$1",[vp]);
  await as(founder);const savedSignups=(await db.query('select * from interest_signups')).rows;
  assert.equal(savedSignups.length,1);assert.equal(savedSignups[0].name,'QA Student');
  console.log('PASS signup domain/required/word rules, retry and email deduplication, leader-only PII reads');

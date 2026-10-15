@@ -9,7 +9,7 @@
     if(id!=='question'&&!value)return 'Please fill this in.';
     if(id==='grade'&&!['9','10','11','12'].includes(value))return 'Choose a grade from 9 to 12.';
     if(id==='studentId'&&!/^[A-Za-z0-9-]{3,30}$/.test(value))return 'Use your student ID (3–30 letters, numbers, or hyphens).';
-    if(id==='email'&&!/^[a-z0-9](?:[a-z0-9._%+-]{0,62}[a-z0-9])?$/i.test(value))return 'Enter just your school email username, without @fuhst.org.';
+    if(id==='email'&&!/^[a-z0-9](?:[a-z0-9._%+-]{0,62}[a-z0-9])?$/i.test(value))return 'Enter just your school email username, without @fuhsd.org.';
     if(id==='interest'&&(words(value)<11||words(value)>12))return 'Please use 11 or 12 words. You have '+words(value)+'.';
     return '';
   }
@@ -23,7 +23,7 @@
     try{
       if(!window.crypto||!crypto.randomUUID)throw new Error('Please use a current browser over a secure connection.');
       const value=id=>document.getElementById(id).value.trim();
-      const payload={name:value('name'),grade:Number(value('grade')),student_id:value('studentId'),email:value('email').toLowerCase()+'@fuhst.org',interest:value('interest'),question:value('question')||null};
+      const payload={name:value('name'),grade:Number(value('grade')),student_id:value('studentId'),email:value('email').toLowerCase()+'@fuhsd.org',interest:value('interest'),question:value('question')||null};
       const fingerprint=JSON.stringify(payload);
       if(submissionBody!==fingerprint){submissionId=crypto.randomUUID();submissionBody=fingerprint;}
       const result=await window.SICA_DB.interest.submit({id:submissionId,...payload});

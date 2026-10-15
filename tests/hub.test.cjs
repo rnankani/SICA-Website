@@ -10,9 +10,9 @@ const server=http.createServer((req,res)=>{const p=decodeURIComponent(new URL(re
 async function main(){
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
  const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH||'C:/Program Files/Google/Chrome/Application/chrome.exe'});
- async function make(signed=true,options={}){
+ async function make(signed=true,options={},asProfile=profile){
   const ctx=await browser.newContext({viewport:{width:1440,height:1000},...options});
-  if(signed)await ctx.addInitScript(p=>{if(location.hostname!=='127.0.0.1'||window!==window.top)return;localStorage.setItem('sica.profile',JSON.stringify(p));localStorage.setItem('sica.token','qa.'+btoa(JSON.stringify({exp:Math.floor(Date.now()/1000)+3600}))+'.qa');localStorage.setItem('sica.refresh','qa-refresh');},profile);
+  if(signed)await ctx.addInitScript(p=>{if(location.hostname!=='127.0.0.1'||window!==window.top)return;localStorage.setItem('sica.profile',JSON.stringify(p));localStorage.setItem('sica.token','qa.'+btoa(JSON.stringify({exp:Math.floor(Date.now()/1000)+3600}))+'.qa');localStorage.setItem('sica.refresh','qa-refresh');},asProfile);
   await ctx.route('**/*.supabase.co/**',async route=>{
    const req=route.request(),url=new URL(req.url()),method=req.method();requests.push({url: req.url(),method,auth:req.headers().authorization});
    const json=(data,status=200)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(data)});
@@ -46,7 +46,7 @@ async function main(){
   await p.locator('#interest').fill('I want to practice conversations and make new friends at school.');
   rejectSignup=true;await p.getByRole('button',{name:'Keep me updated'}).click();await p.locator('#submitFail').filter({hasText:'not been confirmed'}).waitFor();assert.equal(await p.locator('#interestForm').isVisible(),true);assert.equal(store.interest_signups.length,0);
   rejectSignup=false;unconfirmed=true;await p.getByRole('button',{name:'Keep me updated'}).click();await p.locator('#submitFail').filter({hasText:'did not confirm'}).waitFor();assert.equal(await p.locator('#interestDone').isVisible(),false);
-  unconfirmed=false;await p.getByRole('button',{name:'Keep me updated'}).dblclick();await p.locator('#interestDone').waitFor();assert.equal(store.interest_signups.length,1);assert.equal(store.interest_signups[0].email,'qa.student@fuhst.org');assert.equal(store.interest_signups[0].question,null);
+  unconfirmed=false;await p.getByRole('button',{name:'Keep me updated'}).dblclick();await p.locator('#interestDone').waitFor();assert.equal(store.interest_signups.length,1);assert.equal(store.interest_signups[0].email,'qa.student@fuhsd.org');assert.equal(store.interest_signups[0].question,null);
   assert(requests.filter(r=>r.url.includes('/rpc/submit_interest')).every(r=>r.auth!=='Bearer expired-officer-session'));
   assert.equal(await p.locator('#interest').getAttribute('aria-describedby'),'interestHint interestCount interestError');
   assert.equal(await p.evaluate(()=>Object.keys(localStorage).some(k=>/interest|signup/.test(k))),false);
@@ -56,6 +56,15 @@ async function main(){
   const csv=page.waitForEvent('download');await page.getByRole('button',{name:'Export CSV'}).click();assert.equal((await csv).suggestedFilename(),'SICA-interest-signups.csv');
   await page.screenshot({path:path.join(out,'interest-inbox.png'),fullPage:true});
   console.log('PASS independent officer context sees signup and can export CSV');
+  for(const role of ['president','vp','secretary','treasurer','pr']){
+    const roleCtx=await make(true,{}, {...profile,role}),rolePage=await roleCtx.newPage();await rolePage.goto(base+'/interests.html');
+    const allowed=['president','vp'].includes(role);
+    if(allowed)await rolePage.getByText('QA Student',{exact:true}).waitFor();else await rolePage.getByText(/Interest signups are restricted/).waitFor();
+    assert.equal(await rolePage.locator('#rail').getByRole('link',{name:'Interest signups',exact:true}).count(),allowed?1:0);
+    if(!allowed)assert.equal(await rolePage.getByText('QA Student',{exact:true}).count(),0);
+    await roleCtx.close();
+  }
+  console.log('PASS President/VP inbox and sidebar access; other officer roles denied');
   await page.goto(base+'/references.html');await page.getByRole('button',{name:'Existing Library upload',exact:true}).waitFor();
   assert.equal(await page.locator('#rail').getByRole('link',{name:'Library',exact:true}).count(),0);assert.equal(await page.locator('#rail').getByRole('link',{name:'Handbook',exact:true}).count(),0);assert.equal(await page.locator('#rail').getByRole('link',{name:'Announcements',exact:true}).count(),0);
   await page.getByRole('button',{name:'Existing Library upload',exact:true}).hover();assert.equal(await page.getByText('Use this to prepare the first meeting',{exact:true}).isVisible(),true);

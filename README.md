@@ -39,18 +39,22 @@ on a feature that changes policies, grants, functions, or tables.
 
 ## Interest form & workspace rollout (October 14, 2026)
 
-Run `supabase/migrations/202610140001_interest_and_references.sql` in
+Run `supabase/migrations/202610140002_interest_email_and_access.sql` in
 **Supabase → SQL Editor** against the existing SICA database. It is repeatable
 and does not delete officer applications, tasks, or documents. Apply any older
 pending migrations first (including the October 11 files below).
+This file supersedes the first interest-form migration: it also works if that
+file was never run. Run this newer file even if you already ran the first one;
+it corrects the domain and adds Vice President read access. Historical email
+values are preserved rather than silently rewritten.
 
 - Public CTAs now lead to `interest.html`; `apply.html` redirects there.
   The full historical application source is retained in
   `templates/officer-application-source.html.txt`. Leaders can open the
   non-submitting preview through Applications or References in the portal.
 - Interest signup writes use an anonymous, narrowly scoped database function;
-  only Founder/President profiles can read the list. No signup data is kept in
-  browser storage. The exact requested domain is **@fuhst.org**, and the answer
+  only Founder/President/Vice President profiles can read the list. No signup data is kept in
+  browser storage. The exact requested domain is **@fuhsd.org**, and the answer
   must contain **11–12 words**, enforced in the browser and database.
 - Signups are a mailing list, not memberships. The portal has a CSV export;
   it does **not** automatically send emails. Student IDs are omitted from CSV.
