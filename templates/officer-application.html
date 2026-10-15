@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SICA &mdash; Officer Application</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../sica-forms.css?v=1">
+<meta name="view-transition" content="same-origin"></head>
+<body><p class="archive-banner">Saved officer form · Preview only · Submission disabled</p><fieldset disabled style="border:0;min-width:0">
+
+<div class="bar">
+  <div class="bar-in">
+    <a class="mk" href="../index.html">SICA</a>
+    <a class="back" href="../index.html">&larr; Back to site</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="form" id="form">
+    <span class="eyebrow" id="deadlineStatus"><i></i>Applications close September 25</span>
+    <h1>Apply for a founding officer role.</h1>
+    <p class="lede">SICA launches with five officers. This is the team that writes the first curriculum, runs the first meetings, and decides what the club becomes &mdash; before there is anything to inherit.</p>
+
+    <section class="clarity" aria-labelledby="clarityTitle">
+      <div class="deadline" role="status">
+        <b>Applications close September 25</b>
+        <span id="daysLeft">Deadline approaching</span>
+      </div>
+
+      <h2 class="clarity-title" id="clarityTitle">What happens after you apply</h2>
+      <ol class="pipeline" aria-label="Officer selection and training timeline">
+        <li><span class="n">01</span><b>Apply</b><small>By September 25</small></li>
+        <li><span class="n">02</span><b>Interview invites</b><small>September 27</small></li>
+        <li><span class="n">03</span><b>Interviews</b><small>Week of September 29</small></li>
+        <li><span class="n">04</span><b>Team announced</b><small>October 5</small></li>
+        <li><span class="n">05</span><b>Training</b><small>October 6&ndash;November 1</small></li>
+        <li><span class="n">06</span><b>Club application</b><small>Submitted after training</small></li>
+      </ol>
+
+      <div class="clarity-grid">
+        <article class="clarity-card wide">
+          <h3>The time commitment changes by phase</h3>
+          <ul>
+            <li><strong>Right now, before approval:</strong> minimal &mdash; mostly showing up to training sessions.</li>
+            <li><strong>During training, October 6&ndash;November 1:</strong> about 1&ndash;1.5 hours a week across two sessions, plus prep for meetings you are assigned to own.</li>
+            <li><strong>Once SICA is approved and running:</strong> Vice President about 2 hours a week; Treasurer/Secretary and PR/Media about 1&ndash;2 hours a week.</li>
+          </ul>
+        </article>
+        <article class="clarity-card">
+          <h3>The interview</h3>
+          <p>A relaxed 15-minute, one-on-one conversation with Reyansh, SICA&rsquo;s founder. No panel and no presentation.</p>
+        </article>
+        <article class="clarity-card">
+          <h3>Three open seats</h3>
+          <p>One Vice President, one Treasurer/Secretary, and one PR/Media Director. A strong runner-up may be offered another open role; otherwise, they can join the waitlist.</p>
+        </article>
+        <article class="clarity-card">
+          <h3>Who can apply</h3>
+          <p>Any grade can apply for these officer roles. Only the President role has the CHS sophomore/junior restriction, and that role is not currently open.</p>
+        </article>
+        <article class="clarity-card">
+          <h3>If you miss training</h3>
+          <p>Each session is summarized. Missing one occasionally is fine; missing most sessions is not.</p>
+        </article>
+        <article class="clarity-card wide">
+          <h3>How you will hear back</h3>
+          <p>Every update &mdash; interview invitation, decision, or waitlist status &mdash; goes to the school email entered below.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ── 1 ── -->
+    <h2><span class="sn">1</span>Basic info</h2>
+    <div class="two">
+      <div class="f"><label for="name">Full name</label><input id="name" autocomplete="name"><div class="err"></div></div>
+      <div class="f"><label for="grade">Grade</label>
+        <select id="grade">
+          <option value="">Select&hellip;</option>
+          <option value="9">9th</option><option value="10">10th</option>
+          <option value="11">11th</option><option value="12">12th</option>
+        </select><div class="err"></div></div>
+    </div>
+    <div class="two">
+      <div class="f"><label for="email">School email</label>
+        <input id="email" type="email" placeholder="you@student.fuhsd.org" autocomplete="email"><div class="err"></div></div>
+      <div class="f"><label for="role">Role applying for</label>
+        <select id="role">
+          <option value="">Select&hellip;</option>
+          <option value="vp">Vice President</option>
+          <option value="treasurer_secretary">Treasurer / Secretary</option>
+          <option value="pr">PR / Media</option>
+          <option value="other">Other</option>
+        </select><div class="err"></div></div>
+    </div>
+    <!-- Filled from role-expectations.js the moment a role is picked.
+         Choosing a role blind is how you get officers who quit in
+         November over a workload nobody told them about. -->
+    <div class="rx" id="roleExp" hidden></div>
+    <div class="f" id="otherWrap" hidden>
+      <label for="roleOther">Which role did you have in mind?</label>
+      <input id="roleOther" placeholder="Tell us what you would want to do"><div class="err"></div></div>
+    <div class="f">
+      <label for="links">Portfolio or links <span class="opt">optional</span></label>
+      <p class="q">LinkedIn, a personal site, a resume, Instagram &mdash; anything that shows what you have made.</p>
+      <textarea id="links" style="min-height:64px"></textarea></div>
+
+    <!-- ── 2 ── -->
+    <h2><span class="sn">2</span>About you</h2>
+    <p class="hint2">Under 400 words each. We are reading for how you think, not how much you write.</p>
+
+    <div class="f" data-min="40" data-max="400">
+      <label for="q_built">Tell us about something you built, organised, or led that nobody asked you to. What happened?</label>
+      <textarea id="q_built"></textarea><div class="count"></div><div class="err"></div></div>
+
+    <div class="f" data-min="40" data-max="400">
+      <label for="q_weakness">Name one specific weakness you are aware of in yourself &mdash; not a generic one. How has it actually shown up recently?</label>
+      <p class="q">Specific and recent. &ldquo;I am a perfectionist&rdquo; is not an answer.</p>
+      <textarea id="q_weakness"></textarea><div class="count"></div><div class="err"></div></div>
+
+    <!-- ── 3 ── -->
+    <h2><span class="sn">3</span>About SICA</h2>
+
+    <div class="f" data-min="40" data-max="400">
+      <label for="q_sica">In your own words, what does SICA actually do that other clubs don&rsquo;t?</label>
+      <p class="q">Your own read on it, not the tagline.</p>
+      <textarea id="q_sica"></textarea><div class="count"></div><div class="err"></div></div>
+
+    <div class="f" data-min="40" data-max="400">
+      <label for="q_first_month">What would you specifically contribute in the first month, if selected?</label>
+      <textarea id="q_first_month"></textarea><div class="count"></div><div class="err"></div></div>
+
+    <!-- ── 4 ── -->
+    <h2><span class="sn">4</span>Availability &amp; bandwidth</h2>
+
+    <div class="f">
+      <label>Which days are you free during lunch?</label>
+      <div class="days" id="days"></div><div class="err"></div></div>
+
+    <div class="f">
+      <label>Available for occasional after-school planning meetings?</label>
+      <div class="yn">
+        <label class="ynb"><input type="radio" name="afterschool" value="yes"><span>Yes</span></label>
+        <label class="ynb"><input type="radio" name="afterschool" value="no"><span>No</span></label>
+      </div><div class="err"></div></div>
+
+    <div class="f">
+      <label for="commitments">What other clubs, sports or commitments do you have? How would you prioritise SICA?</label>
+      <p class="q">Context, not a disqualifier. It helps us plan around real bandwidth.</p>
+      <textarea id="commitments" style="min-height:76px"></textarea><div class="err"></div></div>
+
+    <!-- ── 5 ── -->
+    <h2><span class="sn">5</span>Anything else</h2>
+    <div class="f">
+      <label for="anything_else">Anything else you want us to know? <span class="opt">optional</span></label>
+      <textarea id="anything_else" style="min-height:64px"></textarea></div>
+
+    <div class="actions">
+      <button class="btn" id="submit">Submit application</button>
+    </div>
+    <p class="submit-fail" id="submitFail"></p>
+    <p class="note" id="modeNote"></p>
+
+    <div class="foot">
+      <span>SICA &middot; Cupertino High School</span>
+      <a href="mailto:thesicaorg@gmail.com">thesicaorg@gmail.com</a>
+      <a href="../index.html">Back to the site</a>
+    </div>
+  </div>
+
+  <div class="done" id="done">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="m5 13 4 4L19 7"/></svg></div>
+    <h2 id="doneTitle">Application sent</h2>
+    <p id="doneBody"></p>
+    <p><a class="btn ghost" href="../index.html" style="margin-top:18px">Back to the site</a></p>
+  </div>
+</div>
+
+
+
+
+
+</fieldset></body>
+</html>

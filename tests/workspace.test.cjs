@@ -80,7 +80,9 @@ async function main(){
  try{
  const ctx=await context(),page=await ctx.newPage();
  await page.goto(url+'/officers.html');
- await page.locator('.w-count').filter({hasText:'4'}).waitFor();
+ await page.locator('.w-timeline').waitFor();
+ assert.equal(await page.locator('.w-count').count(),0);
+ assert.equal(await page.getByText('Your daily workspace',{exact:true}).count(),0);
  assert.equal(await page.locator('.w-timeline').count(),1);
  assert.equal(await page.getByText('First officer practice',{exact:true}).count(),1);
  await page.screenshot({path:path.join(out,'dashboard-desktop.png'),fullPage:true});
@@ -197,8 +199,9 @@ async function main(){
  await missing.route('**/supabase-config.js?*',r=>r.fulfill({contentType:'text/javascript',body:'window.SICA_SUPABASE = {};'}));
  await missingPage.goto(url+'/officers.html');await missingPage.getByRole('heading',{name:'Database unavailable'}).waitFor();
  console.log('PASS 320px layout, signed-out gate, visible missing-config error');
- await page.goto(url+'/apply.html');assert.equal(await page.locator('form').count(),0);await page.getByRole('heading',{name:/Applications are closed/}).waitFor();
- await page.goto(url+'/index.html');await page.getByRole('link',{name:'Applications closed',exact:true}).waitFor();
+ await page.goto(url+'/apply.html');await page.waitForURL('**/interest.html');await page.locator('#interestForm').waitFor();
+ await page.goto(url+'/index.html');await page.locator('.interest-hero').waitFor();
+ assert.equal(await page.getByText('Applications closed',{exact:true}).count(),0);
  assert.equal(await page.getByText('Now accepting',{exact:true}).count(),0);
  await page.getByRole('link',{name:/^officers portal$/i}).click();await page.locator('.w-timeline').waitFor();
  assert.equal(await page.evaluate(async()=>{try{await SICA_DB.applications.create({});return 'bad';}catch(e){return e.message;}}),'Officer applications are closed. This round closed on September 25.');

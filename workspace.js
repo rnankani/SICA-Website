@@ -78,8 +78,8 @@
   }
   function render() {
     const dashboard=document.body.dataset.page==='dashboard';
-    const all=scoped(), remaining=all.filter(active), due=remaining.filter(t => t.due && t.due>=today() && t.due<=shift(today(),7));
-    root.innerHTML='<div class="w-topline"><span class="w-eyebrow">'+(dashboard?'Your daily workspace':'Make the next step clear')+'</span><button class="w-icon" data-refresh aria-label="Refresh workspace" '+(state.loading?'disabled':'')+'>'+icon('refresh')+'</button></div><header class="w-heading"><div><h1>'+(dashboard?'<span class="w-count">'+(state.loaded?remaining.length:'—')+'</span> tasks remaining':'Tasks')+'</h1><p>'+(dashboard?(state.loaded?remaining.filter(overdue).length+' overdue <span>·</span> '+due.length+' due in the next 7 days':'Loading shared tasks…'):'One owner. One next step. A clear finish.')+'</p></div>'+(can('tasks.create')?'<a class="w-add" href="tasks.html?add=1" aria-label="Add task">'+icon('plus')+'<span>Add task</span></a>':'')+'</header><div class="w-context">'+scopeControl()+'<span class="w-sync">'+(state.loading?'Syncing…':state.error?'Not synced':'Saved to SICA')+'</span></div>'+
+    const all=scoped(), remaining=all.filter(active);
+    root.innerHTML='<h1 class="sr-only">'+(dashboard?'Dashboard':'Tasks')+'</h1><header class="w-minimal-head">'+scopeControl()+'<div class="w-head-actions">'+(can('tasks.create')?'<a class="w-add" href="tasks.html?add=1" aria-label="Add task">'+icon('plus')+'<span>Add task</span></a>':'')+'<button class="w-icon" data-refresh aria-label="Refresh workspace" '+(state.loading?'disabled':'')+'>'+icon('refresh')+'</button></div></header><span class="w-sync sr-only" role="status">'+(state.loading?'Syncing…':state.error?'Not synced':'Saved to SICA')+'</span>'+
       (state.error?'<div class="w-error" role="alert"><b>Tasks could not be loaded</b><p>'+esc(state.error)+(state.loaded?' Showing the last loaded view.':' This is not an empty task list.')+'</p><button class="w-btn" data-refresh>Try again</button></div>':'')+
       (state.extraError?'<p class="w-warning" role="status">'+esc(state.extraError)+'</p>':'');
     if(!state.loaded) {if(!state.error) root.insertAdjacentHTML('beforeend','<div class="w-loading" role="status">Loading your plan…</div>'); return;}
@@ -106,7 +106,9 @@
     if(results[1].status==='fulfilled')state.people=results[1].value; else state.extraError='Officer names could not load. Role assignments are still available. ';
     if(results[2].status==='fulfilled')state.meetings=results[2].value; else state.extraError+='Meeting information is unavailable. Retry to check your next meeting.';
     render();
-    if(new URL(location.href).searchParams.has('add') && !panel.open && state.loaded)openEditor();
+    const params=new URL(location.href).searchParams;
+    if(params.has('add') && !panel.open && state.loaded)openEditor();
+    else if(params.has('task') && !panel.open && state.loaded)openEditor(params.get('task'));
   }
   function navigate(url, fromHistory) {
     if(!closeEditor())return false;
@@ -227,21 +229,14 @@
     catch(e){render();toast('Dates not saved. '+e.message,true);}
   }
   function closeMobileMenu() {
-    if(!mobileMenu || !mobileMenu.open)return;
-    const rail=mobileMenu.querySelector('#rail');if(rail)document.querySelector('.shell').prepend(rail);
-    mobileMenu.close();document.body.classList.remove('w-menu-open');
-    document.getElementById('workMenuToggle').setAttribute('aria-expanded','false');
-    const account=document.getElementById('roleMenu');if(account)account.remove();
+    if(window.sicaMobileNav)window.sicaMobileNav.close();
   }
   window.sicaPageInit=function () {
     root=document.getElementById('dailyWorkspace');DB=window.SICA_DB;if(!root || !DB)return;
-    state.scope=can('tasks.view_team')?'team':'mine';
-    document.body.insertAdjacentHTML('afterbegin','<header class="w-mobile-head"><a href="officers.html">SICA<span>Officer workspace</span></a><button id="workMenuToggle" aria-label="Open navigation" aria-expanded="false" aria-controls="workMobileMenu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></header>');
-    mobileMenu=document.createElement('dialog');mobileMenu.className='w-mobile-menu';mobileMenu.id='workMobileMenu';mobileMenu.setAttribute('aria-label','Officer navigation');
-    mobileMenu.innerHTML='<button class="w-menu-close" aria-label="Close navigation">Close ×</button>';document.body.appendChild(mobileMenu);
-    document.getElementById('workMenuToggle').addEventListener('click',()=>{mobileMenu.appendChild(document.getElementById('rail'));mobileMenu.showModal();document.body.classList.add('w-menu-open');document.getElementById('workMenuToggle').setAttribute('aria-expanded','true');});
-    mobileMenu.querySelector('button').addEventListener('click',closeMobileMenu);mobileMenu.addEventListener('cancel',e=>{e.preventDefault();closeMobileMenu();});
-    matchMedia('(max-width:960px)').addEventListener('change',closeMobileMenu);
+    const params=new URL(location.href).searchParams;
+    state.scope=can('tasks.view_team') && params.get('scope')!=='mine'?'team':'mine';
+    if(params.get('view')==='timeline')state.view='timeline';
+    mobileMenu=window.sicaMobileNav.dialog;
     panel=document.createElement('dialog');panel.className='w-panel';panel.setAttribute('aria-labelledby','wPanelTitle');document.body.appendChild(panel);
     document.body.insertAdjacentHTML('beforeend','<div id="workNotice" class="w-notice" role="status" aria-live="polite" hidden></div>');
     panel.addEventListener('cancel',e=>{e.preventDefault();closeEditor();});

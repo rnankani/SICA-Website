@@ -8,8 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="officers.css?v=15">
-<meta name="view-transition" content="same-origin"><meta name="view-transition" content="same-origin"></head>
+<link rel="stylesheet" href="officers.css?v=15"><link rel="stylesheet" href="officer-nav.css?v=1">
+<meta name="view-transition" content="same-origin"></head>
 <body data-page="applications">
 <div class="shell">
   <nav class="rail" id="rail"></nav>
@@ -19,6 +19,7 @@
         <div class="crumb">Intake</div>
         <h1 class="ptitle">Applications</h1>
         <p class="lede">Everyone who applied through the site. Submitted straight to the database &mdash; nothing goes through email.</p>
+        <p style="margin-top:12px"><a class="btn ghost" href="officer-form.html">Saved officer application form ↗</a></p>
       </div>
     </div>
 
@@ -35,10 +36,10 @@
 <script src="role-expectations.js?v=15"></script>
 <script src="supabase-config.js?v=14"></script>
 <script src="auth.js?v=25"></script>
-<script src="db.js?v=25"></script>
-<script src="roles.js?v=14"></script>
+<script src="db.js?v=26"></script>
+<script src="roles.js?v=17"></script>
 <script src="tasks.js?v=14"></script>
-<script src="officers.js?v=25"></script>
+<script src="officers.js?v=26"></script>
 <script>
 window.sicaPageInit = async function () {
   var DB = window.SICA_DB, R = window.SICA_ROLES, A = window.SICA_AUTH;

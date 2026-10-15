@@ -27,6 +27,7 @@
      Mirrors schema.sql exactly. Anything the UI shows as an em dash is
      a column here that has no rows yet. */
   var TABLES = {
+    interest_signups: ['id', 'created_at', 'name', 'grade', 'student_id', 'email', 'interest', 'question'],
     profiles:     ['id', 'email', 'full_name', 'grade', 'role', 'created_at', 'last_seen'],
     officer_invites: ['id', 'email', 'full_name', 'role', 'status', 'profile_id', 'invited_by',
                       'invited_at', 'registered_at', 'decided_by', 'decided_at', 'note'],
@@ -43,7 +44,7 @@
     task_subtasks:['id', 'task_id', 'title', 'completed', 'position', 'created_at'],
     task_activity:['id', 'task_id', 'user_id', 'action', 'detail', 'created_at'],
     announcements:['id', 'title', 'body', 'audience', 'author_id', 'publish_at', 'pinned'],
-    documents:    ['id', 'title', 'category', 'url', 'storage_path', 'file_name', 'mime_type',
+    documents:    ['id', 'title', 'purpose', 'category', 'url', 'storage_path', 'file_name', 'mime_type',
                    'size_bytes', 'owner_role', 'created_by', 'created_at', 'updated_at'],
     expenses:     ['id', 'date', 'item', 'amount', 'paid_by', 'approved_by', 'receipt_url',
                    'category', 'status'],
@@ -220,6 +221,7 @@
   }
   async function storageRequest(path, opts) {
     opts = opts || {};
+    await refreshSharedSession();
     var headers = Object.assign({
       apikey: CFG.anonKey,
       Authorization: 'Bearer ' + authToken()
@@ -353,6 +355,14 @@
     mode: A.mode,
     tables: TABLES,
     statuses: APPLICATION_STATUS,
+
+    interest: {
+      submit: function (payload) {
+        if (!LIVE) return Promise.reject(new Error('The signup database is unavailable. Please try again later.'));
+        return rpc('submit_interest', { payload: payload }, { anon: true });
+      },
+      list: function () { return A.list('interest_signups', { order: 'created_at' }); }
+    },
 
     applications: {
       create: async function () {
@@ -547,9 +557,9 @@
     announcements: { list: function () { return A.list('announcements', { order: 'publish_at' }); },
                 create: function (a) { return A.insert('announcements', a); } },
     documents: {
-      list: async function () {
+      list: async function (opts) {
         var rows = await A.list('documents', { order: 'updated_at' });
-        if (!LIVE) return rows;
+        if (!LIVE || (opts && opts.metadataOnly)) return rows;
         return Promise.all(rows.map(async function (row) {
           if (!row.storage_path) return row; // legacy URL-based document
           try { return Object.assign({}, row, { url: await signedDocumentUrl(row.storage_path) }); }
@@ -558,14 +568,19 @@
       },
       upload: async function (file, metadata) {
         if (!LIVE) throw new Error('File sync is unavailable until Supabase is configured.');
+        if (!file || !file.size || file.size > 50 * 1024 * 1024) throw new Error('Choose a non-empty file up to 50 MB.');
+        if (!window.crypto || !crypto.randomUUID) throw new Error('Use a current browser over a secure connection to upload files.');
+        var documentId = crypto.randomUUID();
         var cleanName = String(file.name || 'document').replace(/[^a-zA-Z0-9._-]+/g, '-');
         var unique = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
         var visibilityFolder = metadata.owner_role === 'president' ? 'president' : 'officers';
         var path = visibilityFolder + '/' + unique + '/' + cleanName;
         await uploadDocumentFile(file, path);
         try {
-          return await A.insert('documents', {
+          var saved = await A.insert('documents', {
+            id: documentId,
             title: metadata.title,
+            purpose: metadata.purpose || '',
             category: metadata.category || 'Handbooks & Guides',
             storage_path: path,
             file_name: file.name,
@@ -574,12 +589,24 @@
             owner_role: metadata.owner_role || null,
             updated_at: new Date().toISOString()
           });
+          if (!saved || saved.id !== documentId) throw new Error('The database did not confirm this file. Refresh References before trying again.');
+          return saved;
         } catch (e) {
-          try { await removeDocumentFile(path); } catch (cleanupError) {}
+          // A lost response may follow a committed insert. Verify it before
+          // reporting failure; never delete a file that may have a saved row.
+          try { var confirmed = await A.get('documents', documentId); if (confirmed && confirmed.storage_path === path) return confirmed; } catch (readError) {}
           throw e;
         }
       },
       create: function (d) { return A.insert('documents', d); },
+      fileUrl: async function (id, download) {
+        var row = await A.get('documents', id);
+        if (!row) throw new Error('This document is unavailable or you do not have access.');
+        var url = row.storage_path ? await signedDocumentUrl(row.storage_path) : row.url;
+        if (!url || !/^https?:\/\//i.test(url)) throw new Error('A valid file link is not available.');
+        if (download && row.storage_path) url += (url.indexOf('?') < 0 ? '?' : '&') + 'download=' + encodeURIComponent(row.file_name || row.title);
+        return url;
+      },
       remove: async function (id) {
         var row = await A.get('documents', id);
         if (LIVE && row && row.storage_path) await removeDocumentFile(row.storage_path);

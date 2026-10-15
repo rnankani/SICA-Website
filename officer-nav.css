@@ -1,0 +1,13 @@
+.w-mobile-head{display:none}.w-mobile-menu{background:#141210;color:var(--text);margin:0;height:100dvh;max-height:100dvh;width:min(310px,90vw);max-width:90vw;border:0;border-right:1px solid var(--line);padding:16px;overflow:hidden}.w-mobile-menu::backdrop{background:#0009}.w-mobile-menu[open]{display:flex;flex-direction:column}.w-menu-close{align-self:flex-end;border:1px solid var(--line);background:none;color:var(--text-2);border-radius:6px;padding:10px 14px;cursor:pointer}.w-menu-open{overflow:hidden}
+@media(max-width:960px){
+  body.unlocked .w-mobile-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line);background:#100f0d}
+  .w-mobile-head a{font:700 23px var(--display);color:var(--brass)}.w-mobile-head span{display:block;font:9px var(--mono);letter-spacing:.1em;color:var(--text-2);text-transform:uppercase;margin-top:4px}
+  .w-mobile-head button{background:none;border:1px solid var(--line);border-radius:7px;width:42px;height:42px;display:grid;place-items:center;color:var(--text);cursor:pointer}.w-mobile-head svg{width:20px;height:20px}
+  body.unlocked .shell>#rail{display:none}
+  body .w-mobile-menu #rail{display:flex;position:static;width:100%;height:auto;min-height:0;flex:1;flex-direction:column;align-items:stretch;overflow-y:auto;overflow-x:hidden;border:0;padding:12px 0;gap:18px}
+  .w-mobile-menu #rail .brand{display:none}.w-mobile-menu #rail .navgroup{flex-direction:column;align-items:stretch;gap:4px}
+  .w-mobile-menu #rail .navlabel{display:block;max-height:none;font-size:9px;padding:0 10px 5px}
+  .w-mobile-menu #rail .navitem{width:100%;justify-content:flex-start;min-height:42px}.w-mobile-menu #rail .navitem-t,.w-mobile-menu #rail .navlabel,.w-mobile-menu #rail .whoami-txt{opacity:1;visibility:visible;transform:none;max-width:none;pointer-events:auto}
+  .w-mobile-menu #rail .railfoot{margin:10px 0 0;align-items:stretch;flex-direction:column}.w-mobile-menu #rail .whoami{width:100%;justify-content:flex-start;padding:6px}.w-mobile-menu .rolemenu{left:12px!important;bottom:12px!important;max-height:calc(100dvh - 90px);overflow-y:auto}
+  .w-mobile-menu .imp{display:flex!important}
+}

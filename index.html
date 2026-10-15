@@ -971,6 +971,7 @@ html.js .rv.in{opacity:1;transform:none}
   .scroll-spine{left:14px}
 }
 
+.interest-hero{min-width:250px;padding:24px 28px!important;font-size:21px!important;justify-content:space-between;gap:40px!important}.interest-hero i{font-style:normal}.interest-caption{font-size:13px;line-height:1.6;color:var(--on-bone);max-width:30ch}.hero-cta .acts{flex-direction:column;align-items:flex-start}.interest-float{position:fixed;right:22px;bottom:22px;z-index:45;display:flex;align-items:center;gap:12px;padding:13px 20px;border-radius:100px;background:#c9a34f;color:#141210;font:600 13px var(--ui);box-shadow:0 4px 22px #0005;transition:transform .2s}.interest-float:hover{transform:translateY(-2px)}@media(max-width:600px){.interest-float{right:14px;bottom:14px;padding:11px 16px}.interest-hero{min-width:220px;font-size:19px!important}}
 html:not(.js) .demo-stage{--lit:1}
 @media (prefers-reduced-motion:reduce){
   .demo-stage{--lit:1!important}
@@ -981,6 +982,7 @@ html:not(.js) .demo-stage{--lit:1}
 </style>
 <meta name="view-transition" content="same-origin"></head>
 <body>
+<a class="interest-float" href="interest.html" aria-label="Interested? Open the interest form">Interested? <span aria-hidden="true">↗</span></a>
 
 <!-- Sticky nav: invisible over the hero, then a blurred bar once the
      sheet comes up. Marks the section you are actually in. -->
@@ -995,11 +997,11 @@ html:not(.js) .demo-stage{--lit:1}
       <a href="#meeting">Meetings</a>
       <a href="#curriculum">Curriculum</a>
       <a href="#faq">FAQ</a>
-      <a href="#officers">Officer roles</a>
+      <a href="#interest">Get updates</a>
       <a href="#join">Join</a>
     </div>
-    <a class="topnav-apply" href="apply.html">
-      <span>Applications closed</span><i aria-hidden="true">&rarr;</i>
+    <a class="topnav-apply" href="interest.html">
+      <span>Interest Form</span><i aria-hidden="true">&rarr;</i>
     </a>
   </div>
 </nav>
@@ -1027,8 +1029,8 @@ html:not(.js) .demo-stage{--lit:1}
     </div>
     <div class="hero-cta">
       <div class="acts hero-r">
-        <a href="#join" class="btn btn--gold"><span>Join the next meeting</span><i class="dot"></i></a>
-        <a href="apply.html" style="font-size:12px;color:var(--on-bone)">Officer applications are closed</a>
+        <a href="interest.html" class="btn btn--gold interest-hero"><span>Interest Form</span><i aria-hidden="true">↗</i></a>
+        <p class="interest-caption">Interested? Sign up for meeting news and SICA updates.</p>
       </div>
       <div class="hero-arrow hero-r" aria-hidden="true">
         <svg viewBox="0 0 24 30" fill="none"><path d="M12 3v22M4.5 18.5 12 26l7.5-7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1248,16 +1250,14 @@ html:not(.js) .demo-stage{--lit:1}
        thing the club is actively recruiting for was invisible for the
        whole page. This says which roles are open, in the same words the
        application form and the handbook use. -->
-  <section class="sec" id="officers">
+  <section class="sec" id="interest">
     <div class="wrap">
       <div class="oa rv">
-        <div class="kicker" style="color:var(--brass-lit)"><i></i><span class="eyebrow">Applications closed</span></div>
-        <h2 class="h2">The next chapter. <em>Built together.</em></h2>
-        <p class="sub">SICA launches with five officers. This is the team that writes the first curriculum, runs the first meetings, and decides what the club becomes.</p>
-        <p class="oa-deadline">Officer applications closed on September 25. You can still join SICA as a member.</p>
-        <ul class="oa-roles" id="oaRoles"></ul>
+        <div class="kicker" style="color:var(--brass-lit)"><i></i><span class="eyebrow">Stay in the loop</span></div>
+        <h2 class="h2">A little curious? <em>Start here.</em></h2>
+        <p class="sub">Add yourself to our mailing list. We’ll let you know about meetings, activities, and what’s next for SICA.</p>
         <div class="acts">
-          <a class="btn btn--gold" href="#join"><span>Come to a meeting</span><i class="dot"></i></a>
+          <a class="btn btn--gold" href="interest.html"><span>Interest Form</span><i class="dot"></i></a>
         </div>
       </div>
     </div>
@@ -1268,7 +1268,7 @@ html:not(.js) .demo-stage{--lit:1}
       <div class="join rv">
         <div class="kicker" style="color:var(--brass-lit)"><i></i><span class="eyebrow">Come visit</span></div>
         <p class="join-note">No preparation. No pressure. <b>Just practice.</b></p>
-        <div class="acts"><a class="btn btn--gold" href="mailto:thesicaorg@gmail.com?subject=Joining%20the%20next%20SICA%20meeting"><span>Join the Next Meeting</span><i class="dot"></i></a></div>
+        <div class="acts"><a class="btn btn--gold" href="interest.html"><span>Keep me updated</span><i class="dot"></i></a></div>
       </div>
     </div>
   </section>
@@ -1306,7 +1306,7 @@ html:not(.js) .demo-stage{--lit:1}
         <a href="#meeting">Meetings</a>
         <a href="#curriculum">Curriculum</a>
         <a href="#why-this-matters">Why it matters</a>
-        <a href="#officers">Officer applications</a>
+        <a href="interest.html">Interest Form</a>
         <a href="#join">Visit</a>
         <a class="foot-officers" href="officers.html">Officers portal</a>
       </nav>
@@ -1345,26 +1345,6 @@ html:not(.js) .demo-stage{--lit:1}
   </div>
 </div>
 
-<script src="role-expectations.js?v=15"></script>
-<script>
-/* The open roles, from the same definitions the application form and
-   the handbook read. A role marked applicable:false — President — is
-   not something anyone can apply for, so it is not listed here. */
-(function () {
-  'use strict';
-  var RX = window.SICA_ROLE_EXPECTATIONS, host = document.getElementById('oaRoles');
-  if (!RX || !host) return;
-  RX.order.forEach(function (id) {
-    var r = RX.roles[id];
-    if (!r || !r.applicable) return;
-    var li = document.createElement('li');
-    var b = document.createElement('b'); b.textContent = r.label;
-    var t = document.createElement('span'); t.textContent = r.hours || r.commitment;
-    li.appendChild(b); li.appendChild(t);
-    host.appendChild(li);
-  });
-})();
-</script>
 <script>
 (function(){
   'use strict';

@@ -334,20 +334,19 @@
     ITEMS.push({sec:'Handbook', k:'CH' + (i < 9 ? '0' : '') + (i + 1), label:c, rt:'Chapter', href:'handbook.html#ch' + (i + 1)});
   });
   ITEMS.push({sec:'Curriculum', k:'W05', label:'Active Listening', rt:'Phase 1', href:'curriculum.html#w5'});
-  ITEMS.push({sec:'Meetings',   k:'M05', label:'Active Listening', rt:'Thu 3 Sep', href:'meetings.html'});
   ITEMS.push({sec:'Team',       k:'PRES',label:'Reyansh Nankani',  rt:'President', href:'president.html'});
   ITEMS.push({sec:'Branding',   k:'HEX', label:'SICA colour palette', rt:'Identity', href:'branding.html'});
   ITEMS.unshift({sec:'Tasks', k:'NEW', label:'Add task', rt:'Quick action', href:'tasks.html?add=1'});
-  ITEMS.unshift({sec:'Tasks', k:'TEAM', label:'Team tasks', rt:'Workspace', href:'tasks.html?view=team'});
-  ITEMS.unshift({sec:'Tasks', k:'MINE', label:'My tasks', rt:'Workspace', href:'tasks.html'});
-  ITEMS.unshift({sec:'Dashboard', k:'TODAY', label:'Today command center', rt:'Dashboard', href:'officers.html'});
+  ITEMS.unshift({sec:'Tasks', k:'TEAM', label:'Team tasks', rt:'Workspace', href:'tasks.html?scope=team'});
+  ITEMS.unshift({sec:'Tasks', k:'MINE', label:'My tasks', rt:'Workspace', href:'tasks.html?scope=mine'});
+  ITEMS.unshift({sec:'Dashboard', k:'PLAN', label:'Task timeline', rt:'Dashboard', href:'officers.html'});
 
-  /* References are searchable from anywhere, so a doc is one ⌘K away even
-     when you are three tabs deep. Rows with no URL yet are still listed —
-     finding out a doc is missing is more useful than it being invisible. */
+  /* References are one command away. Omit placeholder rows that have
+     no file or URL; a search result should always open a real resource. */
   if (window.SICA_REFERENCES){
     window.SICA_REFERENCES.forEach(function(g){
       g.items.forEach(function(i){
+        if (!i.url) return;
         var t = i.title.replace(/&amp;/g, '&');
         ITEMS.push({
           sec: 'References',
@@ -370,7 +369,7 @@
     }).slice(0, 12);
     if (!shown.length){
       palList.innerHTML = '<div class="pal-sec">No matches</div>' +
-        '<div class="pal-row" style="cursor:default">Nothing matches “' + palInput.value + '”.</div>';
+        '<div class="pal-row" style="cursor:default">Nothing matches “' + esc(palInput.value) + '”.</div>';
       return;
     }
     if (sel >= shown.length) sel = shown.length - 1;
@@ -384,7 +383,7 @@
     });
     palList.innerHTML = h;
   }
-  function openPal(){ palWrap.classList.add('open'); palInput.value = ''; sel = 0; renderPal(); palInput.focus(); }
+  function openPal(){ if(window.sicaMobileNav)window.sicaMobileNav.close(); palWrap.classList.add('open'); palInput.value = ''; sel = 0; renderPal(); palInput.focus(); }
   function closePal(){ palWrap.classList.remove('open'); }
   function run(i){
     var it = shown[i];
@@ -440,10 +439,24 @@
     toastT = setTimeout(function(){ toastEl.classList.remove('show'); }, 1800);
   };
 
+  function mountMobileNav(){
+    if(window.sicaMobileNav)return;
+    document.body.insertAdjacentHTML('afterbegin','<header class="w-mobile-head"><a href="officers.html">SICA<span>Officer workspace</span></a><button id="workMenuToggle" aria-label="Open navigation" aria-expanded="false" aria-controls="workMobileMenu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></header>');
+    var menu=document.createElement('dialog');menu.className='w-mobile-menu';menu.id='workMobileMenu';menu.setAttribute('aria-label','Officer navigation');
+    menu.innerHTML='<button class="w-menu-close" aria-label="Close navigation">Close ×</button>';document.body.appendChild(menu);
+    var toggle=document.getElementById('workMenuToggle');
+    function close(){if(!menu.open)return;closeRoleMenu();var rail=menu.querySelector('#rail');if(rail)document.querySelector('.shell').prepend(rail);menu.close();document.body.classList.remove('w-menu-open');toggle.setAttribute('aria-expanded','false');}
+    toggle.addEventListener('click',function(){menu.appendChild(document.getElementById('rail'));menu.showModal();document.body.classList.add('w-menu-open');toggle.setAttribute('aria-expanded','true');});
+    menu.querySelector('button').addEventListener('click',close);menu.addEventListener('cancel',function(e){e.preventDefault();close();});
+    menu.addEventListener('click',function(e){if(e.target.closest('a[href]'))close();});
+    matchMedia('(max-width:960px)').addEventListener('change',close);
+    window.sicaMobileNav={dialog:menu,close:close};
+  }
   function start(){
     try { if (localStorage.getItem('sica-rail') === '1') document.body.classList.add('rail-collapsed'); } catch(e){}
     renderRail();
     buildPal();
+    mountMobileNav();
     if (typeof window.sicaPageInit === 'function') window.sicaPageInit();
   }
 

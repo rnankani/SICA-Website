@@ -23,7 +23,7 @@ async function main(){
  await db.exec(fs.readFileSync(path.join(root,'schema.sql'),'utf8'));
  const migrations=fs.readdirSync(path.join(root,'supabase/migrations')).sort();
  for(const f of migrations)await db.exec(fs.readFileSync(path.join(root,'supabase/migrations',f),'utf8'));
- for(const f of migrations.filter(f=>f.startsWith('20261011')))await db.exec(fs.readFileSync(path.join(root,'supabase/migrations',f),'utf8'));
+ for(const f of migrations.filter(f=>f.startsWith('202610')))await db.exec(fs.readFileSync(path.join(root,'supabase/migrations',f),'utf8'));
  console.log('PASS full schema, migration chain, repeatable new migrations');
  const founder='00000000-0000-4000-8000-000000000001',vp='00000000-0000-4000-8000-000000000002',member='00000000-0000-4000-8000-000000000003';
  await db.exec(`alter table auth.users disable trigger on_auth_user_created;
@@ -68,6 +68,27 @@ async function main(){
  await db.query("select set_application_status($1,'interview',null)",[apps[0].id]);
  assert.equal((await db.query('select list_applications_json() as apps')).rows[0].apps[0].status,'interview');
  console.log('PASS closure preserves the existing application inbox and review actions');
+ const signup={id:'00000000-0000-4000-8000-000000000020',name:'QA Student',grade:10,student_id:'123456',email:'qa.student@fuhst.org',interest:'I want to practice conversations and make new friends at school.',question:null};
+ const submitInterest=payload=>db.query('select submit_interest($1::jsonb) as accepted',[JSON.stringify(payload)]);
+ await as('','anon');
+ assert.equal((await submitInterest(signup)).rows[0].accepted,true);
+ await submitInterest(signup);
+ await submitInterest({...signup,id:'00000000-0000-4000-8000-000000000021',name:'Do not overwrite'});
+  await assert.rejects(()=>submitInterest({...signup,email:'another@fuhst.org'}),/could not confirm/);
+ for(const field of ['name','grade','student_id','email','interest']){const payload={...signup};delete payload[field];await assert.rejects(()=>submitInterest(payload));}
+ await assert.rejects(()=>submitInterest({...signup,email:'qa@gmail.com'}),/@fuhst/);
+ await assert.rejects(()=>submitInterest({...signup,interest:'one two three four five six seven eight nine ten'}),/11 or 12/);
+ await assert.rejects(()=>submitInterest({...signup,interest:'one two three four five six seven eight nine ten eleven twelve thirteen'}),/11 or 12/);
+ await assert.rejects(()=>db.query('select * from interest_signups'),/permission denied/);
+ await assert.rejects(()=>db.query("insert into interest_signups(id,name,grade,student_id,email,interest) values ($1,$2,$3,$4,$5,$6)",Object.values(signup).slice(0,6)),/permission denied/);
+ await as(vp);assert.equal((await db.query('select * from interest_signups')).rows.length,0);
+ await as(founder);const savedSignups=(await db.query('select * from interest_signups')).rows;
+ assert.equal(savedSignups.length,1);assert.equal(savedSignups[0].name,'QA Student');
+ console.log('PASS signup domain/required/word rules, retry and email deduplication, leader-only PII reads');
+ await db.query("insert into documents(title,purpose,owner_role) values ('Shared file','Used for training',null),('Private handbook','President planning','president')");
+ await as(vp);const vpDocs=(await db.query('select * from documents')).rows;assert.equal(vpDocs.length,1);assert.equal(vpDocs[0].title,'Shared file');
+ await as(founder);assert.equal((await db.query('select * from documents')).rows.length,2);
+ console.log('PASS reference metadata and president-only document boundary');
  // Force the audit write to fail: the task update must roll back as well.
  await db.exec('reset role');
  await db.exec("alter table task_activity add constraint qa_fail_history check (action <> 'updated') not valid");
