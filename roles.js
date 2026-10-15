@@ -166,6 +166,7 @@
   Object.keys(ROLES).forEach(function(key){
     ROLES[key].nav.forEach(function(group){group.items=group.items.filter(function(item){return ['library','handbook','announcements'].indexOf(item.id)===-1;});});
     if(['founder','president','vp'].includes(key))ROLES[key].nav[1].items.push(p('interests','Interest signups','interests.html',I.inbox));
+    if(!ROLES[key].nav.some(g=>g.items.some(i=>i.id==='settings')))ROLES[key].nav.push({group:'Personal',items:[p('settings','Settings','settings.html',I.gear)]});
   });
 
   /* The authenticated profile is the source of truth. Local mode keeps

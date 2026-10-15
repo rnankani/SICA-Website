@@ -153,3 +153,4 @@ h2 .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radi
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition-duration:.001ms!important}}
 
 .note,.f .count,.opt{color:#9c9585}.f input::placeholder,.f textarea::placeholder{color:#8c867c}
+.email-lock [hidden]{display:none}

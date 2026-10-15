@@ -27,7 +27,7 @@
        the role at render time so a first-time officer never inherits the
        Founder navigation from the local fallback. */
     ROLE = R.get();
-    NAV = ROLE.nav;
+    NAV = window.SICA_SIDEBAR ? SICA_SIDEBAR.apply(ROLE.nav) : ROLE.nav;
     var rail = document.getElementById('rail');
     if (!rail) return;
     var profile = null;
@@ -39,16 +39,17 @@
     NAV.forEach(function(g){
       h += '<div class="navgroup"><div class="navlabel">' + g.group + '</div>';
       g.items.forEach(function(i){
-        h += '<a class="navitem' + (i.id === page ? ' on' : '') + '" href="' + i.href + '"' +
+        h += '<div class="nav-row"><a class="navitem' + (i.id === page ? ' on' : '') + '" href="' + i.href + '"' +
              ' data-label="' + i.label + '"' +
              (i.id === page ? ' aria-current="page"' : '') + '>' +
              '<svg viewBox="0 0 24 24">' + i.icon + '</svg>' +
              '<span class="navitem-t">' + i.label + '</span>' +
-             '</a>';
+             '</a><button class="nav-options" type="button" data-sidebar-tab="'+i.id+'" aria-label="Customize '+esc(i.label)+' tab">⋯</button></div>';
       });
       h += '</div>';
     });
     h += '<div class="railfoot">' +
+         '<button class="sidebar-customize" type="button" data-sidebar-tab="">Customize sidebar</button>' +
          '<button class="kbd-hint" id="palBtn"><span>Search</span><kbd>⌘K</kbd></button>' +
          (R.isImpersonating()
             ? '<div class="imp" id="impBar"><span>Viewing as ' + ROLE.label + '</span>' +
@@ -59,6 +60,7 @@
          '<span class="whoami-txt"><b>' + esc(displayName) + '</b><span>' + ROLE.label + '</span></span>' +
          '<i class="whoami-c" aria-hidden="true">&#9662;</i></button></div>';
     rail.innerHTML = h;
+    rail.querySelectorAll('[data-sidebar-tab]').forEach(function(b){b.addEventListener('click',function(){window.SICA_SIDEBAR?.open(b.dataset.sidebarTab);});});
 
     /* Collapse preference is per-device and survives navigation, so the
        rail does not silently re-expand on every page load. */
@@ -457,6 +459,7 @@
     renderRail();
     buildPal();
     mountMobileNav();
+    if(window.SICA_SIDEBAR)SICA_SIDEBAR.init(renderRail);
     if (typeof window.sicaPageInit === 'function') window.sicaPageInit();
   }
 

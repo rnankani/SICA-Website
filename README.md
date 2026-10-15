@@ -37,16 +37,16 @@ Frontend deployment does **not** apply database changes. Run pending files
 in `supabase/migrations/` against the linked Supabase project before relying
 on a feature that changes policies, grants, functions, or tables.
 
-## Interest form & workspace rollout (October 14, 2026)
+## Interest form & workspace rollout (October 15, 2026)
 
-Run `supabase/migrations/202610140002_interest_email_and_access.sql` in
+Run `supabase/migrations/202610150001_interest_rules_and_sidebar.sql` in
 **Supabase → SQL Editor** against the existing SICA database. It is repeatable
 and does not delete officer applications, tasks, or documents. Apply any older
 pending migrations first (including the October 11 files below).
-This file supersedes the first interest-form migration: it also works if that
-file was never run. Run this newer file even if you already ran the first one;
-it corrects the domain and adds Vice President read access. Historical email
-values are preserved rather than silently rewritten.
+This file supersedes the earlier interest-form migrations and also bootstraps
+intake if they were never run. Run it even if you ran the October 14 files.
+It enforces the new answer/ID rules and adds private sidebar preferences.
+Historical submissions are preserved without rewriting their answers or IDs.
 
 - Public CTAs now lead to `interest.html`; `apply.html` redirects there.
   The full historical application source is retained in
@@ -55,13 +55,25 @@ values are preserved rather than silently rewritten.
 - Interest signup writes use an anonymous, narrowly scoped database function;
   only Founder/President/Vice President profiles can read the list. No signup data is kept in
   browser storage. The exact requested domain is **@fuhsd.org**, and the answer
-  must contain **11–12 words**, enforced in the browser and database.
+  must contain **2–3 sentences and at least 15 words total**, enforced in the
+  browser and database. Sentence boundaries use `.`, `!`, or `?` followed by
+  whitespace/end; this is punctuation validation, not a grammar judgment.
+  Student IDs require exactly seven ASCII digits and retain leading zeros.
+  A username or a full @fuhsd.org address becomes one lowercase full address.
+- Every officer can use Settings → Customize sidebar, or the menu beside any
+  tab. Pin tabs and reorder with keyboard-accessible arrows. Preferences are
+  stored per user/per role in Supabase, with owner-only RLS. The sidebar never
+  grants access to tabs outside the officer's role. Failed saves retain drafts.
 - Signups are a mailing list, not memberships. The portal has a CSV export;
   it does **not** automatically send emails. Student IDs are omitted from CSV.
 - References reads the original `documents` table and private Storage bucket;
   there is no file migration or duplication. Any non-empty file up to 50 MB
   can be uploaded with a name, purpose, and access level. Open/download obtains
   a fresh signed URL. The built-in handbook also has a standalone HTML download.
+  Listing is paginated to avoid silently dropping files beyond an API row cap.
+  Old Library cards without file URLs (Constitution, Logo Assets, Presentation
+  Template, Recruitment Slides, Flyers, Social Templates) are explicitly listed
+  as awaiting upload. No documents or storage objects are deleted by this pass.
 - Calendar reads task deadlines from the same tasks as the Gantt chart, plus
   meetings and existing events. A task opens its right-side editor. No external
   calendar account is needed. Returning to the calendar refreshes its data.
@@ -70,6 +82,10 @@ values are preserved rather than silently rewritten.
   Announcements is removed from navigation; old links safely go to Dashboard.
 - Settings saves club details to Supabase. Founder Tools contains working
   navigation and a connectivity check, not placeholder reset actions.
+
+For official school intake, see `GOOGLE-FORM-SETUP.md`. The website still uses
+the custom form until a real Google Forms responder URL is provided. There is
+no automatic Google Forms/Sheets/Supabase sync and no sharing has been performed.
 
 After applying SQL, submit one clearly labeled test signup, confirm it in
 **Officer Portal → Interest signups** from a second browser, and delete only

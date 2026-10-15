@@ -4,17 +4,19 @@
   const fields=['name','grade','studentId','email','interest','question'];
   let pending=false, submissionId=null, submissionBody=null, sent=false;
   const words=s=>s.trim()?s.trim().split(/\s+/u).length:0;
+  const sentences=s=>s.trim().split(/[.!?]+(?:\s+|$)/u).filter(part=>part.trim()).length;
+  const emailValue=s=>{const v=s.trim().toLowerCase();return v.includes('@')?v:v+'@fuhsd.org';};
   function message(id){
-    const value=document.getElementById(id).value.trim();
+    const value=id==='studentId'?document.getElementById(id).value:document.getElementById(id).value.trim();
     if(id!=='question'&&!value)return 'Please fill this in.';
     if(id==='grade'&&!['9','10','11','12'].includes(value))return 'Choose a grade from 9 to 12.';
-    if(id==='studentId'&&!/^[A-Za-z0-9-]{3,30}$/.test(value))return 'Use your student ID (3–30 letters, numbers, or hyphens).';
-    if(id==='email'&&!/^[a-z0-9](?:[a-z0-9._%+-]{0,62}[a-z0-9])?$/i.test(value))return 'Enter just your school email username, without @fuhsd.org.';
-    if(id==='interest'&&(words(value)<11||words(value)>12))return 'Please use 11 or 12 words. You have '+words(value)+'.';
+    if(id==='studentId'&&!/^[0-9]{7}$/.test(value))return 'Enter exactly 7 digits (0–9). No letters, spaces, or symbols.';
+    if(id==='email'&&!/^[a-z0-9](?:[a-z0-9._%+-]{0,62}[a-z0-9])?@fuhsd\.org$/.test(emailValue(value)))return 'Use your school username or full @fuhsd.org email address.';
+    if(id==='interest'&&(words(value)<15||sentences(value)<2||sentences(value)>3))return 'Write 2–3 detailed sentences with at least 15 words total. You have '+words(value)+' words and '+sentences(value)+' sentences.';
     return '';
   }
   function validate(id){const el=document.getElementById(id),err=message(id);el.closest('.f').classList.toggle('bad',!!err);el.setAttribute('aria-invalid',String(!!err));document.getElementById(id+'Error').textContent=err;el.setAttribute('aria-describedby',[...new Set(((el.getAttribute('aria-describedby')||'')+' '+id+'Error').trim().split(/\s+/))].join(' '));return !err;}
-  fields.forEach(id=>{document.getElementById(id).addEventListener('input',()=>{const el=document.getElementById(id);if(el.closest('.f').classList.contains('bad'))validate(id);if(id==='interest'){const n=words(el.value),count=document.getElementById('interestCount');count.textContent=n+' words · aim for 11–12';count.classList.toggle('over',n>12);}});});
+  fields.forEach(id=>{document.getElementById(id).addEventListener('input',()=>{const el=document.getElementById(id);if(el.closest('.f').classList.contains('bad'))validate(id);if(id==='email')document.getElementById('emailDomain').hidden=el.value.includes('@');if(id==='interest'){const n=words(el.value),s=sentences(el.value),count=document.getElementById('interestCount');count.textContent=n+' words · '+s+' sentences';count.classList.toggle('over',s>3);}});});
   form.addEventListener('submit',async event=>{
     event.preventDefault();if(pending||sent)return;
     const invalid=fields.filter(id=>!validate(id));
@@ -23,7 +25,7 @@
     try{
       if(!window.crypto||!crypto.randomUUID)throw new Error('Please use a current browser over a secure connection.');
       const value=id=>document.getElementById(id).value.trim();
-      const payload={name:value('name'),grade:Number(value('grade')),student_id:value('studentId'),email:value('email').toLowerCase()+'@fuhsd.org',interest:value('interest'),question:value('question')||null};
+      const payload={name:value('name'),grade:Number(value('grade')),student_id:value('studentId'),email:emailValue(value('email')),interest:value('interest'),question:value('question')||null};
       const fingerprint=JSON.stringify(payload);
       if(submissionBody!==fingerprint){submissionId=crypto.randomUUID();submissionBody=fingerprint;}
       const result=await window.SICA_DB.interest.submit({id:submissionId,...payload});

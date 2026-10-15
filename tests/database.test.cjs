@@ -71,14 +71,15 @@ async function main(){
  // Upgrade an existing old-domain table without losing historical signups.
  await db.exec('reset role');
  await db.exec("alter table interest_signups drop constraint interest_signups_email_check");
+ await db.exec('alter table interest_signups drop constraint interest_signups_student_id_check; alter table interest_signups drop constraint interest_signups_interest_check');
  const historicalId='00000000-0000-4000-8000-000000000099';
- await db.query("insert into interest_signups(id,name,grade,student_id,email,interest) values ($1,'Historical QA',10,'123456','historical@fuhst.org','I want to practice conversations and make new friends at school.')",[historicalId]);
- await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/202610140002_interest_email_and_access.sql'),'utf8'));
+ await db.query("insert into interest_signups(id,name,grade,student_id,email,interest) values ($1,'Historical QA',10,'0123456','historical@fuhst.org','I want to practice everyday conversations and feel more confident meeting people. I also want to make new friends.')",[historicalId]);
+ await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/202610150001_interest_rules_and_sidebar.sql'),'utf8'));
  assert.equal((await db.query('select email from interest_signups where id=$1',[historicalId])).rows[0].email,'historical@fuhst.org');
- await assert.rejects(()=>db.query("insert into interest_signups(id,name,grade,student_id,email,interest) values (gen_random_uuid(),'Bad domain',10,'123456','new@fuhst.org','I want to practice conversations and make new friends at school.')"),/interest_signups_email_check/);
+ await assert.rejects(()=>db.query("insert into interest_signups(id,name,grade,student_id,email,interest) values (gen_random_uuid(),'Bad domain',10,'0123456','new@fuhst.org','I want to practice everyday conversations and feel more confident meeting people. I also want to make new friends.')"),/interest_signups_email_check/);
  await db.query('delete from interest_signups where id=$1',[historicalId]);
  console.log('PASS domain migration preserves historical entries and rejects new old-domain rows');
- const signup={id:'00000000-0000-4000-8000-000000000020',name:'QA Student',grade:10,student_id:'123456',email:'qa.student@fuhsd.org',interest:'I want to practice conversations and make new friends at school.',question:null};
+ const signup={id:'00000000-0000-4000-8000-000000000020',name:'QA Student',grade:10,student_id:'0123456',email:'qa.student@fuhsd.org',interest:'I want to practice everyday conversations and feel more confident meeting people. I also want to make new friends.',question:null};
  const submitInterest=payload=>db.query('select submit_interest($1::jsonb) as accepted',[JSON.stringify(payload)]);
  await as('','anon');
  assert.equal((await submitInterest(signup)).rows[0].accepted,true);
@@ -88,8 +89,11 @@ async function main(){
  for(const field of ['name','grade','student_id','email','interest']){const payload={...signup};delete payload[field];await assert.rejects(()=>submitInterest(payload));}
  await assert.rejects(()=>submitInterest({...signup,email:'qa@gmail.com'}),/@fuhsd/);
  await assert.rejects(()=>submitInterest({...signup,email:'qa@fuhst.org'}),/@fuhsd/);
- await assert.rejects(()=>submitInterest({...signup,interest:'one two three four five six seven eight nine ten'}),/11 or 12/);
- await assert.rejects(()=>submitInterest({...signup,interest:'one two three four five six seven eight nine ten eleven twelve thirteen'}),/11 or 12/);
+ for(const student_id of ['123456','12345678','123a567','123-567','123 567',' 1234567'])await assert.rejects(()=>submitInterest({...signup,student_id}),/7 digits/);
+ await assert.rejects(()=>submitInterest({...signup,interest:'I want to practice everyday conversations and feel more confident meeting people and make new friends at school'}),/2-3 detailed sentences/);
+ await assert.rejects(()=>submitInterest({...signup,interest:'I want to practice everyday conversations. I want to make new friends. I would like to learn more. I want confidence.'}),/2-3 detailed sentences/);
+ await assert.rejects(()=>submitInterest({...signup,interest:'one two three four five six seven eight nine ten'}),/at least 15/);
+ await assert.rejects(()=>submitInterest({...signup,interest:'one two three four five six seven eight nine ten eleven twelve thirteen'}),/at least 15/);
  await assert.rejects(()=>db.query('select * from interest_signups'),/permission denied/);
  await assert.rejects(()=>db.query("insert into interest_signups(id,name,grade,student_id,email,interest) values ($1,$2,$3,$4,$5,$6)",Object.values(signup).slice(0,6)),/permission denied/);
  for(const role of ['vp','president','secretary','treasurer','pr','member']){
@@ -104,6 +108,14 @@ async function main(){
  await as(vp);const vpDocs=(await db.query('select * from documents')).rows;assert.equal(vpDocs.length,1);assert.equal(vpDocs[0].title,'Shared file');
  await as(founder);assert.equal((await db.query('select * from documents')).rows.length,2);
  console.log('PASS reference metadata and president-only document boundary');
+ await db.query('insert into sidebar_preferences(user_id,preferences) values ($1,$2)',[founder,JSON.stringify({founder:{order:['tasks','references'],pinned:['tasks']}})]);
+ await as(vp);assert.equal((await db.query('select * from sidebar_preferences')).rows.length,0);
+ await assert.rejects(()=>db.query('insert into sidebar_preferences(user_id,preferences) values ($1,$2)',[member,'{}']),/row-level security/);
+ await db.query('insert into sidebar_preferences(user_id,preferences) values ($1,$2)',[vp,'{}']);
+ await as(founder);assert.equal((await db.query('select * from sidebar_preferences')).rows.length,1);
+ await as('','anon');await assert.rejects(()=>db.query('select * from sidebar_preferences'),/permission denied/);
+ await as(member);assert.equal((await db.query('select * from sidebar_preferences')).rows.length,0);
+ console.log('PASS private account-scoped sidebar preferences and role boundaries');
  // Force the audit write to fail: the task update must roll back as well.
  await db.exec('reset role');
  await db.exec("alter table task_activity add constraint qa_fail_history check (action <> 'updated') not valid");

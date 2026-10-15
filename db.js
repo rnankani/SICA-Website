@@ -27,6 +27,7 @@
      Mirrors schema.sql exactly. Anything the UI shows as an em dash is
      a column here that has no rows yet. */
   var TABLES = {
+    sidebar_preferences: ['user_id','preferences'],
     interest_signups: ['id', 'created_at', 'name', 'grade', 'student_id', 'email', 'interest', 'question'],
     profiles:     ['id', 'email', 'full_name', 'grade', 'role', 'created_at', 'last_seen'],
     officer_invites: ['id', 'email', 'full_name', 'role', 'status', 'profile_id', 'invited_by',
@@ -261,7 +262,7 @@
   }
 
   /* Primary key per table, for the handful that are not `id`. */
-  var PK = { settings: 'key', social_accounts: 'platform', curriculum_weeks: 'week' };
+  var PK = { settings: 'key', sidebar_preferences: 'user_id', social_accounts: 'platform', curriculum_weeks: 'week' };
   function KEYS(t) { return PK[t] || 'id'; }
 
   var supabase = {
@@ -272,6 +273,8 @@
         q.push(k + '=eq.' + encodeURIComponent(opts.where[k]));
       });
       if (opts && opts.order) q.push('order=' + opts.order + '.desc');
+      if (opts && opts.limit) q.push('limit=' + Number(opts.limit));
+      if (opts && opts.offset) q.push('offset=' + Number(opts.offset));
       q.push('select=*');
       return sb(t + '?' + q.join('&'));
     },
@@ -356,6 +359,14 @@
     tables: TABLES,
     statuses: APPLICATION_STATUS,
 
+    sidebar: {
+      get: function(id) { return A.get('sidebar_preferences', id); },
+      save: async function(id, preferences) {
+        var saved = await A.upsert('sidebar_preferences', {user_id:id, preferences:preferences});
+        if (!saved || saved.user_id !== id) throw new Error('The database did not confirm your sidebar settings.');
+        return saved;
+      }
+    },
     interest: {
       submit: function (payload) {
         if (!LIVE) return Promise.reject(new Error('The signup database is unavailable. Please try again later.'));
@@ -558,7 +569,12 @@
                 create: function (a) { return A.insert('announcements', a); } },
     documents: {
       list: async function (opts) {
-        var rows = await A.list('documents', { order: 'updated_at' });
+        var rows = [], batch, offset = 0;
+        do {
+          batch = await A.list('documents', { order: 'id', limit: 500, offset: offset });
+          rows = rows.concat(batch); offset += batch.length;
+        } while (LIVE && batch.length === 500);
+        rows.sort(function(a,b){return String(b.updated_at||b.created_at||'').localeCompare(String(a.updated_at||a.created_at||''));});
         if (!LIVE || (opts && opts.metadataOnly)) return rows;
         return Promise.all(rows.map(async function (row) {
           if (!row.storage_path) return row; // legacy URL-based document
