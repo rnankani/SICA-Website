@@ -40,16 +40,15 @@
       h += '<div class="navgroup"><div class="navlabel">' + g.group + '</div>';
       g.items.forEach(function(i){
         h += '<div class="nav-row"><a class="navitem' + (i.id === page ? ' on' : '') + '" href="' + i.href + '"' +
-             ' data-label="' + i.label + '"' +
+             ' data-sidebar-id="'+i.id+'" data-label="' + i.label + '"' +
              (i.id === page ? ' aria-current="page"' : '') + '>' +
              '<svg viewBox="0 0 24 24">' + i.icon + '</svg>' +
              '<span class="navitem-t">' + i.label + '</span>' +
-             '</a><button class="nav-options" type="button" data-sidebar-tab="'+i.id+'" aria-label="Customize '+esc(i.label)+' tab">⋯</button></div>';
+             '</a></div>';
       });
       h += '</div>';
     });
     h += '<div class="railfoot">' +
-         '<button class="sidebar-customize" type="button" data-sidebar-tab="">Customize sidebar</button>' +
          '<button class="kbd-hint" id="palBtn"><span>Search</span><kbd>⌘K</kbd></button>' +
          (R.isImpersonating()
             ? '<div class="imp" id="impBar"><span>Viewing as ' + ROLE.label + '</span>' +
@@ -60,7 +59,10 @@
          '<span class="whoami-txt"><b>' + esc(displayName) + '</b><span>' + ROLE.label + '</span></span>' +
          '<i class="whoami-c" aria-hidden="true">&#9662;</i></button></div>';
     rail.innerHTML = h;
-    rail.querySelectorAll('[data-sidebar-tab]').forEach(function(b){b.addEventListener('click',function(){window.SICA_SIDEBAR?.open(b.dataset.sidebarTab);});});
+    rail.querySelectorAll('[data-sidebar-id]').forEach(function(a){
+      a.addEventListener('contextmenu',function(e){e.preventDefault();window.SICA_SIDEBAR?.context(a.dataset.sidebarId,e.clientX,e.clientY,a);});
+      a.addEventListener('keydown',function(e){if(e.key==='ContextMenu'||(e.shiftKey&&e.key==='F10')){e.preventDefault();var rect=a.getBoundingClientRect();window.SICA_SIDEBAR?.context(a.dataset.sidebarId,rect.right,rect.top,a);}});
+    });
 
     /* Collapse preference is per-device and survives navigation, so the
        rail does not silently re-expand on every page load. */
@@ -338,9 +340,9 @@
   ITEMS.push({sec:'Curriculum', k:'W05', label:'Active Listening', rt:'Phase 1', href:'curriculum.html#w5'});
   ITEMS.push({sec:'Team',       k:'PRES',label:'Reyansh Nankani',  rt:'President', href:'president.html'});
   ITEMS.push({sec:'Branding',   k:'HEX', label:'SICA colour palette', rt:'Identity', href:'branding.html'});
-  ITEMS.unshift({sec:'Tasks', k:'NEW', label:'Add task', rt:'Quick action', href:'tasks.html?add=1'});
-  ITEMS.unshift({sec:'Tasks', k:'TEAM', label:'Team tasks', rt:'Workspace', href:'tasks.html?scope=team'});
-  ITEMS.unshift({sec:'Tasks', k:'MINE', label:'My tasks', rt:'Workspace', href:'tasks.html?scope=mine'});
+  ITEMS.unshift({sec:'Tasks', k:'NEW', label:'Add task', rt:'Quick action', href:'officers.html?add=1'});
+  ITEMS.unshift({sec:'Tasks', k:'TEAM', label:'Team tasks', rt:'Workspace', href:'officers.html?scope=team'});
+  ITEMS.unshift({sec:'Tasks', k:'MINE', label:'My tasks', rt:'Workspace', href:'officers.html?scope=mine'});
   ITEMS.unshift({sec:'Dashboard', k:'PLAN', label:'Task timeline', rt:'Dashboard', href:'officers.html'});
 
   /* References are one command away. Omit placeholder rows that have

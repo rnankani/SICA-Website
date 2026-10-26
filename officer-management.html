@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="officers.css?v=15"><link rel="stylesheet" href="officer-nav.css?v=1"><link rel="stylesheet" href="sidebar.css?v=1">
+<link rel="stylesheet" href="officers.css?v=15"><link rel="stylesheet" href="officer-nav.css?v=1"><link rel="stylesheet" href="sidebar.css?v=2">
 <meta name="view-transition" content="same-origin"><link rel="icon" type="image/svg+xml" href="favicon.svg?v=1"></head>
 <body data-page="officers">
 <div class="shell">
@@ -35,6 +35,7 @@
       <p class="inv-err" id="invErr"></p>
     </div>
 
+    <p class="pnote">Adding an invite does not send an email. Send the officer <a href="officers.html">the portal link</a>, ask them to create an account with that exact email, then approve their Registered row here.</p>
     <h2 class="sec-h">Invite list</h2>
     <div class="panel"><div id="invList"></div></div>
 
@@ -48,10 +49,10 @@
 <script src="references-data.js?v=14"></script>
 <script src="supabase-config.js?v=14"></script>
 <script src="auth.js?v=25"></script>
-<script src="db.js?v=27"></script>
-<script src="roles.js?v=19"></script>
+<script src="db.js?v=28"></script>
+<script src="roles.js?v=20"></script>
 <script src="tasks.js?v=14"></script>
-<script src="sidebar.js?v=1"></script><script src="officers.js?v=27"></script>
+<script src="sidebar.js?v=2"></script><script src="officers.js?v=28"></script>
 <script>
 window.sicaPageInit = function () {
   var DB = window.SICA_DB, R = window.SICA_ROLES;
@@ -78,6 +79,7 @@ window.sicaPageInit = function () {
     return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
   }
 
+  function escapeInvite(value){return String(value).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   function row(i) {
     var st = STATUS[i.status] || STATUS.invited;
     var acts = '';
@@ -94,8 +96,8 @@ window.sicaPageInit = function () {
              '<button class="ib"      data-act="remove"  data-id="' + i.id + '">Delete</button>';
 
     return '<div class="invrow">' +
-      '<span class="invwho"><b>' + (i.full_name || '&mdash;') + '</b>' +
-        '<small>' + i.email + '</small></span>' +
+      '<span class="invwho"><b>' + escapeInvite(i.full_name || '—') + '</b>' +
+        '<small>' + escapeInvite(i.email) + '</small></span>' +
       '<span class="invrole">' + ((R.all[i.role] || {}).label || i.role) + '</span>' +
       '<span class="pill ' + st[0] + '">' + st[1] + '</span>' +
       '<span class="invwhen">' + when(i.registered_at || i.invited_at) + '</span>' +
@@ -106,18 +108,21 @@ window.sicaPageInit = function () {
 
   async function draw() {
     var rows = [];
-    try { rows = await DB.invites.list(); } catch (e) { rows = []; }
+    try { rows = await DB.invites.list(); } catch (e) {
+      listEl.innerHTML='<div class="tbl-empty"><b>Invitations could not be loaded</b><p>Refresh to retry. This is not an empty invite list.</p></div>';
+      errEl.textContent=e.message;document.getElementById('invStats').textContent='Counts unavailable';return;
+    }
 
     listEl.innerHTML = rows.length
       ? rows.map(row).join('')
       : '<div class="tbl-empty"><b>Nobody invited yet</b>' +
-        '<p>Add the four open seats above. Until someone is on this list, ' +
+        '<p>Add your confirmed officers above. Until someone is on this list, ' +
         'the database will refuse to create an account for them at all.</p></div>';
 
     /* Guarded like the list above: a failed query must leave the page
        readable rather than blanking the stat row with no explanation. */
     var c = { invited: 0, registered: 0, approved: 0, denied: 0, revoked: 0, total: 0 };
-    try { c = await DB.invites.counts(); } catch (e) {}
+    rows.forEach(function(r){if(r.status in c)c[r.status]++;c.total++;});
     document.getElementById('invStats').innerHTML = [
       ['Invited', c.invited, 'Not registered yet'],
       ['Waiting on you', c.registered, c.registered ? 'Approve or deny' : 'Nothing pending'],

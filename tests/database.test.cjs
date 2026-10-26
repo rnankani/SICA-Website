@@ -116,6 +116,40 @@ async function main(){
  await as('','anon');await assert.rejects(()=>db.query('select * from sidebar_preferences'),/permission denied/);
  await as(member);assert.equal((await db.query('select * from sidebar_preferences')).rows.length,0);
  console.log('PASS private account-scoped sidebar preferences and role boundaries');
+ // New shared-role assignment is enforced in PostgreSQL, not just in the UI.
+ await db.exec('reset role');
+ await db.exec(fs.readFileSync(path.join(root,'supabase/migrations/202610250001_shared_tasks_and_google_intake.sql'),'utf8'));
+ await as(founder);
+ const shared=(await db.query("insert into tasks(title,owner_role,owner_id,created_by,assignee_roles) values ('Shared plan','founder',$1,$1,ARRAY['vp','pr']::sica_role[]) returning *",[founder])).rows[0];
+ await as(vp);
+ assert.equal((await db.query('select * from tasks where id=$1',[shared.id])).rows.length,1);
+ await db.query("update tasks set title='Shared plan updated' where id=$1",[shared.id]);
+ await assert.rejects(()=>db.query("update tasks set assignee_roles=ARRAY['secretary']::sica_role[] where id=$1",[shared.id]),/reassign/);
+ await assert.rejects(()=>db.query("update tasks set created_by=$1 where id=$2",[vp,shared.id]),/reassign/);
+ await assert.rejects(()=>db.query("insert into tasks(title,owner_id,owner_role,assignee_roles) values ('Unauthorized',$1,'vp',ARRAY['pr']::sica_role[])",[vp]),/yourself/);
+ await as(member);assert.equal((await db.query('select * from tasks where id=$1',[shared.id])).rows.length,0);
+ await as('','anon');await assert.rejects(()=>submitInterest(signup),/official Google Interest Form/);
+ await as(founder);assert.equal((await db.query('select * from interest_signups')).rows.length,1);
+ console.log('PASS shared assignee access, update permission, no reassignment escalation, cached intake blocked, historical signup preserved');
+ // Exercise the actual invite/signup-trigger/approval/revocation lifecycle.
+ await as(founder);
+ const invitation=(await db.query("insert into officer_invites(email,full_name,role) values ('new.officer@example.test','New Officer','pr') returning id")).rows[0].id;
+ await as(vp);
+ await assert.rejects(()=>db.query("insert into officer_invites(email,role) values ('unauthorized@example.test','vp')"),/row-level security/);
+ await assert.rejects(()=>db.query("update profiles set role='founder' where id=$1",[vp]),/permission denied/);
+ await assert.rejects(()=>db.query("select approve_officer($1)",[invitation]),/Only the founder/);
+ await db.exec('reset role');
+ const newOfficer='00000000-0000-4000-8000-000000000044';
+ await db.query("insert into auth.users(id,email) values ($1,'new.officer@example.test')",[newOfficer]);
+ assert.equal((await db.query("select role from profiles where id=$1",[newOfficer])).rows[0].role,'member');
+ assert.equal((await db.query("select status from officer_invites where id=$1",[invitation])).rows[0].status,'registered');
+ await as(founder);await db.query('select approve_officer($1)',[invitation]);
+ assert.equal((await db.query("select role from profiles where id=$1",[newOfficer])).rows[0].role,'pr');
+ assert.equal((await db.query("select * from email_outbox where to_email='new.officer@example.test'")).rows.length,1);
+ await as(newOfficer);assert.equal((await db.query('select * from tasks where id=$1',[shared.id])).rows.length,1);
+ await as(founder);await db.query("select revoke_officer($1,'Test cleanup')",[invitation]);
+ assert.equal((await db.query("select role from profiles where id=$1",[newOfficer])).rows[0].role,'member');
+ console.log('PASS invite → registration → founder approval → shared task access → revocation; self-promotion denied');
  // Force the audit write to fail: the task update must roll back as well.
  await db.exec('reset role');
  await db.exec("alter table task_activity add constraint qa_fail_history check (action <> 'updated') not valid");

@@ -84,16 +84,18 @@ async function main(){
  assert.equal(await page.locator('.w-count').count(),0);
  assert.equal(await page.getByText('Your daily workspace',{exact:true}).count(),0);
  assert.equal(await page.locator('.w-timeline').count(),1);
- assert.equal(await page.getByText('First officer practice',{exact:true}).count(),1);
+ assert.equal(await page.getByText('Next meeting: First officer practice',{exact:true}).count(),1);
  await page.screenshot({path:path.join(out,'dashboard-desktop.png'),fullPage:true});
  console.log('PASS dashboard: real data, counts, timeline and next meeting');
  await page.evaluate(()=>{window.testShell=document.getElementById('rail');});
  await page.getByRole('link',{name:'Add task',exact:true}).click();
  await page.locator('.w-panel[open]').waitFor();
- assert(new URL(page.url()).pathname.endsWith('/tasks.html'));
+ assert(new URL(page.url()).pathname.endsWith('/officers.html'));
  assert(await page.evaluate(()=>window.testShell===document.getElementById('rail')));
  await page.locator('[name=title]').fill('Prepare an easy icebreaker');
  await page.locator('[name=owner]').selectOption('person:'+vp.id);
+ await page.locator('[name=assignee_roles][value=pr]').check();
+ await page.locator('[name=assignee_roles][value=secretary]').check();
  await page.locator('[name=due]').fill(day(5));
  await page.locator('[name=description]').fill('Three prompts for the first pair activity.');
  await page.screenshot({path:path.join(out,'task-editor-desktop.png'),fullPage:true});
@@ -101,11 +103,13 @@ async function main(){
  await page.locator('.w-panel[open]').waitFor({state:'hidden'});
  assert.equal(store.tasks.filter(t=>t.title==='Prepare an easy icebreaker').length,1);
  assert.equal(store.tasks.find(t=>t.title==='Prepare an easy icebreaker').owner_id,vp.id);
+ assert.deepEqual(store.tasks.find(t=>t.title==='Prepare an easy icebreaker').assignee_roles,['secretary','pr']);
+ assert.equal(await page.locator('#rail a[data-sidebar-id=tasks]').count(),0);
  console.log('PASS persistent navigation, right editor, ownership and duplicate-click protection');
- await page.reload();await page.locator('[data-edit]').filter({hasText:'Prepare an easy icebreaker'}).waitFor();
+ await page.reload();await page.locator('#wResults [data-edit]').filter({hasText:'Prepare an easy icebreaker'}).waitFor();
  await page.evaluate(()=>{window.testShell=document.getElementById('rail');});
  const second=await context(),secondPage=await second.newPage();
- await secondPage.goto(url+'/tasks.html');await secondPage.locator('[data-edit]').filter({hasText:'Prepare an easy icebreaker'}).waitFor();
+ await secondPage.goto(url+'/tasks.html');await secondPage.locator('#wResults [data-edit]').filter({hasText:'Prepare an easy icebreaker'}).waitFor();
  assert.equal(await secondPage.evaluate(()=>localStorage.getItem('sica.tasks')),null);
  console.log('PASS refresh and independent browser context read the shared HTTP store; no local task storage');
  await page.getByRole('button',{name:'Complete Prepare an easy icebreaker',exact:true}).click();
@@ -113,12 +117,12 @@ async function main(){
  await page.locator('#wFilter').selectOption('completed');
  await page.getByRole('button',{name:'Reopen Prepare an easy icebreaker',exact:true}).waitFor();
  assert(store.tasks.find(t=>t.title==='Prepare an easy icebreaker').completed_at);
- await page.locator('[data-edit]').filter({hasText:'Prepare an easy icebreaker'}).click();
+ await page.locator('#wResults [data-edit]').filter({hasText:'Prepare an easy icebreaker'}).click();
  await page.locator('#wHistory').getByText('completed',{exact:true}).waitFor();
  await page.getByRole('button',{name:'Close task editor'}).click();
  console.log('PASS completion, saved completion timestamp, history and completed filter');
  await page.locator('#wFilter').selectOption('active');
- await page.locator('[data-edit=t1]').click();
+ await page.locator('#wResults [data-edit=t1]').click();
  await page.locator('[name=title]').fill('Unsaved task name');
  failWrite=true;await page.getByRole('button',{name:'Save changes'}).click();
  await page.locator('#wFormError').filter({hasText:'Not saved'}).waitFor();
@@ -130,7 +134,7 @@ async function main(){
  page.once('dialog',d=>d.dismiss());await page.getByRole('button',{name:'Close task editor'}).click();assert(await page.locator('.w-panel').evaluate(d=>d.open));
  page.once('dialog',d=>d.accept());await page.getByRole('button',{name:'Close task editor'}).click();
  console.log('PASS failure keeps draft, empty PATCH is rejected, discard requires confirmation');
- await page.getByRole('button',{name:'Timeline view'}).click();
+
  const bar=page.locator('[data-bar=t1]');await bar.waitFor();const box=await bar.boundingBox(),old=store.tasks.find(t=>t.id==='t1').start_date;
  await page.mouse.move(box.x+20,box.y+15);await page.mouse.down();await page.mouse.move(box.x+108,box.y+15,{steps:8});await page.mouse.up();
  await page.waitForFunction(d=>document.getElementById('workNotice').textContent.startsWith('Dates saved'),null);
@@ -145,7 +149,7 @@ async function main(){
  console.log('PASS Gantt drag, resize, keyboard edit and date validation');
  await page.getByRole('link',{name:'Dashboard',exact:true}).click();
  assert(await page.evaluate(()=>window.testShell===document.getElementById('rail')));
- await page.goBack();await page.getByRole('heading',{name:'Tasks',exact:true}).waitFor();
+ await page.goBack();await page.getByRole('heading',{name:'Dashboard',exact:true}).waitFor();
  console.log('PASS navigation history without shell reload');
  failRead=true;await page.getByRole('button',{name:'Refresh workspace'}).click();
  await page.getByText('Tasks could not be loaded',{exact:true}).waitFor();
@@ -164,7 +168,7 @@ async function main(){
  await page.evaluate(()=>SICA_DB.tasks.list());
  console.log('PASS expired-session renewal is deduplicated; transient outage does not sign officers out');
  const officer=await context(vp),officerPage=await officer.newPage();await officerPage.goto(url+'/tasks.html');
- await officerPage.locator('[data-edit=t3]').waitFor();
+ await officerPage.locator('#wResults [data-edit=t3]').waitFor();
  assert.equal(await officerPage.getByRole('button',{name:'Team',exact:true}).count(),0);
  assert.equal(await officerPage.getByRole('button',{name:/Plan our first practice/}).count(),0);
  await officerPage.getByRole('link',{name:'Add task',exact:true}).click();
@@ -199,7 +203,7 @@ async function main(){
  await missing.route('**/supabase-config.js?*',r=>r.fulfill({contentType:'text/javascript',body:'window.SICA_SUPABASE = {};'}));
  await missingPage.goto(url+'/officers.html');await missingPage.getByRole('heading',{name:'Database unavailable'}).waitFor();
  console.log('PASS 320px layout, signed-out gate, visible missing-config error');
- await page.goto(url+'/apply.html');await page.waitForURL('**/interest.html');await page.locator('#interestForm').waitFor();
+ await page.route('https://docs.google.com/forms/**',r=>r.fulfill({contentType:'text/html',body:'<h1>Official Google Form</h1>'}));await page.goto(url+'/apply.html');await page.waitForURL('https://docs.google.com/forms/**');
  await page.goto(url+'/index.html');await page.locator('.interest-hero').waitFor();
  assert.equal(await page.getByText('Applications closed',{exact:true}).count(),0);
  assert.equal(await page.getByText('Now accepting',{exact:true}).count(),0);

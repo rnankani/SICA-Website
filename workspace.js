@@ -26,6 +26,7 @@
   const roleName = key => (window.SICA_ROLES.all[key] || {}).label || 'Unassigned';
   function profile() {try {return JSON.parse(localStorage.getItem('sica.profile') || '{}');} catch (_) {return {};}}
   function mine(task) {
+    if ((task.assignee_roles || []).includes(role())) return true;
     // Role previews must not accidentally inherit the founder's personal work.
     if (window.SICA_ROLES.isImpersonating()) return task.owner_role === role();
     return task.owner_id ? task.owner_id === profile().id : task.owner_role === role();
@@ -33,7 +34,7 @@
   const editable = task => can('tasks.edit_any') || (can('tasks.edit_own') && mine(task));
   const state = {rows:[], people:[], meetings:[], loaded:false, error:'', extraError:'', scope:'mine', filter:'active', search:'', view:'list', scale:14, offset:0, loading:false, saving:false};
   let root, DB, panel, mobileMenu, returnFocus, panelTask, initialForm = '', loadGeneration = 0, panelGeneration = 0, drag = null;
-  const owner = task => {const p = state.people.find(p => p.id === task.owner_id); return p ? p.full_name || roleName(p.role) : roleName(task.owner_role);};
+  const owner = task => {const p = state.people.find(p => p.id === task.owner_id); const lead=p ? p.full_name || roleName(p.role) : roleName(task.owner_role); return [lead,...(task.assignee_roles||[]).filter(r=>r!==task.owner_role).map(roleName)].join(' · ');};
   const scoped = () => state.rows.filter(t => state.scope === 'team' || mine(t));
   function sorted(rows) {
     const ranks = {urgent:0, high:1, medium:2, low:3};
@@ -48,7 +49,7 @@
     clearTimeout(toast.timer); toast.timer = setTimeout(() => {el.hidden=true;}, error ? 14000 : 5000);
   }
   function empty(title, text, add) {
-    return '<div class="w-empty">'+icon('check')+'<h3>'+title+'</h3><p>'+text+'</p>'+(add && can('tasks.create') ? '<a class="w-btn w-primary" href="tasks.html?add=1">'+icon('plus')+'Add a task</a>' : '')+'</div>';
+    return '<div class="w-empty">'+icon('check')+'<h3>'+title+'</h3><p>'+text+'</p>'+(add && can('tasks.create') ? '<a class="w-btn w-primary" href="officers.html?add=1">'+icon('plus')+'Add a task</a>' : '')+'</div>';
   }
   function scopeControl() {
     return can('tasks.view_team') ? '<div class="w-switch" aria-label="Task scope"><button data-scope="mine" aria-pressed="'+(state.scope==='mine')+'">My work</button><button data-scope="team" aria-pressed="'+(state.scope==='team')+'">Team</button></div>' : '<span class="w-role">'+esc(roleName(role()))+' · My work</span>';
@@ -79,22 +80,23 @@
   function render() {
     const dashboard=document.body.dataset.page==='dashboard';
     const all=scoped(), remaining=all.filter(active);
-    root.innerHTML='<h1 class="sr-only">'+(dashboard?'Dashboard':'Tasks')+'</h1><header class="w-minimal-head">'+scopeControl()+'<div class="w-head-actions">'+(can('tasks.create')?'<a class="w-add" href="tasks.html?add=1" aria-label="Add task">'+icon('plus')+'<span>Add task</span></a>':'')+'<button class="w-icon" data-refresh aria-label="Refresh workspace" '+(state.loading?'disabled':'')+'>'+icon('refresh')+'</button></div></header><span class="w-sync sr-only" role="status">'+(state.loading?'Syncing…':state.error?'Not synced':'Saved to SICA')+'</span>'+
+    root.innerHTML='<h1 class="sr-only">'+(dashboard?'Dashboard':'Tasks')+'</h1><header class="w-minimal-head">'+scopeControl()+'<div class="w-head-actions">'+(can('tasks.create')?'<a class="w-add" href="officers.html?add=1" aria-label="Add task">'+icon('plus')+'<span>Add task</span></a>':'')+'<button class="w-icon" data-refresh aria-label="Refresh workspace" '+(state.loading?'disabled':'')+'>'+icon('refresh')+'</button></div></header><span class="w-sync sr-only" role="status">'+(state.loading?'Syncing…':state.error?'Not synced':'Saved to SICA')+'</span>'+
       (state.error?'<div class="w-error" role="alert"><b>Tasks could not be loaded</b><p>'+esc(state.error)+(state.loaded?' Showing the last loaded view.':' This is not an empty task list.')+'</p><button class="w-btn" data-refresh>Try again</button></div>':'')+
       (state.extraError?'<p class="w-warning" role="status">'+esc(state.extraError)+'</p>':'');
     if(!state.loaded) {if(!state.error) root.insertAdjacentHTML('beforeend','<div class="w-loading" role="status">Loading your plan…</div>'); return;}
     if(dashboard) {
       root.insertAdjacentHTML('beforeend',timeline(sorted(remaining)));
       const next=state.meetings.filter(m=>m.date && m.date.slice(0,10)>=today() && m.status!=='cancelled' && m.status!=='completed').sort((a,b)=>a.date.localeCompare(b.date))[0];
-      root.insertAdjacentHTML('beforeend','<div class="w-bottom"><section class="w-attention"><div class="w-card-head"><h2>Up next <span>'+remaining.length+'</span></h2><a href="tasks.html">All tasks →</a></div>'+(remaining.length?sorted(remaining).slice(0,5).map(row).join(''):empty('You’re all caught up','No unfinished tasks in this view.',true))+'</section><aside class="w-meeting">'+icon('calendar')+'<span class="w-eyebrow">Next meeting</span><h2>'+esc(next?next.topic||'Team meeting':'Room to plan')+'</h2><p>'+esc(next?pretty(next.date.slice(0,10))+(next.room?' · '+next.room:''):'No upcoming meeting is listed.')+'</p><a class="w-btn" href="meetings.html">View meetings '+icon('arrow')+'</a></aside></div>');
-    } else {
-      root.insertAdjacentHTML('beforeend','<div class="w-toolbar"><label class="w-search"><span class="sr-only">Search tasks</span><input id="wSearch" type="search" placeholder="Find a task or owner…" value="'+esc(state.search)+'"></label><select id="wFilter" aria-label="Filter by status">'+Object.entries({active:'Active tasks',all:'All tasks',...STATUS}).map(([v,label])=>'<option value="'+v+'" '+(state.filter===v?'selected':'')+'>'+label+'</option>').join('')+'</select><div class="w-switch"><button data-view="list" aria-label="List view" aria-pressed="'+(state.view==='list')+'">'+icon('list')+'</button><button data-view="timeline" aria-label="Timeline view" aria-pressed="'+(state.view==='timeline')+'">'+icon('timeline')+'</button></div></div><div id="wResults"></div>');
+      root.insertAdjacentHTML('beforeend','<aside class="w-next-meeting"><span>Next meeting: '+esc(next?next.topic||'Team meeting':'Not scheduled')+'</span><a href="meetings.html">View meetings →</a></aside>');
+    }
+    {
+      root.insertAdjacentHTML('beforeend','<div class="w-toolbar"><label class="w-search"><span class="sr-only">Search tasks</span><input id="wSearch" type="search" placeholder="Find a task or owner…" value="'+esc(state.search)+'"></label><select id="wFilter" aria-label="Filter by status">'+Object.entries({active:'Active tasks',all:'All tasks',...STATUS}).map(([v,label])=>'<option value="'+v+'" '+(state.filter===v?'selected':'')+'>'+label+'</option>').join('')+'</select></div><div id="wResults"></div>');
       renderResults();
     }
   }
   function renderResults() {
     const result=document.getElementById('wResults'); if(!result)return;
-    const rows=visible(); result.innerHTML=state.view==='timeline'?timeline(rows):'<section class="w-task-list" aria-label="Task list">'+(rows.length?rows.map(row).join(''):empty('No tasks here',state.search?'Try another search.':'Change the filter or add the next thing to do.',!state.search))+'</section>';
+    const rows=visible(); result.innerHTML='<section class="w-task-list" aria-label="Task list">'+(rows.length?rows.map(row).join(''):empty('No tasks here',state.search?'Try another search.':'Change the filter or add the next thing to do.',!state.search))+'</section>';
   }
   async function load() {
     const token=++loadGeneration; state.loading=true; render();
@@ -114,9 +116,11 @@
     if(!closeEditor())return false;
     closeMobileMenu();
     const path=url.pathname.split('/').pop();
-    document.body.dataset.page=path==='tasks.html'?'tasks':'dashboard';
-    document.title='SICA — '+(path==='tasks.html'?'Tasks':'Dashboard');
-    root.setAttribute('aria-label',path==='tasks.html'?'Tasks':'Dashboard');
+    url.pathname=url.pathname.replace(/tasks\.html$/, 'officers.html');
+    if(url.searchParams.has('scope'))state.scope=can('tasks.view_team')&&url.searchParams.get('scope')==='team'?'team':'mine';
+    document.body.dataset.page='dashboard';
+    document.title='SICA — Dashboard';
+    root.setAttribute('aria-label','Dashboard');
     document.querySelectorAll('#rail .navitem').forEach(a=>{
       const selected=new URL(a.href).pathname===url.pathname;
       a.classList.toggle('on',selected); if(selected)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');
@@ -124,6 +128,7 @@
     if(!fromHistory)history.pushState({},'',url.pathname+url.search);
     render(); window.scrollTo({top:0,behavior:'instant'});
     if(url.searchParams.has('add'))openEditor();
+    else if(url.searchParams.has('task'))openEditor(url.searchParams.get('task'));
     else {root.tabIndex=-1; root.focus({preventScroll:true});}
     return true;
   }
@@ -137,7 +142,7 @@
     panel.close(); document.body.classList.remove('w-panel-open'); ++panelGeneration;
     if(returnFocus && returnFocus.isConnected)returnFocus.focus();
     // Do not reopen a completed draft when the current URL is refreshed.
-    const url=new URL(location.href); if(url.searchParams.has('add')) {url.searchParams.delete('add');history.replaceState({},'',url.pathname+url.search);}
+    const url=new URL(location.href); if(url.searchParams.has('add') || url.searchParams.has('task')) {url.searchParams.delete('add');url.searchParams.delete('task');history.replaceState({},'',url.pathname+url.search);}
     return true;
   }
   function openEditor(id) {
@@ -149,13 +154,16 @@
     const readOnly=t && !editable(t), self=profile();
     let owners={};
     if(can('tasks.assign')) {
-      Object.entries(window.SICA_ROLES.all).forEach(([key,r])=>{owners['role:'+key]=r.label+' · role';});
-      state.people.filter(p=>window.SICA_ROLES.all[p.role]).forEach(p=>{owners['person:'+p.id]=(p.full_name||roleName(p.role))+' · '+roleName(p.role);});
+      Object.entries(window.SICA_ROLES.all).filter(([key])=>key!=='member').forEach(([key,r])=>{owners['role:'+key]=r.label+' · role';});
+      state.people.filter(p=>p.role!=='member' && window.SICA_ROLES.all[p.role]).forEach(p=>{owners['person:'+p.id]=(p.full_name||roleName(p.role))+' · '+roleName(p.role);});
     } else {owners['person:'+self.id]=(self.full_name||'Me')+' · '+roleName(role());}
     const defaultOwner=window.SICA_ROLES.isImpersonating()?'role:'+role():'person:'+self.id;
     let selected=t ? (t.owner_id?'person:'+t.owner_id:'role:'+t.owner_role) : defaultOwner;
     if(!(selected in owners)) owners[selected]=t?owner(t):(self.full_name||roleName(role()));
     panel.innerHTML='<div class="w-panel-head"><span class="w-eyebrow">'+(t?'Task details':'A clear next step')+'</span><button class="w-icon" type="button" data-close aria-label="Close task editor">'+icon('close')+'</button></div><form id="wTaskForm"><div class="w-panel-content"><h2 id="wPanelTitle">'+(t?'Edit task':'New task')+'</h2><fieldset '+(readOnly?'disabled':'')+'><label>What needs to get done?<input name="title" required maxlength="140" placeholder="e.g. Draft the first meeting plan" value="'+esc(t?t.title:'')+'" autofocus></label><label>Owner<select name="owner" '+(!can('tasks.assign')?'disabled':'')+'>'+choices(owners,selected)+'</select></label><div class="w-fields"><label>Start<input name="start_date" type="date" value="'+esc(t?t.start_date||'':today())+'"></label><label>Due<input name="due" type="date" value="'+esc(t?t.due||'':'')+'"></label></div><div class="w-fields"><label>Status<select name="status">'+choices(STATUS,t?t.status:'not_started')+'</select></label><label>Priority<select name="priority">'+choices(PRIORITY,t?t.priority:'medium')+'</select></label></div><label>What does done look like?<textarea name="description" rows="3" maxlength="10000" placeholder="A little context helps someone start without asking.">'+esc(t?t.description:'')+'</textarea></label><details '+(t?'open':'')+'><summary>More details</summary><div class="w-fields"><label>Progress (%)<input name="progress" type="number" min="0" max="100" step="1" value="'+(t?Number(t.progress)||0:0)+'"></label><label>Project<input name="category" maxlength="60" placeholder="e.g. Club launch" value="'+esc(t?t.category:'')+'"></label></div></details></fieldset>'+(t?'<section class="w-history"><h3>Activity</h3><div id="wHistory" role="status">Loading task history…</div></section>':'')+'<p class="w-form-error" id="wFormError" role="alert"></p></div><footer class="w-panel-actions">'+(t && can('tasks.archive')?'<button type="button" class="w-btn" data-archive>Archive</button>':'')+'<button type="button" class="w-btn" data-close>Cancel</button>'+(!readOnly?'<button class="w-btn w-primary" type="submit">'+(t?'Save changes':'Create task')+'</button>':'')+'</footer></form>';
+    const selectedRoles=t?.assignee_roles||[];
+    const assignees='<fieldset class="w-assignees" '+(!can('tasks.assign')||readOnly?'disabled':'')+'><legend>Assignees</legend><p>Share this task with one or more officer roles. The owner stays accountable.</p><div>'+Object.entries(SICA_ROLES.all).filter(([key])=>key!=='member').map(([key,r])=>'<label><input type="checkbox" name="assignee_roles" value="'+key+'" '+(selectedRoles.includes(key)?'checked':'')+'><span>'+esc(r.label)+'</span></label>').join('')+'</div></fieldset>';
+    panel.querySelector('[name="owner"]').closest('label').insertAdjacentHTML('afterend',assignees);
     initialForm=formSnapshot(); panel.showModal(); document.body.classList.add('w-panel-open');
     const generation=++panelGeneration;
     if(t)DB.taskActivity.list(t.id).then(items=>{
@@ -175,6 +183,7 @@
     const person=state.people.find(p=>p.id===key) || (key===profile().id?profile():null);
     let patch={title,description:data.get('description').trim(),start_date:start,due,priority:data.get('priority'),status:data.get('status'),progress:Number(data.get('progress')),category:data.get('category').trim()||null};
     if(can('tasks.assign') || !panelTask) {
+      if(can('tasks.assign') && (data.getAll('assignee_roles').length || panelTask?.assignee_roles))patch.assignee_roles=data.getAll('assignee_roles');
       patch.owner_id=type==='person'?key:null;
       patch.owner_role=type==='person'?(person?person.role:(panelTask && panelTask.owner_id===key?panelTask.owner_role:null)):key;
       if(!patch.owner_role){error.textContent='The selected owner could not be verified. Refresh officer names and try again.';return;}
@@ -188,7 +197,7 @@
       const row=panelTask?await DB.tasks.update(panelTask.id,patch):await DB.tasks.create(patch);
       if(!row || !row.id)throw new Error('The database did not confirm this save. Your changes are still here.');
       replaceRow(row); setSaving(false); closeEditor(true); render(); toast('Task saved to SICA.');
-    } catch(e) {setSaving(false); error.textContent='Not saved. '+(e.message||'Check your connection and try again.');}
+    } catch(e) {setSaving(false); error.textContent='Not saved. '+(/assignee_roles/.test(e.message)?'Shared assignments need the October 25 database update. Ask the founder to run it in Supabase; your draft is still here.':(e.message||'Check your connection and try again.'));}
   }
   function setSaving(value){state.saving=value;panel.querySelectorAll('button').forEach(b=>b.disabled=value);panel.setAttribute('aria-busy',String(value));}
   function replaceRow(row){const i=state.rows.findIndex(t=>t.id===row.id);if(i<0)state.rows.push(row);else state.rows[i]=row;}

@@ -1,0 +1,24 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SICA — Interest Form</title><meta name="description" content="Interested in SICA? Sign up for meeting news and club updates.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="sica-forms.css?v=2"><link rel="icon" type="image/svg+xml" href="favicon.svg?v=1"></head><body>
+<nav class="bar" aria-label="Site"><div class="bar-in"><a class="mk" href="index.html">SICA</a><a class="back" href="index.html">← Back to the site</a></div></nav>
+<main class="wrap"><section id="interestIntro"><span class="eyebrow"><i></i>Stay in the loop</span><h1>A little curious?<br>That’s enough.</h1><p class="lede">Join our mailing list for meeting news and SICA updates. No experience needed.</p></section>
+<form id="interestForm" novalidate>
+<h2><span class="sn">1</span>A little about you</h2>
+<p class="hint2">Everything is required except your question.</p>
+<div class="f"><label for="name">Your name</label><input id="name" name="name" autocomplete="name" required maxlength="100"><p class="err" id="nameError"></p></div>
+<div class="two"><div class="f"><label for="grade">Grade</label><select id="grade" name="grade" required><option value="">Choose your grade</option><option value="9">9th grade</option><option value="10">10th grade</option><option value="11">11th grade</option><option value="12">12th grade</option></select><p class="err" id="gradeError"></p></div>
+<div class="f"><label for="studentId">Student ID (7 digits)</label><input id="studentId" name="student_id" required inputmode="numeric" pattern="[0-9]{7}" autocomplete="off" spellcheck="false"><p class="err" id="studentIdError"></p></div></div>
+<div class="f"><label for="email">Student email</label><div class="email-lock"><input id="email" name="email_local" required maxlength="74" autocomplete="email" autocapitalize="none" spellcheck="false" aria-describedby="emailDomain emailError" placeholder="Your email username"><span id="emailDomain">@fuhsd.org</span></div><p class="q">Enter your username or paste your full @fuhsd.org address. We save one complete email address.</p><p class="err" id="emailError"></p></div>
+<h2><span class="sn">2</span>What caught your eye?</h2>
+<div class="f"><label for="interest">What interests you about SICA?</label><p class="q" id="interestHint">Write 2–3 detailed sentences, with at least 15 words total (up to 1,000 characters).</p><textarea id="interest" name="interest" required maxlength="1000" aria-describedby="interestHint interestCount interestError"></textarea><div class="count" id="interestCount" aria-live="polite">0 words · 0 sentences</div><p class="err" id="interestError"></p></div>
+<div class="f"><label for="question">Any question for us? <span class="opt">optional</span></label><textarea id="question" name="question" maxlength="1500"></textarea><p class="err" id="questionError"></p></div>
+<p class="note">Signing up asks SICA to email you club updates. Your student ID helps us identify student signups; it won’t be published. To leave the list, email <a href="mailto:thesicaorg@gmail.com">thesicaorg@gmail.com</a>.</p>
+<div class="actions"><button type="submit" class="btn" id="interestSubmit">Keep me updated <span aria-hidden="true">→</span></button></div><p class="submit-fail" id="submitFail" role="alert"></p>
+</form>
+<section class="done" id="interestDone" tabindex="-1" aria-labelledby="doneTitle"><div class="ic"><svg viewBox="0 0 24 24"><path d="m5 13 4 4L19 7"/></svg></div><h2 id="doneTitle">You’re on the list.</h2><p>Your interest has been saved. We’ll use your student email for SICA updates.</p><a class="btn ghost" href="index.html">Back to SICA</a></section>
+<footer class="foot"><span>SICA · Cupertino High School</span><a href="mailto:thesicaorg@gmail.com">thesicaorg@gmail.com</a></footer></main>
+<script src="supabase-config.js?v=14"></script><script src="db.js?v=27"></script><script src="interest.js?v=3"></script></body></html>

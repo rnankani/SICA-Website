@@ -38,22 +38,12 @@ async function main(){
   });ctx.on('page',p=>p.on('pageerror',e=>errors.push(e.message)));return ctx;
  }
  try{
-  const guest=await make(false),p=await guest.newPage();await p.goto(base+'/interest.html');
-  await p.evaluate(()=>localStorage.setItem('sica.token','expired-officer-session'));
-  await p.getByRole('button',{name:'Keep me updated'}).click();assert.equal(await p.locator('.f.bad').count(),5);assert.equal(await p.evaluate(()=>document.activeElement.id),'name');
-  await p.locator('#name').fill('QA Student');await p.locator('#grade').selectOption('10');await p.locator('#studentId').fill('0123456');await p.locator('#email').fill('qa.student');
-  await p.locator('#interest').fill('one two three four five six seven eight nine ten');await p.getByRole('button',{name:'Keep me updated'}).click();assert.match(await p.locator('#interestError').textContent(),/at least 15/);assert.equal(store.interest_signups.length,0);
-  await p.locator('#email').fill('qa@gmail.com');await p.getByRole('button',{name:'Keep me updated'}).click();assert.match(await p.locator('#emailError').textContent(),/@fuhsd/);await p.locator('#email').fill('qa.student');
-  await p.locator('#interest').fill('I want to practice everyday conversations and feel more confident meeting people. I also want to make new friends.');
-  for(const id of ['123456','12345678','123a567','123-567']){await p.locator('#studentId').fill(id);await p.getByRole('button',{name:'Keep me updated'}).click();assert.match(await p.locator('#studentIdError').textContent(),/exactly 7/);}
-  await p.locator('#studentId').fill('0123456');await p.locator('#email').fill(' QA.Student@FUHSD.ORG ');
-  rejectSignup=true;await p.getByRole('button',{name:'Keep me updated'}).click();await p.locator('#submitFail').filter({hasText:'not been confirmed'}).waitFor();assert.equal(await p.locator('#interestForm').isVisible(),true);assert.equal(store.interest_signups.length,0);
-  rejectSignup=false;unconfirmed=true;await p.getByRole('button',{name:'Keep me updated'}).click();await p.locator('#submitFail').filter({hasText:'did not confirm'}).waitFor();assert.equal(await p.locator('#interestDone').isVisible(),false);
-  unconfirmed=false;await p.getByRole('button',{name:'Keep me updated'}).dblclick();await p.locator('#interestDone').waitFor();assert.equal(store.interest_signups.length,1);assert.equal(store.interest_signups[0].email,'qa.student@fuhsd.org');assert.equal(store.interest_signups[0].question,null);
-  assert(requests.filter(r=>r.url.includes('/rpc/submit_interest')).every(r=>r.auth!=='Bearer expired-officer-session'));
-  assert.equal(await p.locator('#interest').getAttribute('aria-describedby'),'interestHint interestCount interestError');
-  assert.equal(await p.evaluate(()=>Object.keys(localStorage).some(k=>/interest|signup/.test(k))),false);
-  console.log('PASS public form required fields, locked domain, word validation, failure retention, confirmation, double click');
+  const google='https://docs.google.com/forms/d/e/1FAIpQLSdr-Sl0hjNKy3dynrCPY_3DLSmTZfMZGaL5xeIsLeaF0gBZkQ/viewform';
+  const guest=await make(false),p=await guest.newPage();
+  await guest.route('https://docs.google.com/forms/**',r=>r.fulfill({contentType:'text/html',body:'<h1>Official Google Form</h1>'}));
+  await p.goto(base+'/interest.html');await p.waitForURL(google);
+  store.interest_signups.push({id:'historical',name:'QA Student',grade:10,student_id:'0123456',email:'qa.student@fuhsd.org',interest:'Historical website signup',created_at:new Date().toISOString()});
+  console.log('PASS retired interest URL opens official Google Form; historical entries retained');
   const officer=await make(),page=await officer.newPage();await page.goto(base+'/interests.html');await page.getByText('QA Student',{exact:true}).waitFor();
   await page.locator('.h-signup summary').click();await page.getByText('Student ID: 0123456',{exact:true}).waitFor();
   const csv=page.waitForEvent('download');await page.getByRole('button',{name:'Export CSV'}).click();assert.equal((await csv).suggestedFilename(),'SICA-interest-signups.csv');
@@ -63,18 +53,27 @@ async function main(){
     const roleCtx=await make(true,{}, {...profile,role}),rolePage=await roleCtx.newPage();await rolePage.goto(base+'/interests.html');
     const allowed=['president','vp'].includes(role);
     if(allowed)await rolePage.getByText('QA Student',{exact:true}).waitFor();else await rolePage.getByText(/Interest signups are restricted/).waitFor();
-    assert.equal(await rolePage.locator('#rail').getByRole('link',{name:'Interest signups',exact:true}).count(),allowed?1:0);
+    assert.equal(await rolePage.locator('#rail').getByRole('link',{name:'Interest archive',exact:true}).count(),allowed?1:0);
     if(!allowed)assert.equal(await rolePage.getByText('QA Student',{exact:true}).count(),0);
     await roleCtx.close();
   }
   console.log('PASS President/VP inbox and sidebar access; other officer roles denied');
-  await page.getByRole('button',{name:'Customize sidebar',exact:true}).click();await page.getByRole('button',{name:'Pin References',exact:true}).click();await page.getByRole('button',{name:'Save sidebar',exact:true}).click();await page.locator('.sidebar-dialog').waitFor({state:'hidden'});
+  await page.locator('#rail [data-sidebar-id=references]').click({button:'right'});await page.getByRole('menuitem',{name:'Rearrange tabs…'}).click();await page.getByRole('button',{name:'Pin References',exact:true}).click();await page.getByRole('button',{name:'Save sidebar',exact:true}).click();await page.locator('.sidebar-dialog').waitFor({state:'hidden'});
   assert.equal(await page.locator('#rail .navgroup').first().getByRole('link').first().textContent(),'References');
-  await page.locator('#rail').getByRole('button',{name:'Customize References tab',exact:true}).click();await page.getByRole('button',{name:'Pin Tasks',exact:true}).click();await page.getByRole('button',{name:'Move Tasks down',exact:true}).click();await page.getByRole('button',{name:'Save sidebar',exact:true}).click();await page.locator('.sidebar-dialog').waitFor({state:'hidden'});
+  await page.locator('#rail [data-sidebar-id=references]').click({button:'right'});await page.getByRole('menuitem',{name:'Rearrange tabs…'}).click();
+  await page.getByRole('button',{name:'Pin Dashboard',exact:true}).click();
+  assert.equal(await page.locator('.sidebar-setting').first().getAttribute('data-id'),'dashboard');
+  await page.locator('[data-drag=dashboard]').dragTo(page.locator('.sidebar-setting[data-id=references]'));
+  await page.getByRole('button',{name:'Save sidebar',exact:true}).click();await page.locator('.sidebar-dialog').waitFor({state:'hidden'});
+
   await page.reload();await page.getByText('QA Student',{exact:true}).waitFor();assert.equal(await page.locator('#rail .navgroup').first().getByRole('link').first().textContent(),'References');
   const personalCtx=await make(),personalPage=await personalCtx.newPage();await personalPage.goto(base+'/interests.html');await personalPage.waitForFunction(()=>document.querySelector('#rail .navlabel')?.textContent==='Pinned');assert.equal(await personalPage.locator('#rail .navgroup').first().getByRole('link').count(),2);await personalCtx.close();
   console.log('PASS sidebar pin/reorder saved across page reloads and independent browsers');
-  await page.getByRole('button',{name:'Customize sidebar',exact:true}).click();await page.getByRole('button',{name:'Pin Calendar',exact:true}).click();failPreferences=true;await page.getByRole('button',{name:'Save sidebar',exact:true}).click();await page.getByText(/Not saved. Preferences temporarily unavailable/).waitFor();assert.equal(await page.getByRole('button',{name:'Unpin Calendar',exact:true}).getAttribute('aria-pressed'),'true');failPreferences=false;await page.getByRole('button',{name:'Save sidebar',exact:true}).click();await page.locator('.sidebar-dialog').waitFor({state:'hidden'});
+  await page.locator('#rail [data-sidebar-id=references]').click({button:'right'});await page.getByRole('menuitem',{name:'Rearrange tabs…'}).click();await page.getByRole('button',{name:'Pin Calendar',exact:true}).click();failPreferences=true;await page.getByRole('button',{name:'Save sidebar',exact:true}).click();await page.getByText(/Not saved. Preferences temporarily unavailable/).waitFor();assert.equal(await page.getByRole('button',{name:'Unpin Calendar',exact:true}).getAttribute('aria-pressed'),'true');failPreferences=false;await page.getByRole('button',{name:'Save sidebar',exact:true}).click();await page.locator('.sidebar-dialog').waitFor({state:'hidden'});
+  assert.equal(await page.locator('.nav-options,.sidebar-customize').count(),0);
+  await page.locator('#rail [data-sidebar-id=references]').focus();await page.keyboard.press('Shift+F10');
+  await page.getByRole('menuitem',{name:'Unpin tab',exact:true}).waitFor();await page.keyboard.press('Escape');
+  assert.equal(await page.locator('.sidebar-context').count(),0);
   await page.goto(base+'/references.html');await page.getByRole('button',{name:'Existing Library upload',exact:true}).waitFor();
   assert.equal(await page.locator('#rail').getByRole('link',{name:'Library',exact:true}).count(),0);assert.equal(await page.locator('#rail').getByRole('link',{name:'Handbook',exact:true}).count(),0);assert.equal(await page.locator('#rail').getByRole('link',{name:'Announcements',exact:true}).count(),0);
   await page.getByRole('button',{name:'Existing Library upload',exact:true}).hover();assert.equal(await page.getByText('Use this to prepare the first meeting',{exact:true}).isVisible(),true);
@@ -98,13 +97,13 @@ async function main(){
   await page.goto(base+'/founder-tools.html');assert.equal(await page.getByText('Reset application',{exact:true}).count(),0);await page.getByRole('button',{name:'Check connection'}).click();await page.getByText(/Supabase is reachable/).waitFor();
   await page.goto(base+'/officer-form.html');await page.frameLocator('iframe').getByText('Saved officer form · Preview only · Submission disabled',{exact:true}).waitFor();assert.equal(await page.frameLocator('iframe').getByRole('button',{name:'Submit application'}).isDisabled(),true);
   console.log('PASS minimal persisted settings, real founder actions, preserved disabled form template');
-  const phoneCtx=await make(false,{viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'}),phone=await phoneCtx.newPage();await phone.goto(base+'/interest.html');assert(await phone.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await phone.screenshot({path:path.join(out,'interest-mobile.png'),fullPage:true});
+  const phoneCtx=await make(false,{viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'}),phone=await phoneCtx.newPage();await phoneCtx.route('https://docs.google.com/forms/**',r=>r.fulfill({contentType:'text/html',body:'<h1>Official Google Form</h1>'}));await phone.goto(base+'/interest.html');await phone.waitForURL(google);assert(await phone.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await phone.screenshot({path:path.join(out,'interest-mobile.png'),fullPage:true});
   const mobile=await make(true,{viewport:{width:390,height:844},isMobile:true,hasTouch:true}),mp=await mobile.newPage();await mp.goto(base+'/references.html');await mp.getByRole('button',{name:'Club initiation',exact:true}).waitFor();assert(await mp.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await mp.screenshot({path:path.join(out,'references-mobile.png'),fullPage:true});
   await mp.getByRole('button',{name:'Open navigation'}).click();await mp.locator('#workMobileMenu[open]').getByRole('link',{name:'Settings',exact:true}).click();await mp.waitForURL('**/settings.html');await mp.locator('#clubSettings').waitFor();assert.equal(await mp.locator('[name=room]').inputValue(),'Room 12');
-  await mp.locator('#hubMain').getByRole('button',{name:'Customize sidebar',exact:true}).click();await mp.locator('.sidebar-dialog[open]').waitFor();assert(await mp.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await mp.screenshot({path:path.join(out,'sidebar-mobile.png'),fullPage:true});await mp.getByRole('button',{name:'Close sidebar settings',exact:true}).click();
-  await phone.goto(base+'/index.html');assert.equal(await phone.getByText(/applications closed/i).count(),0);await phone.locator('.interest-float').click();await phone.waitForURL('**/interest.html');
+  await mp.locator('#hubMain').getByRole('button',{name:'Arrange tabs',exact:true}).click();await mp.locator('.sidebar-dialog[open]').waitFor();assert(await mp.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await mp.screenshot({path:path.join(out,'sidebar-mobile.png'),fullPage:true});await mp.getByRole('button',{name:'Close sidebar settings',exact:true}).click();
+  await phone.goto(base+'/index.html');assert.equal(await phone.getByText(/applications closed/i).count(),0);await phone.locator('.interest-float').click();await phone.waitForURL(google);
   await p.goto(base+'/index.html');await p.getByRole('link',{name:'Interest Form',exact:true}).first().waitFor();await p.waitForFunction(()=>[...document.querySelectorAll('.hero-r')].every(el=>getComputedStyle(el).opacity==='1'));await p.screenshot({path:path.join(out,'home-desktop.png')});
-  await phone.setViewportSize({width:320,height:740});await phone.goto(base+'/interest.html');assert(await phone.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  await phone.setViewportSize({width:320,height:740});await phone.goto(base+'/interest.html');await phone.waitForURL(google);assert(await phone.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
   console.log('PASS mobile layouts, public interest CTAs, reduced-motion form');assert.deepEqual(errors,[]);console.log('PASS no browser JS errors');console.log('Screenshots: '+out);
  }finally{await browser.close();server.close();}
 }
