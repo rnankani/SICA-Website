@@ -15,11 +15,8 @@ window.SICA_SUPABASE = {
   /* the newer publishable key — same permissions as the legacy anon JWT */
   anonKey: 'sb_publishable_bGd6xb2b0dADbwqLY5JNdw_a9-yyoK-',
 
-  /* Cosmetic only — it gives a clearer error on the form. The real
-     rule is enforced by the handle_new_user() trigger in schema.sql,
-     because anyone can call the auth API directly and never load this
-     page. Change it in BOTH places or not at all. */
-  emailDomain: '@student.fuhsd.org',
+  /* Any valid email may be invited. Access is enforced by the invite
+     record and founder approval, never by a school-email suffix. */
 
   /* Where a sign-in link returns to. Only used once email confirmation
      or OAuth is switched on; password sign-in does not need it. */

@@ -23,9 +23,8 @@ Add these questions; turn on Required for every question except the last:
 3. **Student ID** — Short answer. Response validation → Regular expression →
    Matches: `^[0-9]{7}$`. Error: “Enter exactly 7 digits. No letters or symbols.”
    Keep this as text, not a numeric spreadsheet calculation, to retain zeros.
-4. **Student email** — Short answer. Ask for the full address. Regular expression
-   → Matches: `^[A-Za-z0-9._%+-]+@fuhsd[.]org$`.
-   Error: “Enter your full @fuhsd.org school email address.”
+4. **Email** — Short answer. Ask for the full address from any email provider.
+   Response validation → Text → Email address. Do not restrict to a school domain.
 5. **What interests you about SICA, and what would you like to practice?** —
    Paragraph. Description: “Write 2–3 detailed sentences with at least 15 words
    total.” For the minimum, use Regular expression → Matches:
@@ -34,7 +33,7 @@ Add these questions; turn on Required for every question except the last:
    expectation without brittle punctuation restrictions.
 6. **Any question for us?** — Paragraph, optional.
 
-Confirmation: “You're on the SICA interest list. Watch your school email for
+Confirmation: “You're on the SICA interest list. Watch your email for
 club updates. Thanks for being interested!”
 
 ## 2. Link the spreadsheet — no code

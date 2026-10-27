@@ -223,6 +223,7 @@
     start();
   }
 
+  var authNotice = '';
   function showGate(reason){
     var A = window.SICA_AUTH;
     var live = A && A.live;
@@ -232,18 +233,23 @@
     if (reason === 'notOfficer'){
       var g2 = document.createElement('div');
       g2.className = 'gate'; g2.id = 'gate';
-      g2.innerHTML = '<div class="gate-card"><h1>Not an officer account</h1>' +
+      g2.innerHTML = '<div class="gate-card"><h1>Waiting for founder approval</h1>' +
         '<p>You are signed in, but this workspace is for SICA officers. ' +
-        'Applying for a role is how you get access &mdash; an approved application ' +
-        'is what turns an account into an officer account.</p>' +
+        'Your account exists. Ask the founder to approve your Registered entry in Officer Management. You do not need to apply again.</p>' +
         '<div class="row" style="margin-top:22px">' +
         '<a href="index.html">&larr; Back to site</a>' +
         '<span style="display:flex;gap:8px">' +
         '<button type="button" class="btn ghost" id="gateOut">Sign out</button>' +
-        '<a class="btn" href="apply.html">Apply</a></span></div></div>';
+        '<button class="btn" type="button" id="gateCheck">Check approval</button></span></div><p id="approvalStatus" role="status"></p></div>';
       document.body.appendChild(g2);
       document.getElementById('gateOut').addEventListener('click', function(){
         A.signOut().then(function(){ location.reload(); });
+      });
+      document.getElementById('gateCheck').addEventListener('click', async function(){
+        var button=this;button.disabled=true;var status=document.getElementById('approvalStatus');status.textContent='Checking…';
+        try{var p=await A.profile(true);if(p&&p.role&&p.role!=='member'){unlock();return;}status.textContent='Still waiting for founder approval. Your account is registered.';}
+        catch(ex){status.textContent='Could not check approval. '+A.explainError(ex);}
+        finally{button.disabled=false;}
       });
       return;
     }
@@ -262,16 +268,16 @@
     g.innerHTML = live
       ? '<div class="gate-card"><h1>Officer sign-in</h1>' +
         '<p>Use your SICA account. Applications are only visible once you are signed in. ' +
-        'New accounts need the emailed confirmation link before the first sign-in.</p>' +
+        'Any email provider is welcome—use the exact address the founder invited. New accounts need email confirmation, then founder approval.</p>' +
         '<form id="gateForm">' +
-        '<input id="gateEmail" type="email" autocomplete="username" placeholder="Email" aria-label="Email">' +
+        '<input id="gateEmail" type="email" autocomplete="username" placeholder="Your invited email" aria-label="Email" autocapitalize="none" spellcheck="false">' +
         '<input id="gateCode" type="password" autocomplete="current-password" placeholder="Password" aria-label="Password">' +
         '<div class="err" id="gateErr" role="alert"></div>' +
         '<div class="row"><a href="index.html">&larr; Back to site</a>' +
         '<span style="display:flex;gap:8px">' +
         '<button type="button" class="btn ghost" id="gateNew">Create account</button>' +
         '<button type="submit" class="btn">Sign in</button></span></div></form>' +
-        '<p class="gate-state" id="gateState"></p></div>'
+        '<button type="button" class="btn ghost gate-resend" id="gateResend">Resend confirmation</button><p class="gate-state" id="gateState"></p></div>'
       : '<div class="gate-card"><h1>Officer access</h1>' +
         '<p>This workspace is for SICA officers. Enter the current access code.</p>' +
         '<form id="gateForm"><input id="gateCode" type="password" autocomplete="off" placeholder="ACCESS CODE" aria-label="Access code">' +
@@ -284,21 +290,32 @@
     (document.getElementById('gateEmail') || document.getElementById('gateCode')).focus();
 
     if (live) {
+      if(authNotice){err.textContent=authNotice;authNotice='';}
+      var authBusy=false;
+      var setAuthBusy=function(value){authBusy=value;g.querySelectorAll('button').forEach(function(b){b.disabled=value;});};
+      var enterWorkspace=function(){
+        return A.profile(true).then(function(p){if(!p)throw new Error('Your signed-in account could not be verified. Please try signing in again.');if(p.role&&p.role!=='member')return unlock();g.remove();showGate('notOfficer');});
+      };
+      document.getElementById('gateResend').addEventListener('click',async function(){
+        if(authBusy)return;setAuthBusy(true);err.textContent='Requesting confirmation…';
+        try{await A.resendConfirmation(document.getElementById('gateEmail').value);err.textContent='If this account needs confirmation, check your inbox and spam folder for a new link.';}
+        catch(ex){err.textContent=A.explainError(ex);}finally{setAuthBusy(false);}
+      });
       A.ping().then(function (p) {
         var el = document.getElementById('gateState');
         if (el) el.textContent = p.ok ? '' : p.reason;
         if (el) el.className = 'gate-state' + (p.ok ? '' : ' bad');
       });
       document.getElementById('gateNew').addEventListener('click', function () {
+        if(authBusy)return;
         var e = document.getElementById('gateEmail').value.trim();
         var p = document.getElementById('gateCode').value;
         if (!e || p.length < 8) { err.textContent = 'Enter an email and a password of at least 8 characters.'; return; }
-        err.textContent = 'Creating account…';
+        setAuthBusy(true);err.textContent = 'Creating account…';
         A.signUp(e, p).then(function (d) {
-          if (d && d.access_token) unlock();
-          else err.textContent = 'Account created. Open the confirmation link we just emailed you, ' +
-                                 'then come back and sign in.';
-        }).catch(function (ex) { err.textContent = ex.message; });
+          if (d && d.access_token) return enterWorkspace();
+          else err.textContent = 'Check your inbox and spam folder for a confirmation link. After confirming, sign in. If you already registered, use Sign in instead.';
+        }).catch(function (ex) { err.textContent = A.explainError(ex); }).finally(function(){setAuthBusy(false);});
       });
     }
 
@@ -310,17 +327,12 @@
         else { err.textContent = 'That code is not right.'; v.value = ''; v.focus(); }
         return;
       }
+      if(authBusy)return;
       var em = document.getElementById('gateEmail').value.trim();
       var pw = document.getElementById('gateCode').value;
-      err.textContent = 'Signing in…';
-      A.signIn(em, pw)
-        .then(function () { return A.profile(true); })
-        .then(function (p) {
-          if (p && p.role && p.role !== 'member') return unlock();
-          document.getElementById('gate').remove();
-          showGate('notOfficer');
-        })
-        .catch(function (ex) { err.textContent = ex.message; });
+      if(!em||!pw){err.textContent='Enter your invited email and password.';return;}
+      setAuthBusy(true);err.textContent='Signing in…';
+      A.signIn(em,pw).then(enterWorkspace).catch(function(ex){err.textContent=A.explainError(ex);}).finally(function(){setAuthBusy(false);});
     });
   }
 
@@ -473,7 +485,7 @@
     if (A && A.live){
       /* A real session beats the passcode. Refresh first so an officer
          returning after an hour is not bounced for no reason. */
-      A.refresh().then(function(){
+      A.consumeConfirmation().then(function(notice){authNotice=notice||'';return A.refresh();}).then(function(){
         if (!A.signedIn()) return showGate();
         /* Signed in is not the same as authorised. Anyone may create an
            account; only an officer profile may open the workspace. */

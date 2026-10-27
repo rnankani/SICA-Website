@@ -9,16 +9,30 @@ This adds shared role assignees, enforces their access, makes invite permissions
 ## Invite the confirmed officers
 
 1. Sign in as the founder at https://www.joinsica.page/officers.html.
-2. Open **Officer Management**. Enter the officer's name, exact email they will use, and role. Click **Add to invite list**. Invite VP, Treasurer and PR; leave Secretary vacant until selected.
+2. Open **Officer Management**. Enter the officer's name, exact email they will use (any provider), and role. Click **Add to invite list**. Invite VP, Treasurer and PR; leave Secretary vacant until selected.
 3. Send that officer the portal URL yourself. Adding to the list does not send an invitation email.
 4. They enter the same email and a password of at least 8 characters, then click **Create account**. They should not submit another application.
 5. They open Supabase's confirmation email if confirmation is enabled, then sign in. Until you approve, they have no officer access.
 6. Refresh Officer Management. Their row should now say **Registered**. Click **Approve**.
-7. Ask them to sign out and back in so the newly granted role loads. They should see their Dashboard and assigned work. Test with one real task before onboarding the next officer.
+7. Ask them to click **Check approval** on the waiting screen (or sign out and back in). They should see their Dashboard and assigned work. Test with one real task before onboarding the next officer.
 
 If an account already exists, do not create a duplicate. Check its existing invite status first. Approved accounts can sign in directly. A Registered row is ready for approval. Do not use a shared founder login or hand out an API key.
 
 Approval queues an email in the database. Delivery depends on the mail function configuration; the **Send the email** action opens a prewritten Gmail message for manual sending. Don't assume automatic delivery.
+
+## Signup troubleshooting — October 26
+
+The hard-coded `@student.fuhsd.org` restriction was removed. Existing invited emails are unchanged; no SQL migration is required for this email fix. Any valid domain is accepted, but the address must still match its invite.
+
+- Confirmed live read-only: email signup is enabled and email confirmation is required.
+- Supabase → Authentication → URL Configuration: the Site URL should be `https://www.joinsica.page`; allow `https://www.joinsica.page/officers.html` as a redirect. Signup now explicitly requests that return URL.
+- Email unconfirmed: use **Resend confirmation**, then the newest email link. Expired link errors are shown instead of silently ignored.
+- Email address not authorized / delivery errors: configure a production SMTP sender in Supabase Auth. The built-in sender has restrictions and low rate limits; the repository cannot change your project SMTP settings. Keep email verification enabled.
+- Invalid credentials: use the exact invited email and the password chosen during Create account. An invitation alone does not create a password/account.
+- Database error saving new user: verify the invite email and status, then inspect Supabase Auth logs. Do not disable the invite trigger or RLS as a workaround.
+- Role/profile load errors now stay visible instead of being mislabeled as pending approval.
+
+These browser fixes are deployed through GitHub. Live email delivery cannot be validated using local HTTP mocks; test one actual invited officer before sending everyone through at once.
 
 ## Daily workflow
 

@@ -1,3 +1,7 @@
+## Current onboarding (October 26, 2026)
+
+Officer accounts accept any valid email domain. Use the exact invited address, create an account, confirm the email, and wait for founder approval. Pending officers can use **Check approval** without signing out. See `OFFICER-ROLLOUT.md` for the current rollout and troubleshooting steps. Public interest intake is Google Forms; the custom form below is historical and archived, not active.
+
 # SICA — Student Influence & Communication Association
 
 Marketing site for SICA, a high-school program that teaches communication, influence, and presence — the skills schools don't teach.

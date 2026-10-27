@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="officers.css?v=15"><link rel="stylesheet" href="officer-nav.css?v=1"><link rel="stylesheet" href="sidebar.css?v=2">
+<link rel="stylesheet" href="officers.css?v=18"><link rel="stylesheet" href="officer-nav.css?v=1"><link rel="stylesheet" href="sidebar.css?v=2">
 <meta name="view-transition" content="same-origin"><link rel="icon" type="image/svg+xml" href="favicon.svg?v=1"></head>
 <body data-page="officers">
 <div class="shell">
@@ -28,7 +28,7 @@
     <div class="panel">
       <form class="inv-add" id="invAdd">
         <input id="invName"  placeholder="Full name" aria-label="Full name">
-        <input id="invEmail" type="email" placeholder="school email" aria-label="Email">
+        <input id="invEmail" type="email" placeholder="Any email address" aria-label="Email">
         <select id="invRole" aria-label="Role"></select>
         <button class="btn" type="submit">Add to invite list</button>
       </form>
@@ -47,12 +47,12 @@
 </div>
 
 <script src="references-data.js?v=14"></script>
-<script src="supabase-config.js?v=14"></script>
-<script src="auth.js?v=25"></script>
+<script src="supabase-config.js?v=15"></script>
+<script src="auth.js?v=26"></script>
 <script src="db.js?v=28"></script>
 <script src="roles.js?v=20"></script>
 <script src="tasks.js?v=14"></script>
-<script src="sidebar.js?v=2"></script><script src="officers.js?v=28"></script>
+<script src="sidebar.js?v=2"></script><script src="officers.js?v=29"></script>
 <script>
 window.sicaPageInit = function () {
   var DB = window.SICA_DB, R = window.SICA_ROLES;
@@ -136,16 +136,20 @@ window.sicaPageInit = function () {
     }).join('');
   }
 
+  var inviting=false;
   document.getElementById('invAdd').addEventListener('submit', async function (e) {
     e.preventDefault();
+    if(inviting)return;
     errEl.textContent = '';
     var name  = document.getElementById('invName').value.trim();
     var email = document.getElementById('invEmail').value.trim().toLowerCase();
     var role  = document.getElementById('invRole').value;
     if (!email) { errEl.textContent = 'An email is required — it is what the invite matches on.'; return; }
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { errEl.textContent = 'That does not look like an email address.'; return; }
+    var submit=e.target.querySelector('button[type=submit]');inviting=true;submit.disabled=true;
     try {
-      await DB.invites.add({ email: email, full_name: name, role: role });
+      var saved=await DB.invites.add({ email: email, full_name: name, role: role });
+      if(!saved||!saved.id)throw new Error('The database did not confirm this invitation. Refresh the invite list before retrying.');
       document.getElementById('invName').value = '';
       document.getElementById('invEmail').value = '';
       await draw();
@@ -153,7 +157,7 @@ window.sicaPageInit = function () {
       errEl.textContent = /duplicate|unique/i.test(ex.message)
         ? 'That email is already on the list.'
         : ex.message;
-    }
+    } finally {inviting=false;submit.disabled=false;}
   });
 
   /* Approving writes the message into email_outbox inside the same

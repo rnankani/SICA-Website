@@ -43,7 +43,11 @@ body:not(.unlocked) .shell{display:none}
 .gate-card input{background:var(--ground);border:1px solid rgba(237,232,220,.18);border-radius:6px;color:var(--text);font-family:var(--ui);font-size:15px;letter-spacing:.16em;padding:13px 15px;outline:none}
 .gate-card input:focus{border-color:var(--brass)}
 .gate-card .err{font-size:12.5px;color:var(--warn);min-height:1.2em}
-.gate-card .row{display:flex;gap:9px;justify-content:space-between;align-items:center}
+.gate-card .row{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.gate-card input[type=email]{letter-spacing:normal;min-width:0;width:100%}
+.gate-card .gate-resend{margin-top:18px;font-size:12px}
+.gate-card button:disabled{opacity:.55;cursor:wait}
+@media(max-width:440px){.gate-card .row>span{width:100%;flex-wrap:wrap}.gate-card .row>span button{flex:1;white-space:nowrap}}
 .gate-card .row a{font-size:12px;color:var(--text-3)}
 
 /* ─── shell ───────────────────────────────────────────────── */
